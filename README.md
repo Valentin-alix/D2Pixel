@@ -41,7 +41,7 @@ We need dot command :
 
 ### .env:
 
-- PATH_ANKAMA_LAUNCHER
+- BACKEND_URL=145.239.198.180
 
 ### Generate .exe
 

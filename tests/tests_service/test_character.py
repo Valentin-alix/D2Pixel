@@ -22,7 +22,7 @@ class TestServiceCharacter(unittest.TestCase):
 
         possible = CharacterService.get_possible_collectable(character.id)
         print(possible)
-        on_map = CollectableService.get_possible_config_on_map(
+        on_map = CollectableService.get_possible_config_on_map(  # FIXME
             189531649, [elem.id for elem in possible]
         )
         print(on_map)

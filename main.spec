@@ -7,7 +7,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ("./resources", "./resources"),
-        (".env", ".env")
+        (".env", ".")
     ],
     hiddenimports=["pkg_resources.extern"],
     hookspath=[],

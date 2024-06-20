@@ -1,5 +1,5 @@
-from frontend.src.gui.components.buttons import PushButtonIcon
-from frontend.src.gui.components.organization import HorizontalLayout
+from src.gui.components.buttons import PushButtonIcon
+from src.gui.components.organization import HorizontalLayout
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtWidgets import QSizePolicy, QWidget
 

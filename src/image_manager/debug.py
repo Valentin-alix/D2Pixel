@@ -1,7 +1,7 @@
 from typing import Any
 
 import cv2
-import matplotlib.pyplot as plt
+
 import numpy
 from cv2.typing import MatLike
 from EzreD2Shared.shared.entities.position import Position
@@ -114,6 +114,8 @@ def draw_form(
 
 
 def draw_maps_on_grid(maps: list[MapSchema]):
+    import matplotlib.pyplot as plt
+
     maps_x = [map.x for map in maps]
     maps_y = [map.y for map in maps]
 
