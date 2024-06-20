@@ -1,0 +1,6 @@
+[submodule "EzreD2Datas"]
+	path = EzreD2Datas
+	url = https://github.com/Valentin-alix/EzreD2Datas
+[submodule "EzreD2Shared"]
+	path = EzreD2Shared
+	url = https://github.com/Valentin-alix/EzreD2Shared

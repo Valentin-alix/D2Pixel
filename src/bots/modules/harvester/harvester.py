@@ -1,0 +1,289 @@
+import traceback
+from threading import Lock
+from time import perf_counter, sleep
+
+import numpy
+import win32con
+from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
+from EzreD2Shared.shared.entities.object_search_config import ObjectSearchConfig
+from EzreD2Shared.shared.entities.position import Position
+from EzreD2Shared.shared.enums import ToDirection
+from EzreD2Shared.shared.schemas.map import MapSchema
+from EzreD2Shared.shared.schemas.sub_area import SubAreaSchema
+from EzreD2Shared.shared.schemas.template_found import InfoTemplateFoundPlacementSchema
+from EzreD2Shared.shared.utils.debugger import timeit
+from EzreD2Shared.shared.utils.randomizer import (
+    RANGE_DURATION_ACTIVITY,
+    multiply_offset,
+)
+
+from src.bots.dofus.connection.connection_system import ConnectionSystem
+from src.bots.dofus.hud.highlight import remove_highlighted_zone
+from src.bots.dofus.hud.info_bar import is_full_pods
+from src.bots.dofus.hud.info_popup.info_popup import (
+    EventInfoPopup,
+)
+from src.bots.dofus.hud.infobulle import replace_infobulle
+from src.bots.dofus.sub_area_farming.sub_area_farming_system import (
+    SubAreaFarmingSystem,
+)
+from src.bots.dofus.walker.core_walker_system import WaitForNewMapWalking
+from src.bots.dofus.walker.directions import (
+    get_pos_from_direction,
+    get_pos_to_direction,
+)
+from src.bots.modules.harvester.path_positions import (
+    find_dumby_optimal_path_positions,
+    find_optimal_path_positions,
+)
+from src.exceptions import (
+    CharacterIsStuckException,
+    StoppedException,
+    UnknowStateException,
+)
+from src.services.character import CharacterService
+from src.services.collectable import CollectableService
+from src.services.sub_area import SubAreaService
+
+
+def clean_image_after_collect(
+    prev_img: numpy.ndarray, img: numpy.ndarray, pos: Position | None = None
+):
+    img = replace_infobulle(prev_img, img, pos)
+
+    return remove_highlighted_zone(prev_img, img, pos)
+
+
+TIME_HARVEST = 60 * 60 * 2
+
+harvester_choose_sub_area_lock = Lock()
+
+
+class Harvester(SubAreaFarmingSystem, ConnectionSystem):
+    def __init__(
+        self,
+        harvest_sub_areas_farming_ids: list[int],
+        harvest_map_time: dict[MapSchema, float],
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.weight_by_map_harvest: dict[int, float] = {}
+        self.harvest_sub_areas_farming_ids = harvest_sub_areas_farming_ids
+        self.harvest_map_time = harvest_map_time
+
+    def run_harvest(self) -> None:
+        if self.character.lvl < 10:
+            return None
+
+        limit_time = TIME_HARVEST * multiply_offset(RANGE_DURATION_ACTIVITY)
+
+        initial_time = perf_counter()
+        possible_collectable_ids = [
+            elem.id
+            for elem in CharacterService.get_possible_collectable(self.character.id)
+        ]
+        valid_sub_areas = SubAreaService.get_valid_sub_areas_harvester(
+            self.character.id
+        )
+        valid_sub_area_ids = [elem.id for elem in valid_sub_areas]
+        self.weight_by_map_harvest = SubAreaService.get_weights_harvest_map(
+            self.character.server_id, possible_collectable_ids, valid_sub_area_ids
+        )
+
+        while perf_counter() - initial_time < limit_time:
+            with harvester_choose_sub_area_lock:
+                sub_areas = self.get_random_grouped_sub_area(
+                    self.harvest_sub_areas_farming_ids,
+                    self.weight_by_map_harvest,
+                    valid_sub_areas,
+                )
+            self.harvest_sub_areas_farming_ids.extend((elem.id for elem in sub_areas))
+            try:
+                self.log_info(f"Harvest : gonna farm {sub_areas}")
+                self.collect_sub_areas(
+                    sub_areas,
+                    wait_default_args=WaitForNewMapWalking(
+                        extra_func=self._on_info_modal, check_fight=True
+                    ),
+                )
+            except StoppedException:
+                raise
+            except (UnknowStateException, CharacterIsStuckException):
+                self.log_error(traceback.format_exc())
+                self.deblock_character()
+            finally:
+                for sub_area in sub_areas:
+                    self.harvest_sub_areas_farming_ids.remove(sub_area.id)
+
+        item_ids = [
+            elem.item_id
+            for elem in CharacterService.get_possible_collectable(self.character.id)
+        ]
+        CharacterService.add_bank_items(self.character.id, item_ids)
+
+    def _on_info_modal(self, img: numpy.ndarray) -> numpy.ndarray:
+        img, events = self.handle_info_modal(img)
+        for event in events:
+            if event == EventInfoPopup.LVL_UP_JOB:
+                possible_collectable_ids = [
+                    elem.id
+                    for elem in CharacterService.get_possible_collectable(
+                        self.character.id
+                    )
+                ]
+                valid_sub_areas = SubAreaService.get_valid_sub_areas_harvester(
+                    self.character.id
+                )
+                valid_sub_area_ids = [elem.id for elem in valid_sub_areas]
+                self.weight_by_map_harvest = SubAreaService.get_weights_harvest_map(
+                    self.character.server_id,
+                    possible_collectable_ids,
+                    valid_sub_area_ids,
+                )
+        return img
+
+    def collect_sub_areas(
+        self,
+        sub_areas: list[SubAreaSchema],
+        wait_default_args: WaitForNewMapWalking = WaitForNewMapWalking(),
+    ):
+        max_time = SubAreaService.get_max_time_harvester(
+            [elem.id for elem in sub_areas]
+        )
+
+        img = self.go_inside_grouped_sub_area(sub_areas)
+
+        initial_time: float = perf_counter()
+        self.harvest_map_time[self.get_curr_map_info().map] = perf_counter()
+
+        is_new_map: bool = True
+
+        while perf_counter() - initial_time < max_time:
+            map_direction = self.get_next_direction_sub_area(
+                sub_areas, self.harvest_map_time, self.weight_by_map_harvest
+            )
+            if map_direction is None:
+                self.log_info("Did not found neighbor in sub_area")
+                if self.get_curr_map_info().map.sub_area not in sub_areas:
+                    img = self.go_inside_grouped_sub_area(sub_areas)
+                    continue
+                raise CharacterIsStuckException()
+
+            if is_new_map:
+                collecting_count = self.collect_map(
+                    img,
+                    self.get_curr_map_info().map,
+                    map_direction.to_direction,
+                )
+                timeout = 15 + collecting_count * 5
+                wait_args = wait_default_args._replace(
+                    retry_args=wait_default_args.retry_args._replace(timeout=timeout)
+                )
+            else:
+                wait_args = wait_default_args
+
+            new_img, was_teleported = self.go_to_neighbor(
+                map_direction,
+                do_trust=True,
+                use_shift=is_new_map,
+                wait_new_map_walking_args=wait_args,
+            )
+
+            if was_teleported:
+                new_img = self.go_inside_grouped_sub_area(sub_areas)
+
+            if new_img is None:
+                is_new_map = False
+                continue
+
+            self.harvest_map_time[self.get_curr_map_info().map] = perf_counter()
+            img = new_img
+            is_new_map = True
+
+            if is_full_pods(img):
+                img = self.bank_clear_inventory()
+                img = self.close_modals(
+                    img,
+                    ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
+                )
+                img = self.go_inside_grouped_sub_area(sub_areas)
+
+        self._current_zone = None
+        self.log_info("Zone finished")
+
+    @timeit
+    def get_pos_configs(
+        self, img: numpy.ndarray, configs: set[ObjectSearchConfig]
+    ) -> list[tuple[Position, InfoTemplateFoundPlacementSchema, ObjectSearchConfig]]:
+        positions_infos: list[
+            tuple[Position, InfoTemplateFoundPlacementSchema, ObjectSearchConfig]
+        ] = []
+        self.log_info(f"Searching configs : {configs}")
+        for config in configs:
+            for pos_info in self.get_multiple_position(
+                img, config, self.get_curr_map_info().map.id
+            ):
+                positions_infos.append((*pos_info, config))
+        return positions_infos
+
+    def collect_map(
+        self,
+        img: numpy.ndarray,
+        map: MapSchema,
+        next_direction: ToDirection,
+    ) -> int:
+        start_pos = get_pos_from_direction(self.get_curr_direction())
+        end_pos = get_pos_to_direction(next_direction)
+
+        possible_colls = [
+            elem.id
+            for elem in CharacterService.get_possible_collectable(self.character.id)
+        ]
+
+        collectable_configs = CollectableService.get_possible_config_on_map(
+            map.id, possible_colls
+        )
+        self.log_info(f"Searching for {collectable_configs}")
+
+        positions_infos = self.get_pos_configs(img, set(collectable_configs))
+
+        if len(positions_infos) == 0:
+            return 0
+
+        positions = [pos_info[0] for pos_info in positions_infos]
+        optimal_path = (
+            find_dumby_optimal_path_positions(positions, start_pos)
+            if (len(positions) + (1 if start_pos else 0) + (1 if end_pos else 0)) > 13
+            else find_optimal_path_positions(positions, start_pos, end_pos)[1]
+        )
+        self.log_info(f"Collect path : {optimal_path}")
+
+        positions_infos.sort(key=lambda pos_info: optimal_path.index(pos_info[0]))
+        collected_count = 0
+        with self.hold(win32con.VK_SHIFT):
+            for index, (pos, template_found_place, config) in enumerate(
+                positions_infos
+            ):
+                if index != 0:
+                    # not first pos, check if pos still valid
+                    pos_info = next(
+                        (
+                            self.iter_position_from_template_info(
+                                img, config, [template_found_place]
+                            )
+                        ),
+                        None,
+                    )
+                    if pos_info is None:
+                        continue
+                self.click(pos)
+                sleep(0.3)
+                collected_count += 1
+                if len(positions_infos) <= index + 1:
+                    # no more pos after
+                    continue
+                high_img = self.capture()
+                img = clean_image_after_collect(img, high_img, pos)
+
+        return collected_count

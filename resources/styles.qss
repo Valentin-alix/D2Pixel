@@ -1,0 +1,38 @@
+QComboBox {{
+  font-weight: bold;
+  color: {QTMATERIAL_PRIMARYCOLOR};
+}}
+
+QLineEdit {{
+  font-weight: bold;
+  color: {QTMATERIAL_PRIMARYCOLOR};
+}}
+
+.border-right-slim {{
+  border-right: 1px solid {QTMATERIAL_SECONDARYLIGHTCOLOR};
+}}
+
+QListWidget::item {{
+  padding:0px;
+  margin:0px;
+}}
+
+QComboBox:items{{
+  font-weight: bold;
+  color: {QTMATERIAL_PRIMARYCOLOR};
+}}
+
+QListView{{
+  color: {QTMATERIAL_PRIMARYCOLOR};
+}}
+
+QLabel {{
+  qproperty-alignment: AlignCenter;
+  font-weight: bold;
+}}
+
+QGroupBox {{
+  qproperty-alignment: AlignCenter;
+}}
+
+

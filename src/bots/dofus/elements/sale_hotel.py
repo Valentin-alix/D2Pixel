@@ -1,0 +1,301 @@
+import traceback
+from time import sleep
+
+import numpy
+import tesserocr
+import win32con
+from EzreD2Shared.shared.consts.adaptative.positions import (
+    HOTEL_OPEN_QUANTITY_PANEL_POSITION,
+    HOTEL_PRICE_INPUT_POSITION,
+    SALE_HOTEL_ALL_CATEGORY_POSITION,
+    SALE_HOTEL_FILTER_OBJECTS_POSITION,
+)
+from EzreD2Shared.shared.consts.adaptative.regions import (
+    RIGHT_INVENTORY_SALE_HOTEL,
+    SALE_HOTEL_AVAILABLE_SLOT_REGION,
+    SALE_HOTEL_HUNDRED_PRICE_REGION,
+    SALE_HOTEL_ONE_PRICE_REGION,
+    SALE_HOTEL_QUANTITY_REGION,
+    SALE_HOTEL_TEN_PRICE_REGION,
+)
+from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
+from EzreD2Shared.shared.enums import CategoryEnum
+from EzreD2Shared.shared.schemas.item import ItemSchema
+from EzreD2Shared.shared.schemas.region import RegionSchema
+from EzreD2Shared.shared.utils.randomizer import wait
+
+from src.bots.dofus.elements.bank import BankSystem
+from src.bots.dofus.walker.entities_map.sale_hotel import (
+    get_sales_hotels_by_category,
+)
+from src.common.loggers.dofus_logger import DofusLogger
+from src.exceptions import UnknowStateException
+from src.image_manager.ocr import (
+    BASE_CONFIG,
+    get_text_from_image,
+    set_config_for_ocr_number,
+)
+from src.image_manager.transformation import crop_image
+from src.services.price import PriceService
+
+
+class SaleHotel(DofusLogger):
+    def sale_hotel_get_current_quantity_item(self, img: numpy.ndarray) -> int | None:
+        """need to be in hdv & item selected, return quantity displayed
+
+        Args:
+            img (numpy.ndarray)
+
+        Returns:
+            int | None: the quantity of item displayed
+        """
+        img = crop_image(img, SALE_HOTEL_QUANTITY_REGION)
+        with tesserocr.PyTessBaseAPI(**BASE_CONFIG) as tes_api:
+            set_config_for_ocr_number(tes_api, white_list="10")
+            try:
+                return int(get_text_from_image(img, tes_api))
+            except ValueError:
+                return None
+
+    def sale_hotel_get_area_price_by_quantity(self, quantity: int) -> RegionSchema:
+        """get area of price based on quantity (1, 10, 100)
+
+        Args:
+            quantity (int)
+
+        Raises:
+            ValueError: not coherent quantity found
+
+        Returns:
+            Area: the area of price wanted
+        """
+        match quantity:
+            case 1:
+                return SALE_HOTEL_ONE_PRICE_REGION
+            case 10:
+                return SALE_HOTEL_TEN_PRICE_REGION
+            case 100:
+                return SALE_HOTEL_HUNDRED_PRICE_REGION
+        raise ValueError(f"Invalid quantity value : {quantity}")
+
+    def sale_hotel_get_price_by_area_item(
+        self, img: numpy.ndarray, area_price: RegionSchema
+    ) -> int | None:
+        """get price displayed in area
+
+        Args:
+            img (numpy.ndarray)
+            area_price (RegionSchema)
+
+        Returns:
+            int | None: price found, return None if invalid number
+        """
+        img = crop_image(img, area_price)
+        with tesserocr.PyTessBaseAPI(**BASE_CONFIG) as tes_api:
+            set_config_for_ocr_number(tes_api)
+            try:
+                price = int(get_text_from_image(img, tes_api))
+            except ValueError:
+                return None
+
+        return price
+
+    def sale_hotel_get_price_average_item(self, img: numpy.ndarray) -> float | None:
+        """get price average of item based on all price show in interface\n
+        it make a average from unity price, per dozen, per hundred
+
+        Args:
+            img (numpy.ndarray)
+
+        Returns:
+            float | None: the average price, or none if no price found
+        """
+        sum_prices: float = 0
+        quantity_found: int = 0
+        for quantity in [1, 10, 100]:
+            area_price = self.sale_hotel_get_area_price_by_quantity(quantity)
+            price = self.sale_hotel_get_price_by_area_item(img, area_price)
+            if price is None:
+                continue
+            self.log_info(f"Found price {price} for quantity {quantity}")
+            sum_prices += price
+            quantity_found += quantity
+
+        if quantity_found == 0:
+            return None
+        return sum_prices / quantity_found
+
+    def sale_hotel_get_price_item(
+        self, img: numpy.ndarray, price_average: float
+    ) -> tuple[int, int] | None:
+        """get price for current item in sell place
+
+        Args:
+            img (numpy.ndarray)
+            price_average (float): price average of item, in case no price were found in the hud
+
+        Returns:
+            tuple[int, int] | None: prices and quantity
+        """
+        quantity = self.sale_hotel_get_current_quantity_item(img)
+        if quantity is None:
+            self.log_info("No quantity found.")
+            return None
+
+        area_price = self.sale_hotel_get_area_price_by_quantity(quantity)
+        if (
+            price := self.sale_hotel_get_price_by_area_item(img, area_price)
+        ) is not None:
+            self.log_info(f"Found price {price} for quantity {quantity}")
+            return price, quantity
+
+        self.log_info(
+            f"No price found for {quantity}, calculating price from other quantities"
+        )
+        other_quantities = [
+            other_quantity
+            for other_quantity in [1, 10, 100]
+            if other_quantity != quantity
+        ]
+        prices = []
+        # calculate price based on other quantities
+        for other_quantity in other_quantities:
+            area_price = self.sale_hotel_get_area_price_by_quantity(other_quantity)
+            price = self.sale_hotel_get_price_by_area_item(img, area_price)
+            if price is not None:
+                prices.append(int(price * quantity / other_quantity))
+
+        if len(prices) > 0:
+            self.log_info(
+                f"Got price from other quantities (divided for curr quantity) : {prices}"
+            )
+            return min(prices), quantity
+
+        # no price display on hdv
+        self.log_info("Found no price display, return average price multiplied by 1.3")
+        return int(quantity * price_average * 1.3), quantity
+
+    def sale_hotel_get_count_remaining_slot(self, img: numpy.ndarray) -> int:
+        """get count of remaining slot displayed in sale hotel
+
+        Args:
+            img (numpy.ndarray)
+
+        Returns:
+            int: count of remaining slot
+        """
+        croped_img = crop_image(img, SALE_HOTEL_AVAILABLE_SLOT_REGION)
+        with tesserocr.PyTessBaseAPI(**BASE_CONFIG) as tes_api:
+            set_config_for_ocr_number(tes_api, white_list="0123456789/")
+            text = get_text_from_image(croped_img, tes_api)
+        try:
+            curr_slot, max_slot = text.split("/")
+            return int(max_slot) - int(curr_slot)
+        except ValueError:
+            self.log_error(traceback.format_exc())
+            raise UnknowStateException(img, "value_error_slot")
+
+
+class SaleHotelSystem(BankSystem, SaleHotel):
+    def sale_hotel_choose_biggest_quantity(self) -> numpy.ndarray:
+        self.log_info("Choosing biggest quantity")
+        self.click(HOTEL_OPEN_QUANTITY_PANEL_POSITION)
+        img = self.capture()
+
+        hundred_info = self.get_position(img, ObjectConfigs.SaleHotel.hundred_quantity)
+        if hundred_info:
+            self.click(hundred_info[0])
+            img = self.capture()
+        elif ten_info := self.get_position(img, ObjectConfigs.SaleHotel.ten_quantity):
+            self.click(ten_info[0])
+            img = self.capture()
+        return img
+
+    def sale_hotel_sell_items_inv(
+        self, items_inventory: set[ItemSchema]
+    ) -> tuple[bool, list[int]]:
+        """need to be in category sell in hdv, sell all item from inventory
+
+        Returns:
+            bool: True if full place, False if no more object
+        """
+        self.click(SALE_HOTEL_ALL_CATEGORY_POSITION)
+
+        img = self.capture()
+        count_remaining_slot: int = self.sale_hotel_get_count_remaining_slot(img)
+        self.log_info(f"Remaining Slots : {count_remaining_slot}")
+
+        if self.get_position(img, ObjectConfigs.Check.medium_inventory) is None:
+            self.click(SALE_HOTEL_FILTER_OBJECTS_POSITION)
+            sleep(0.3)
+            img = self.capture()
+
+        completed_items: list[int] = []
+        for item_inv in items_inventory:
+            wait()
+            img = self.capture()
+            self.log_info(f"Treating item : {item_inv}")
+            pos_item_inv = self.search_icon_item(
+                item_inv, img, RIGHT_INVENTORY_SALE_HOTEL
+            )
+            if pos_item_inv is None:
+                self.log_warning(f"Did not found icon for item {item_inv}")
+                continue
+            self.click(pos_item_inv)
+            wait()
+            img = self.sale_hotel_choose_biggest_quantity()
+
+            price_average = self.sale_hotel_get_price_average_item(img)
+            self.log_info(f"Got average price from hud : {price_average}")
+            if price_average is None:
+                continue
+            price = PriceService.update_or_create_price(
+                item_inv.id, self.character.server_id, price_average
+            )
+            price_average = price.average
+            self.log_info(f"Got average price : {price_average}")
+            if price_average is None:
+                continue
+
+            old_price: int | None = None
+            old_quantity: int | None = None
+            while True:
+                price_info = self.sale_hotel_get_price_item(img, price_average)
+                if price_info is None:
+                    break
+                curr_price, curr_quantity = price_info
+
+                if (
+                    old_price is None
+                    or old_quantity != curr_quantity
+                    or abs(curr_price - old_price) > 10
+                ):
+                    new_price = max(curr_price - 1, 2)
+                    self.click(HOTEL_PRICE_INPUT_POSITION, count=2)
+                    self.send_text(str(new_price))
+                    old_quantity = curr_quantity
+                    old_price = new_price
+                else:
+                    self.key(win32con.VK_RETURN)
+                wait()
+                img = self.capture()
+                pos_info_yes = self.get_position(img, ObjectConfigs.Button.yes)
+                if pos_info_yes is not None:
+                    self.log_info("Confirming price.")
+                    self.click(pos_info_yes[0])
+                    wait()
+                    img = self.capture()
+
+                count_remaining_slot -= 1
+                if count_remaining_slot == 0:
+                    return True, completed_items
+            completed_items.append(item_inv.id)
+        return False, completed_items
+
+    def go_to_sale_hotel(self, category: CategoryEnum):
+        sale_hotels = get_sales_hotels_by_category(category)
+        sale_hotel_entity = self.go_near_entity_map(sale_hotels)
+        self.click(sale_hotel_entity.position)
+        pos = self.wait_on_screen(ObjectConfigs.SaleHotel.sale_category, force=True)[0]
+        self.click(pos)
+        wait((1, 1.5))
