@@ -54,7 +54,7 @@ def clean_image_after_collect(
     return remove_highlighted_zone(prev_img, img, pos)
 
 
-TIME_HARVEST = 60 * 60 * 2
+TIME_HARVEST = 60 * 60 * 4
 
 harvester_choose_sub_area_lock = Lock()
 

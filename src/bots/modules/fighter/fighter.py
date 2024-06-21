@@ -53,7 +53,7 @@ def get_group_lvl(img: numpy.ndarray, region: RegionSchema) -> int | None:
 MULTIPLIER_LVL = 1.5
 OFFSET_LVL = 5
 
-TIME_FIGHTER = 60 * 60 * 1.5
+TIME_FIGHTER = 60 * 60 * 1
 
 fighter_choose_sub_area_lock = Lock()
 
