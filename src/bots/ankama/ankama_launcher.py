@@ -26,9 +26,9 @@ from src.window_manager.organizer import (
 from src.window_manager.win32 import is_window_visible
 
 RANGES_HOURS_PLAYTIME: list[tuple[str, str]] = [
-    ("08:00", "12:00"),
-    ("13:00", "20:00"),
-    ("21:00", "23:00"),
+    ("08:00", "12:30"),
+    ("13:00", "20:30"),
+    ("21:00", "23:45"),
 ]
 
 

@@ -11,7 +11,7 @@ PATH_FIXTURES_HUD_BANK = os.path.join(PATH_FIXTURES, "hud", "bank")
 
 class TestIconSearcher(unittest.TestCase):
     def setUp(self) -> None:
-        self.icon_searcher = IconSearcher(SessionLocal())
+        self.icon_searcher = IconSearcher(log_header="temp")
         return super().setUp()
 
     def test_icon_searcher(self):
@@ -29,11 +29,7 @@ class TestIconSearcher(unittest.TestCase):
             "Gant de Martoa",
             "Slip en Cuir Moulant du Garglyphe",
         ]:
-            item = (
-                self.icon_searcher.session.query(Item)
-                .filter(func.lower(Item.name) == func.lower(res))
-                .one()
-            )
+
             pos = self.icon_searcher.search_icon_item(item, img)
             print(pos)
             assert pos is not None, res

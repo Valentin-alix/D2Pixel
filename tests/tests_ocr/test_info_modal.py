@@ -3,11 +3,10 @@ import unittest
 
 import cv2
 
+from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
+from EzreD2Shared.shared.enums import JobEnum
 from src.bots.dofus.hud.info_popup.job_level import get_job_level_from_level_up
-from src.data_layer.consts.object_configs import ObjectConfigs
-from src.data_layer.database import SessionLocal
-from src.data_layer.models.job import JobEnum
-from src.data_layer.schemas.region import RegionSchema
+
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from tests.utils import PATH_FIXTURES
 
@@ -15,7 +14,7 @@ PATH_FIXTURES_INFOBAR = os.path.join(PATH_FIXTURES, "hud", "infobar")
 
 
 class TestInfoModal(unittest.TestCase):
-    object_searcher = ObjectSearcher(SessionLocal())
+    object_searcher = ObjectSearcher("temp")
 
     def test_lvl_up_job(self):
         FOLDER_LVL_UP_JOB = os.path.join(PATH_FIXTURES_INFOBAR, "lvl_up_job")
@@ -36,9 +35,8 @@ class TestInfoModal(unittest.TestCase):
                 img, ObjectConfigs.Job.level_up
             ):
                 job, level = get_job_level_from_level_up(
-                    self.object_searcher.session,
                     img,
-                    RegionSchema.model_validate(lvl_up_info[1].region),
+                    lvl_up_info[1].region,
                 )
                 print(job, level)
                 assert LVL_JOB_BY_FILENAME[filename[:-4]] == (job.name, level), (

@@ -1,8 +1,7 @@
 .venv
-backend/data
 poetry.lock
-backend/logs/*
-backend/helper/output/*.png
+logs/*
+helper/output/*.png
 *.sql
 #official python gitignore
 # Byte-compiled / optimized / DLL files
