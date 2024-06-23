@@ -1,4 +1,5 @@
-from functools import cache
+from cachetools import cached
+from cachetools.keys import hashkey
 
 from EzreD2Shared.shared.consts.adaptative.positions import (
     ASTRUB_SALE_HOTEL_CONSUMABLE_POSITION,
@@ -17,6 +18,7 @@ from src.bots.dofus.walker.maps import (
     get_bonta_sale_hotel_consumable_map,
     get_bonta_sale_hotel_resource_map,
 )
+from src.services.session import ServiceSession
 
 
 class SaleHotel(EntityMap):
@@ -28,28 +30,30 @@ class SaleHotel(EntityMap):
         return f"{str(self.map_info)}_{str(self.position)}".__hash__()
 
 
-@cache
-def get_sales_hotels_by_category(category: CategoryEnum) -> list[SaleHotel]:
+@cached(cache={}, key=lambda _, category: hashkey(category))
+def get_sales_hotels_by_category(
+    service: ServiceSession, category: CategoryEnum
+) -> list[SaleHotel]:
     match category:
         case CategoryEnum.RESOURCES:
             return [
                 SaleHotel(
-                    map_info=get_bonta_sale_hotel_resource_map(),
+                    map_info=get_bonta_sale_hotel_resource_map(service),
                     position=BONTA_SALE_HOTEL_RESOURCE_POSITION,
                 ),
                 SaleHotel(
-                    map_info=get_astrub_sale_hotel_resource_map(),
+                    map_info=get_astrub_sale_hotel_resource_map(service),
                     position=ASTRUB_SALE_HOTEL_RESOURCE_POSITION,
                 ),
             ]
         case CategoryEnum.CONSUMABLES:
             return [
                 SaleHotel(
-                    map_info=get_bonta_sale_hotel_consumable_map(),
+                    map_info=get_bonta_sale_hotel_consumable_map(service),
                     position=BONTA_SALE_HOTEL_CONSUMABLE_POSITION,
                 ),
                 SaleHotel(
-                    map_info=get_astrub_sale_hotel_consumable_map(),
+                    map_info=get_astrub_sale_hotel_consumable_map(service),
                     position=ASTRUB_SALE_HOTEL_CONSUMABLE_POSITION,
                 ),
             ]

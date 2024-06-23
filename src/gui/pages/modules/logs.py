@@ -51,7 +51,7 @@ class LogBox(QGroupBox):
     def on_new_log_msg(self, msg_with_type: tuple[int, str]):
         scrollbar = self.list_logs.verticalScrollBar()
 
-        if self.list_logs.count() > 150:
+        if self.list_logs.count() > 500:
             old_scroll_value = scrollbar.value()
             self.list_logs.takeItem(0)
             scrollbar.setValue(old_scroll_value)

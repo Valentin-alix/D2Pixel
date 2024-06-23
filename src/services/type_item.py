@@ -1,4 +1,5 @@
-from functools import cache
+from cachetools import cached
+from cachetools.keys import hashkey
 
 from EzreD2Shared.shared.enums import CategoryEnum
 from EzreD2Shared.shared.schemas.type_item import TypeItemSchema
@@ -11,7 +12,7 @@ TYPE_ITEM_URL = BACKEND_URL + "/type_item/"
 
 class TypeItemService(ServiceSession):
     @staticmethod
-    @cache
+    @cached(cache={}, key=lambda _, category: hashkey(category))
     def get_type_items(
         service: ServiceSession, category: CategoryEnum | None = None
     ) -> list[TypeItemSchema]:

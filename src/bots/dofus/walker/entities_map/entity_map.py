@@ -1,4 +1,5 @@
-from functools import cache
+from cachetools import cached
+from cachetools.keys import hashkey
 
 from EzreD2Shared.shared.schemas.map import MapSchema
 from pydantic import BaseModel
@@ -11,7 +12,7 @@ class EntityMap(BaseModel):
     map_info: MapSchema
 
 
-@cache
+@cached(cache={}, key=lambda _: hashkey())
 def get_phenixs_entity_map(service: ServiceSession) -> list[EntityMap]:
     map_ids: list[int] = [
         190843392,

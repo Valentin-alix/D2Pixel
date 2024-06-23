@@ -475,7 +475,7 @@ class CoreWalkerSystem:
             if world_id == 1:
                 self.travel_to_map(
                     [
-                        get_portal_map_id_by_world()[
+                        get_portal_map_id_by_world(self.service)[
                             self.get_curr_map_info().map.world_id, world_id
                         ]
                     ],
@@ -491,7 +491,7 @@ class CoreWalkerSystem:
             if world_id == 2:
                 self.travel_to_map(
                     [
-                        get_portal_map_id_by_world()[
+                        get_portal_map_id_by_world(self.service)[
                             self.get_curr_map_info().map.world_id, world_id
                         ],
                     ],

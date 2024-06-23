@@ -1,6 +1,6 @@
 from contextlib import contextmanager
+from logging import Logger
 from requests import Response, Session
-from src.common.loggers.app_logger import AppLogger
 from requests.auth import HTTPBasicAuth
 from dotenv import get_key
 
@@ -10,13 +10,13 @@ from src.gui.signals.app_signals import AppSignals
 
 
 class ServiceSession:
-    def __init__(self, logger: AppLogger, app_signals: AppSignals) -> None:
+    def __init__(self, logger: Logger, app_signals: AppSignals) -> None:
         self.app_signals = app_signals
         self.logger = logger
 
     def __handle_error(self, rep: Response, *args, **kwargs):
         if rep.status_code != 200:
-            self.logger.error(f"{rep.status_code} {rep.json()}")
+            self.logger.error(f"{rep.status_code} {rep.content}")
 
     @contextmanager
     def logged_session(self):

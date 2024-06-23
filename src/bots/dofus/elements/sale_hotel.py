@@ -345,7 +345,7 @@ class SaleHotelSystem:
         return False, completed_items
 
     def go_to_sale_hotel(self, category: CategoryEnum):
-        sale_hotels = get_sales_hotels_by_category(category)
+        sale_hotels = get_sales_hotels_by_category(self.service, category)
         sale_hotel_entity = self.core_walker_sys.go_near_entity_map(sale_hotels)
         self.controller.click(sale_hotel_entity.position)
         pos = self.image_manager.wait_on_screen(

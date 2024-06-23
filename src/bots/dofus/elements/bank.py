@@ -125,7 +125,9 @@ class BankSystem:
         self.bank_building.go_to_bank()
         img = self.capturer.capture()
 
-        if self.core_walker_sys.get_curr_map_info().map == get_astrub_bank_map():
+        if self.core_walker_sys.get_curr_map_info().map == get_astrub_bank_map(
+            self.service
+        ):
             pos = self.object_searcher.get_position(
                 img, ObjectConfigs.Bank.owl_astrub, force=True
             )[0]

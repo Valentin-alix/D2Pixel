@@ -11,6 +11,7 @@ from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.maps import get_astrub_bank_map, get_bonta_bank_map
 from src.entities.building_info import BuildingInfo
 from src.image_manager.screen_objects.image_manager import ImageManager
+from src.services.session import ServiceSession
 from src.window_manager.controller import Controller
 
 
@@ -21,22 +22,24 @@ class BankBuilding:
         logger: Logger,
         controller: Controller,
         image_manager: ImageManager,
+        service: ServiceSession,
     ) -> None:
         self.core_walker_sys = core_walker_sys
         self.logger = logger
         self.controller = controller
         self.image_manager = image_manager
+        self.service = service
 
     @property
     def _banks(self) -> list[BuildingInfo]:
         return [
             BuildingInfo(
-                map_info=get_astrub_bank_map(),
+                map_info=get_astrub_bank_map(self.service),
                 go_in=self.__go_in_bank_astrub,
                 go_out=self.__go_out_bank_astrub,
             ),
             BuildingInfo(
-                map_info=get_bonta_bank_map(),
+                map_info=get_bonta_bank_map(self.service),
                 go_in=self.__go_in_bank_bonta,
                 go_out=self.__go_out_bank_bonta,
             ),

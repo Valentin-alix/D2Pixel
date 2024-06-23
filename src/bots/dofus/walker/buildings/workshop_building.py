@@ -25,6 +25,7 @@ from src.common.retry import retry_force_count
 from src.entities.building_info import BuildingInfo
 from src.exceptions import CharacterIsStuckException
 from src.image_manager.screen_objects.image_manager import ImageManager
+from src.services.session import ServiceSession
 from src.window_manager.controller import Controller
 
 
@@ -35,11 +36,13 @@ class WorkshopBuilding:
         logger: Logger,
         controller: Controller,
         image_manager: ImageManager,
+        service_session: ServiceSession,
     ) -> None:
         self.core_walker_sys = core_walker_sys
         self.logger = logger
         self.controller = controller
         self.image_manager = image_manager
+        self.service_session = service_session
 
     def go_workshop_for_job(self, job_name: str) -> Position:
         match job_name:
@@ -69,7 +72,7 @@ class WorkshopBuilding:
     def _workshop_woodcutter(self) -> list[BuildingInfo]:
         return [
             BuildingInfo(
-                map_info=get_bonta_workshop_woodcutter_map(),
+                map_info=get_bonta_workshop_woodcutter_map(self.service_session),
                 go_in=self.__go_in_workshop_woodcutter_bonta,
                 go_out=self.__go_out_workshop_woodcutter_bonta,
             )
@@ -104,7 +107,7 @@ class WorkshopBuilding:
     def _workshop_fisherman(self) -> list[BuildingInfo]:
         return [
             BuildingInfo(
-                map_info=get_bonta_workshop_fisher_map(),
+                map_info=get_bonta_workshop_fisher_map(self.service_session),
                 go_in=self.__go_in_workshop_fisherman_bonta,
                 go_out=self.__go_out_workshop_fisherman_bonta,
             )
@@ -139,7 +142,7 @@ class WorkshopBuilding:
     def _workshop_peasant(self) -> list[BuildingInfo]:
         return [
             BuildingInfo(
-                map_info=get_bonta_workshop_peasant_map(),
+                map_info=get_bonta_workshop_peasant_map(self.service_session),
                 go_in=self.__go_in_workshop_peasant_bonta,
                 go_out=self.__go_out_workshop_peasant_bonta,
             )
@@ -174,7 +177,7 @@ class WorkshopBuilding:
     def _workshop_alchimist(self) -> list[BuildingInfo]:
         return [
             BuildingInfo(
-                map_info=get_bonta_workshop_alchemist_map(),
+                map_info=get_bonta_workshop_alchemist_map(self.service_session),
                 go_in=self.__go_in_workshop_alchimist_bonta,
                 go_out=self.__go_out_workshop_alchimist_bonta,
             )

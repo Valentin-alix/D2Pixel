@@ -1,8 +1,9 @@
 import math
 import os
-from functools import cache
 from typing import Iterator, Literal, Sequence, overload
 
+from cachetools import cached
+from cachetools.keys import hashkey
 import cv2
 import numpy
 from EzreD2Shared.shared.entities.object_search_config import ObjectSearchConfig
@@ -29,7 +30,7 @@ from src.services.template import TemplateService
 TEMPLATE_FOLDER = os.path.join(ASSET_FOLDER_PATH, "templates")
 
 
-@cache
+@cached(cache={}, key=lambda config: hashkey(config))
 def get_templates(config: ObjectSearchConfig) -> dict[str, numpy.ndarray]:
     templates_by_filename: dict[str, numpy.ndarray] = {}
     for folder, _, files in os.walk(TEMPLATE_FOLDER):

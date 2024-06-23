@@ -213,6 +213,7 @@ class AnkamaLauncher:
             controller,
             grid,
             Event(),
+            self.service,
         )
         connecter = ConnectionSystem(
             fight_sys,

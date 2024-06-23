@@ -1,5 +1,5 @@
-from functools import cache
-
+from cachetools import cached
+from cachetools.keys import hashkey
 import cv2
 import numpy
 from EzreD2Shared.shared.schemas.item import ItemSchema
@@ -24,7 +24,7 @@ class ItemService(ServiceSession):
             return [ItemSchema(**elem) for elem in resp.json()]
 
     @staticmethod
-    @cache
+    @cached(cache={}, key=lambda _, item_id: hashkey(item_id))
     def get_icon_img(service: ServiceSession, item_id: int) -> numpy.ndarray | None:
         with service.logged_session() as session:
             resp = session.get(f"{ITEM_URL}{item_id}/image/")

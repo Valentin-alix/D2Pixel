@@ -1,3 +1,5 @@
+from cachetools import cached
+from cachetools.keys import hashkey
 from EzreD2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from src.services.session import ServiceSession
 from src.consts import BACKEND_URL
@@ -7,6 +9,12 @@ COLLECTABLE_URL = BACKEND_URL + "/collectable/"
 
 class CollectableService(ServiceSession):
     @staticmethod
+    @cached(
+        cache={},
+        key=lambda _, map_id, possible_collectable_ids: hashkey(
+            map_id, tuple(possible_collectable_ids)
+        ),
+    )
     def get_possible_config_on_map(
         service: ServiceSession,
         map_id: int,

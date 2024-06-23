@@ -1,4 +1,5 @@
-from functools import cache
+from cachetools import cached
+from cachetools.keys import hashkey
 from src.services.session import ServiceSession
 from EzreD2Shared.shared.enums import FromDirection
 from EzreD2Shared.shared.schemas.map import MapSchema
@@ -39,14 +40,14 @@ class MapService(ServiceSession):
             return [MapWithActionSchema(**elem) for elem in resp.json()]
 
     @staticmethod
-    @cache
+    @cached(cache={}, key=lambda _, map_id: hashkey(map_id))
     def get_map(service: ServiceSession, map_id: int) -> MapSchema:
         with service.logged_session() as session:
             resp = session.get(f"{MAP_URL}{map_id}")
             return MapSchema(**resp.json())
 
     @staticmethod
-    @cache
+    @cached(cache={}, key=lambda _, x, y, world_id: hashkey(x, y, world_id))
     def get_related_map(
         service: ServiceSession, x: int, y: int, world_id: int
     ) -> MapSchema:
@@ -57,6 +58,12 @@ class MapService(ServiceSession):
             return MapSchema(**resp.json())
 
     @staticmethod
+    @cached(
+        cache={},
+        key=lambda _, zone_text, from_map_id, coordinates: hashkey(
+            zone_text, from_map_id, tuple(coordinates)
+        ),
+    )
     def get_map_from_hud(
         service: ServiceSession,
         zone_text: str,
@@ -77,7 +84,7 @@ class MapService(ServiceSession):
             return MapSchema(**resp.json())
 
     @staticmethod
-    @cache
+    @cached(cache={}, key=lambda _, map_id: hashkey(map_id))
     def get_near_map_allow_havre(
         service: ServiceSession,
         map_id: int,
@@ -104,6 +111,10 @@ class MapService(ServiceSession):
             return [MapDirectionSchema(**elem) for elem in resp.json()]
 
     @staticmethod
+    @cached(
+        cache={},
+        key=lambda _, sub_area_ids, is_sub: hashkey(tuple(sub_area_ids), is_sub),
+    )
     def get_limit_maps_sub_area(
         service: ServiceSession,
         sub_area_ids: list[int],

@@ -1,7 +1,7 @@
 import os
 from enum import Enum
-from functools import cache
 
+from cachetools import cached
 import cv2
 import numpy
 
@@ -14,7 +14,7 @@ class CursorType(Enum):
     SWORD = 1
 
 
-@cache
+@cached(cache={})
 def get_cursor_images() -> dict[CursorType, numpy.ndarray]:
     cursor_infos: dict[CursorType, numpy.ndarray] = {}
     for cursor_type in CursorType:

@@ -1,4 +1,5 @@
-from functools import cache
+from cachetools import cached
+from cachetools.keys import hashkey
 from EzreD2Shared.shared.enums import CharacteristicEnum, ElemEnum
 from EzreD2Shared.shared.schemas.character import CharacterSchema
 from EzreD2Shared.shared.schemas.spell_lvl import CurrentBoostSchema, SpellLevelSchema
@@ -11,7 +12,10 @@ SPELL_URL = BACKEND_URL + "/spell/"
 
 class SpellService(ServiceSession):
     @staticmethod
-    @cache
+    @cached(
+        cache={},
+        key=lambda _, character_lvl, breed_id: hashkey(character_lvl, breed_id),
+    )
     def get_spell_lvls(
         service: ServiceSession, character_lvl: int, breed_id: int
     ) -> list[SpellLevelSchema]:
@@ -23,7 +27,12 @@ class SpellService(ServiceSession):
             return [SpellLevelSchema(**spell_lvl) for spell_lvl in resp.json()]
 
     @staticmethod
-    @cache
+    @cached(
+        cache={},
+        key=lambda _, character_lvl, breed_id, characteristic: hashkey(
+            character_lvl, breed_id, characteristic
+        ),
+    )
     def get_spell_lvl_for_boost(
         service: ServiceSession,
         character_lvl: int,
@@ -44,7 +53,10 @@ class SpellService(ServiceSession):
             return SpellLevelSchema(**resp.json())
 
     @staticmethod
-    @cache
+    @cached(
+        cache={},
+        key=lambda _, spell_lvl, characteristic: hashkey(spell_lvl, characteristic),
+    )
     def check_if_boost_for_characteristic(
         service: ServiceSession,
         spell_lvl: SpellLevelSchema,
@@ -58,6 +70,12 @@ class SpellService(ServiceSession):
             return bool(resp.json())
 
     @staticmethod
+    @cached(
+        cache={},
+        key=lambda _, prefered_elem, po_bonus, spell_lvl_ids: hashkey(
+            prefered_elem, po_bonus, tuple(spell_lvl_ids)
+        ),
+    )
     def get_max_range_valuable_dmg_spell(
         service: ServiceSession,
         prefered_elem: ElemEnum,

@@ -177,6 +177,7 @@ class ModuleManager:
             self.controller,
             grid,
             self.is_dead,
+            self.service,
         )
         walker_sys = WalkerSystem(
             fight_sys,
@@ -204,10 +205,18 @@ class ModuleManager:
             self.is_dead,
         )
         bank_building = BankBuilding(
-            core_walker_sys, self.logger, self.controller, self.image_manager
+            core_walker_sys,
+            self.logger,
+            self.controller,
+            self.image_manager,
+            self.service,
         )
         workshop_building = WorkshopBuilding(
-            core_walker_sys, self.logger, self.controller, self.image_manager
+            core_walker_sys,
+            self.logger,
+            self.controller,
+            self.image_manager,
+            self.service,
         )
         sale_hotel = SaleHotel(self.logger)
         sale_hotel_sys = SaleHotelSystem(

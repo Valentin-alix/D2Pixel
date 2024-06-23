@@ -24,6 +24,7 @@ from src.common.retry import RetryTimeArgs
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
+from src.services.session import ServiceSession
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
@@ -48,6 +49,7 @@ class FightSystem:
         controller: Controller,
         grid: Grid,
         is_dead: Event,
+        service: ServiceSession,
     ) -> None:
         self.capturer = capturer
         self.object_searcher = object_searcher
@@ -62,6 +64,7 @@ class FightSystem:
         self.image_manager = image_manager
         self.controller = controller
         self.grid = grid
+        self.service = service
 
     def play_fight(self) -> tuple[numpy.ndarray, bool]:
         """Return True if was teleported"""
@@ -150,7 +153,7 @@ class FightSystem:
 
     def revive_character(self) -> numpy.ndarray:
         self.core_walker_system.go_near_entity_map(
-            get_phenixs_entity_map(), use_transport=False
+            get_phenixs_entity_map(self.service), use_transport=False
         )
         img = self.capturer.capture()
         phenix_pos_info = self.object_searcher.get_position(
