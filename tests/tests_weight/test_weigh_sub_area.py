@@ -11,14 +11,14 @@ from src.bots.modules.harvester.harvest_sub_area_farming import (
     HarvestSubAreaFarming,
     get_weights_harvest_map,
 )
-from src.gui.signals.dofus_signals import DofusSignals
+from src.gui.signals.dofus_signals import BotSignals
 from src.window_manager.organizer import WindowInfo
 
 
 class TestWeightSubArea(unittest.TestCase):
     def setUp(self) -> None:
         self.sub_area_farming = SubAreaFarming(
-            window_info=WindowInfo(hwnd=1, name="temp"), bot_signals=DofusSignals()
+            window_info=WindowInfo(hwnd=1, name="temp"), bot_signals=BotSignals()
         )
         self.sub_area_fighter_farming = FighterSubAreaFarming(
             fighter_maps_time={}, fighter_sub_areas_farming_ids=[], character_id="temp"
@@ -27,7 +27,7 @@ class TestWeightSubArea(unittest.TestCase):
             window_info=WindowInfo(hwnd=1, name="temp"),
             harvest_sub_areas_farming_ids=[],
             harvest_map_time={},
-            bot_signals=DofusSignals(),
+            bot_signals=BotSignals(),
         )
 
         return super().setUp()

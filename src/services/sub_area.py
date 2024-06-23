@@ -1,20 +1,22 @@
 from EzreD2Shared.shared.schemas.item import ItemSchema
 from EzreD2Shared.shared.schemas.sub_area import SubAreaSchema
 from src.consts import BACKEND_URL
-from src.services.session import logged_session
+from src.services.session import ServiceSession
+
 
 SUBAREA_URL = BACKEND_URL + "/sub_area/"
 
 
-class SubAreaService:
+class SubAreaService(ServiceSession):
     @staticmethod
     def get_random_grouped_sub_area(
+        service: ServiceSession,
         sub_area_ids_farming: list[int],
         weight_by_map: dict[int, float],
         valid_sub_area_ids: list[int],
         is_sub: bool,
     ) -> list[SubAreaSchema]:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SUBAREA_URL}random_grouped_sub_area/",
                 params={"is_sub": is_sub},
@@ -28,11 +30,12 @@ class SubAreaService:
 
     @staticmethod
     def get_weights_fight_map(
+        service: ServiceSession,
         server_id: int,
         sub_area_ids: list[int],
         lvl: int,
     ) -> dict[int, float]:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SUBAREA_URL}weights_fight_map",
                 params={"server_id": server_id, "lvl": lvl},
@@ -42,9 +45,10 @@ class SubAreaService:
 
     @staticmethod
     def get_max_time_fighter(
+        service: ServiceSession,
         sub_area_ids: list[int],
     ) -> int:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SUBAREA_URL}max_time_fighter",
                 json=sub_area_ids,
@@ -53,9 +57,10 @@ class SubAreaService:
 
     @staticmethod
     def get_valid_sub_areas_fighter(
+        service: ServiceSession,
         character_id: str,
     ) -> list[SubAreaSchema]:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SUBAREA_URL}valid_sub_areas_fighter/",
                 params={"character_id": character_id},
@@ -64,11 +69,12 @@ class SubAreaService:
 
     @staticmethod
     def get_weights_harvest_map(
+        service: ServiceSession,
         server_id: int,
         possible_collectable_ids: list[int],
         valid_sub_area_ids: list[int],
     ) -> dict[int, float]:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SUBAREA_URL}weights_harvest_map",
                 params={"server_id": server_id},
@@ -81,9 +87,10 @@ class SubAreaService:
 
     @staticmethod
     def get_max_time_harvester(
+        service: ServiceSession,
         sub_area_ids: list[int],
     ) -> int:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SUBAREA_URL}max_time_harvester",
                 json=sub_area_ids,
@@ -92,9 +99,10 @@ class SubAreaService:
 
     @staticmethod
     def get_valid_sub_areas_harvester(
+        service: ServiceSession,
         character_id: str,
     ) -> list[SubAreaSchema]:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SUBAREA_URL}valid_sub_areas_harvester/",
                 params={"character_id": character_id},
@@ -103,9 +111,10 @@ class SubAreaService:
 
     @staticmethod
     def get_dropable_items(
+        service: ServiceSession,
         sub_area_id: int,
     ) -> list[ItemSchema]:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SUBAREA_URL}{sub_area_id}/dropable_items",
             )

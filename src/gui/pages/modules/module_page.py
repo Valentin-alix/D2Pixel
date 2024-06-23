@@ -105,7 +105,7 @@ class ModulesPage(QWidget):
         self.info_action.show()
 
     def refresh_state_play_stop_btn(self):
-        if self.module_manager.is_playing:
+        if self.module_manager.is_playing.is_set():
             self.button_play.hide()
             self.button_stop.show()
         else:

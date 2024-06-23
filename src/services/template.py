@@ -4,19 +4,19 @@ from EzreD2Shared.shared.schemas.region import RegionSchema
 from EzreD2Shared.shared.schemas.template_found import (
     TemplateFoundPlacementSchema,
 )
-from src.services.session import logged_session
+from src.services.session import ServiceSession
 from src.consts import BACKEND_URL
 
 TEMPLATE_URL = BACKEND_URL + "/template/"
 
 
-class TemplateService:
+class TemplateService(ServiceSession):
     @staticmethod
     @cached(cache=TTLCache(maxsize=256, ttl=300))
     def get_template_from_config(
-        config: ObjectSearchConfig, map_id: int | None = None
+        service: ServiceSession, config: ObjectSearchConfig, map_id: int | None = None
     ) -> list[TemplateFoundPlacementSchema] | None:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{TEMPLATE_URL}places/from_config/",
                 params={"map_id": map_id},
@@ -28,21 +28,23 @@ class TemplateService:
 
     @staticmethod
     def increment_count_template_map(
+        service: ServiceSession,
         template_found_map_id: int,
     ):
-        with logged_session() as session:
+        with service.logged_session() as session:
             session.put(
                 f"{TEMPLATE_URL}template_found_map/{template_found_map_id}/increment_parsed_count"
             )
 
     @staticmethod
     def get_place_or_create(
+        service: ServiceSession,
         config: ObjectSearchConfig,
         filename: str,
         region_schema: RegionSchema,
         map_id: int | None = None,
     ) -> TemplateFoundPlacementSchema:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{TEMPLATE_URL}places/or_create",
                 params={

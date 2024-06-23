@@ -1,26 +1,32 @@
 from collections import defaultdict
+from logging import Logger
+from threading import Event
 
 from EzreD2Shared.shared.schemas.map import MapSchema
 
 from src.bots.ankama.ankama_launcher import AnkamaLauncher
+from src.bots.dofus.chat.sentence import FakeSentence
 from src.bots.modules.module_manager import ModuleManager
 from src.gui.signals.app_signals import AppSignals
+from src.services.session import ServiceSession
 from src.window_manager.organizer import (
     WindowInfo,
 )
 
 
 class BotsManager:
-    ankama_launcher: AnkamaLauncher
-    app_signals: AppSignals
-    module_managers: list[ModuleManager]
-
-    def __init__(self, app_signals: AppSignals) -> None:
-        self.module_managers = []
+    def __init__(
+        self, logger: Logger, service: ServiceSession, app_signals: AppSignals
+    ) -> None:
+        self.module_managers: list[ModuleManager] = []
         self.app_signals = app_signals
+        self.service = service
+        self.fake_sentence = FakeSentence()
+        self.logger = logger
+        self.is_paused = Event()
         self.app_signals.is_connecting_bots.emit(True)
 
-        self.ankama_launcher = AnkamaLauncher()
+        self.ankama_launcher = AnkamaLauncher(self.logger, self.is_paused, self.service)
         dofus_windows = self.ankama_launcher.connect_all()
         self._setup_farmers(dofus_windows)
 
@@ -35,11 +41,14 @@ class BotsManager:
 
         for window in dofus_windows:
             module_manager = ModuleManager(
-                window_info=window,
-                fighter_maps_time=fighter_map_time,
-                fighter_sub_areas_farming_ids=fighter_sub_area_farming_ids,
-                harvest_map_time=harvest_map_time,
-                harvest_sub_areas_farming_ids=harvest_sub_area_farming_ids,
+                self.service,
+                window,
+                self.is_paused,
+                self.fake_sentence,
+                fighter_map_time,
+                fighter_sub_area_farming_ids,
+                harvest_sub_area_farming_ids,
+                harvest_map_time,
             )
             module_manager.is_connected.set()
             self.module_managers.append(module_manager)

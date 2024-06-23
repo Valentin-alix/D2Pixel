@@ -21,12 +21,11 @@ class CurrentMapInfo(BaseModel):
 
 
 class MapState:
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self) -> None:
         self.curr_map_info: CurrentMapInfo | None = None
         self.curr_direction: FromDirection | None = None
         self.building: BuildingInfo | None = None
         self.is_first_move: bool = True
-        super().__init__(*args, **kwargs)
 
     def reset_map_state(self):
         self.curr_map_info = None

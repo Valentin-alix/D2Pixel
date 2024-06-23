@@ -25,11 +25,19 @@ from EzreD2Shared.shared.utils.text_similarity import are_similar_text
 
 from src.bots.dofus.hud.small_bar import get_percentage_inventory_bar_normal
 from src.bots.dofus.walker.buildings.bank_buildings import BankBuilding
+from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.maps import get_astrub_bank_map
 from src.entities.item import ItemProcessedStatus
 from src.image_manager.ocr import get_text_from_image
+from src.image_manager.screen_objects.icon_searcher import IconSearcher
+from src.image_manager.screen_objects.image_manager import ImageManager
+from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.image_manager.transformation import crop_image
 from src.services.character import CharacterService
+from src.services.session import ServiceSession
+from src.states.character_state import CharacterState
+from src.window_manager.capturer import Capturer
+from src.window_manager.controller import Controller
 
 COUNT_SLOT_RECEIPE_BANK = 5
 
@@ -62,24 +70,48 @@ def get_slot_area_item(img: numpy.ndarray, item_name: str) -> RegionSchema | Non
     return None
 
 
-class BankSystem(BankBuilding):
+class BankSystem:
+    def __init__(
+        self,
+        bank_building: BankBuilding,
+        object_searcher: ObjectSearcher,
+        capturer: Capturer,
+        image_manager: ImageManager,
+        icon_searcher: IconSearcher,
+        controller: Controller,
+        service: ServiceSession,
+        core_walker_sys: CoreWalkerSystem,
+        character_state: CharacterState,
+    ) -> None:
+        self.bank_building = bank_building
+        self.capturer = capturer
+        self.icon_searcher = icon_searcher
+        self.object_searcher = object_searcher
+        self.core_walker_sys = core_walker_sys
+        self.image_manager = image_manager
+        self.controller = controller
+        self.service = service
+        self.character_state = character_state
+
     def _bank_open_chest(self):
-        consult_chest_info = self.wait_on_screen(
+        consult_chest_info = self.image_manager.wait_on_screen(
             ObjectConfigs.Bank.consult_chest_text,
             force=True,
         )
-        self.click(consult_chest_info[0])
+        self.controller.click(consult_chest_info[0])
 
     def _bank_transfer_all(self) -> numpy.ndarray:
-        pos, _, img = self.wait_on_screen(
+        pos, _, img = self.image_manager.wait_on_screen(
             ObjectConfigs.Bank.transfer_icon_out, force=True
         )
-        self.click(pos)
+        self.controller.click(pos)
         sleep(0.3)
-        pos = self.get_position(
-            self.capture(), ObjectConfigs.Bank.transfer_all_text, force=True
+        pos = self.object_searcher.get_position(
+            self.capturer.capture(),
+            ObjectConfigs.Bank.transfer_all_text,
+            force=True,
         )[0]
-        self.click(pos)
+        self.controller.click(pos)
         wait()
         return img
 
@@ -89,19 +121,25 @@ class BankSystem(BankBuilding):
         Returns:
             numpy.ndarray
         """
-        assert self.character.lvl >= 10
-        self.go_to_bank()
-        img = self.capture()
+        assert self.character_state.character.lvl >= 10
+        self.bank_building.go_to_bank()
+        img = self.capturer.capture()
 
-        if self.get_curr_map_info().map == get_astrub_bank_map():
-            pos = self.get_position(img, ObjectConfigs.Bank.owl_astrub, force=True)[0]
+        if self.core_walker_sys.get_curr_map_info().map == get_astrub_bank_map():
+            pos = self.object_searcher.get_position(
+                img, ObjectConfigs.Bank.owl_astrub, force=True
+            )[0]
         else:
-            pos = self.get_position(img, ObjectConfigs.Bank.owl_bonta, force=True)[0]
+            pos = self.object_searcher.get_position(
+                img, ObjectConfigs.Bank.owl_bonta, force=True
+            )[0]
 
-        self.click(pos)
+        self.controller.click(pos)
         self._bank_open_chest()
         img = self._bank_transfer_all()
-        self.pods = CharacterService.get_max_pods(self.character.id)
+        self.character_state.pods = CharacterService.get_max_pods(
+            self.service, self.character_state.character.id
+        )
         return img
 
     def bank_get_item(self, item: ItemSchema) -> ItemProcessedStatus:
@@ -117,20 +155,20 @@ class BankSystem(BankBuilding):
             NOT PROCESSED if character did not take any related item
         """
 
-        self.send_text(item.name, pos=BANK_SEARCH_IN_POSITION)
+        self.controller.send_text(item.name, pos=BANK_SEARCH_IN_POSITION)
         sleep(1)
-        pos_item = self.search_icon_item(item, self.capture())
+        pos_item = self.icon_searcher.search_icon_item(item, self.capturer.capture())
         if pos_item:
-            with self.hold(win32con.VK_CONTROL):
-                self.click(pos_item, count=2)
+            with self.controller.hold(win32con.VK_CONTROL):
+                self.controller.click(pos_item, count=2)
             wait()
-            if get_percentage_inventory_bar_normal(self.capture()) > 0.9:
+            if get_percentage_inventory_bar_normal(self.capturer.capture()) > 0.9:
                 return ItemProcessedStatus.MAX_PROCESSED
 
-            self.click(BANK_CLEAR_SEARCH_IN_POSITION)
+            self.controller.click(BANK_CLEAR_SEARCH_IN_POSITION)
             return ItemProcessedStatus.PROCESSED
 
-        self.click(BANK_CLEAR_SEARCH_IN_POSITION)
+        self.controller.click(BANK_CLEAR_SEARCH_IN_POSITION)
         sleep(0.3)
         return ItemProcessedStatus.NOT_PROCESSED
 
@@ -150,10 +188,13 @@ class BankSystem(BankBuilding):
 
         slot_img = crop_image(img, slot_area)
 
-        if self.get_position(slot_img, ObjectConfigs.Check.small) is not None:
+        if (
+            self.object_searcher.get_position(slot_img, ObjectConfigs.Check.small)
+            is not None
+        ):
             return None
 
-        position_transfer_in_info = self.get_position(
+        position_transfer_in_info = self.object_searcher.get_position(
             slot_img, ObjectConfigs.Bank.transfer_icon_in
         )
         if position_transfer_in_info is not None:
@@ -173,38 +214,42 @@ class BankSystem(BankBuilding):
             ItemCraftStatus: did we get full ingredients or not or not at all
         """
 
-        self.click(BANK_POSSIBLE_RECEIPE_ICON_POSITION)
+        self.controller.click(BANK_POSSIBLE_RECEIPE_ICON_POSITION)
 
-        self.wait_on_screen(ObjectConfigs.Text.receipe)
-        self.send_text(recipe.result_item.name, pos=BANK_SEARCH_RECIPE_POSITION)
-        img = self.capture()
+        self.image_manager.wait_on_screen(ObjectConfigs.Text.receipe)
+        self.controller.send_text(
+            recipe.result_item.name, pos=BANK_SEARCH_RECIPE_POSITION
+        )
+        img = self.capturer.capture()
         if (slot_area := get_slot_area_item(img, recipe.result_item.name)) and (
             transfer_icon_position := self.__get_transfer_position_if_available(
                 img, slot_area
             )
         ):
             # we can pick atleast ingredients for one of that item
-            self.click(transfer_icon_position)
-            if (max_craft_round := (self.pods // recipe.receipe_pod_cost)) < (
-                max_craft_total := int(self.get_selected_text())
-            ):
-                self.send_text("0" + str(max_craft_round))
-                self.pods -= max_craft_round * recipe.receipe_pod_cost
+            self.controller.click(transfer_icon_position)
+            if (
+                max_craft_round := (
+                    self.character_state.pods // recipe.receipe_pod_cost
+                )
+            ) < (max_craft_total := int(self.controller.get_selected_text())):
+                self.controller.send_text("0" + str(max_craft_round))
+                self.character_state.pods -= max_craft_round * recipe.receipe_pod_cost
                 item_craft_status = ItemProcessedStatus.PROCESSED
             else:
                 # we got the max possible craft for this item
-                self.pods -= max_craft_total * recipe.receipe_pod_cost
+                self.character_state.pods -= max_craft_total * recipe.receipe_pod_cost
                 item_craft_status = ItemProcessedStatus.MAX_PROCESSED
-                self.key(win32con.VK_RETURN)
+                self.controller.key(win32con.VK_RETURN)
             wait()
 
-            img = self.capture()
-            if get_percentage_inventory_bar_normal(self.capture()) > 0.9:
+            img = self.capturer.capture()
+            if get_percentage_inventory_bar_normal(self.capturer.capture()) > 0.9:
                 # transfer impossible, we are full pods
-                self.pods = 0
+                self.character_state.pods = 0
                 item_craft_status = ItemProcessedStatus.PROCESSED
         else:
             item_craft_status = ItemProcessedStatus.NOT_PROCESSED
 
-        self.click(BANK_POSSIBLE_RECEIPE_ICON_POSITION)
+        self.controller.click(BANK_POSSIBLE_RECEIPE_ICON_POSITION)
         return item_craft_status

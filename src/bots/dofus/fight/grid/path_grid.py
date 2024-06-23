@@ -1,3 +1,4 @@
+from logging import Logger
 from typing import Iterator
 
 from EzreD2Shared.shared.utils.algos.astar import find_path
@@ -12,19 +13,23 @@ def get_dist_cell_to_multiple_cells(current: Cell, ends: set[Cell]) -> float:
     return min(current.get_dist_cell(end) for end in ends) * multiply_offset()
 
 
-class AstarGrid(Grid):
+class AstarGrid:
+    def __init__(self, grid: Grid, logger: Logger) -> None:
+        self.grid = grid
+        self.logger = logger
+
     @timeit
     def get_near_movable_to_reach_enemy(
         self, target_cell: Cell | None = None
     ) -> Cell | None:
         target_cells: list[Cell] = (
-            [target_cell] if target_cell is not None else self.enemy_cells
+            [target_cell] if target_cell is not None else self.grid.enemy_cells
         )
 
         if len(target_cells) == 0:
             return None
 
-        if (curr_cell := self.character_cell) is not None:
+        if (curr_cell := self.grid.character_cell) is not None:
             path_to_enemy: Iterator[Cell] | None = None
             for cell in sorted(
                 target_cells, key=lambda cell: cell.get_dist_cell(curr_cell)
@@ -33,8 +38,8 @@ class AstarGrid(Grid):
                     return None
                 path_to_enemy = find_path(
                     curr_cell,
-                    set(self.get_neighbors_movable_cell(cell)),
-                    get_neighbors_func=self.get_neighbors_movable_cell,
+                    set(self.grid.get_neighbors_movable_cell(cell)),
+                    get_neighbors_func=self.grid.get_neighbors_movable_cell,
                     distance_between_func=get_dist_cell_to_multiple_cells,
                     do_reverse=True,
                 )
@@ -42,15 +47,15 @@ class AstarGrid(Grid):
                     continue
 
                 near_cell = next(
-                    (cell for cell in path_to_enemy if cell in self.movable_cells),
+                    (cell for cell in path_to_enemy if cell in self.grid.movable_cells),
                     None,
                 )
                 if near_cell:
                     return near_cell
 
-        self.log_info("No character cell or path found, find based on movable cell")
+        self.logger.info("No character cell or path found, find based on movable cell")
         near_cell = min(
-            self.movable_cells,
+            self.grid.movable_cells,
             key=lambda mov_cell: min(
                 (cell.get_dist_cell(mov_cell) for cell in target_cells),
                 default=float("inf"),

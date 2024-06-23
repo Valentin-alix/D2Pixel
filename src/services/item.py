@@ -1,19 +1,21 @@
 from functools import cache
-from src.services.session import logged_session
+
 import cv2
 import numpy
 from EzreD2Shared.shared.schemas.item import ItemSchema
 from src.consts import BACKEND_URL
+from src.services.session import ServiceSession
 
 ITEM_URL = BACKEND_URL + "/item/"
 
 
-class ItemService:
+class ItemService(ServiceSession):
+
     @staticmethod
     def get_default_sellable_items(
-        character_id: str, recipe_ids: list[int]
+        service: ServiceSession, character_id: str, recipe_ids: list[int]
     ) -> list[ItemSchema]:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{ITEM_URL}default_sellable",
                 params={"character_id": character_id},
@@ -23,8 +25,8 @@ class ItemService:
 
     @staticmethod
     @cache
-    def get_icon_img(item_id: int) -> numpy.ndarray | None:
-        with logged_session() as session:
+    def get_icon_img(service: ServiceSession, item_id: int) -> numpy.ndarray | None:
+        with service.logged_session() as session:
             resp = session.get(f"{ITEM_URL}{item_id}/image/")
             img = resp.content
             if img is None:

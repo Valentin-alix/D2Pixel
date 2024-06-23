@@ -15,26 +15,29 @@ from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.services.breed import BreedService
 from src.services.character import CharacterService
 from src.services.server import ServerService
+from src.services.session import ServiceSession
 
 
 class BotSettingsModal(Dialog):
     def __init__(
         self,
+        service: ServiceSession,
         module_manager: ModuleManager,
         *args,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
+        self.service = service
         self.valid_lvl = QIntValidator()
         self.valid_lvl.setRange(1, 200)
 
-        self.setWindowTitle(module_manager.character.id)
+        self.setWindowTitle(module_manager.character_state.character.id)
         self.module_manager = module_manager
 
         self.main_layout = VerticalLayout(margins=(16, 16, 16, 16))
         self.setLayout(self.main_layout)
 
-        character = self.module_manager.character
+        character = self.module_manager.character_state.character
 
         self.set_is_sub(character)
         self.set_server_choices(character)
@@ -59,7 +62,7 @@ class BotSettingsModal(Dialog):
         self.server_combo = QComboBox()
         self.server_combo.setFixedWidth(100)
         self.server_widget_layout.addWidget(self.server_combo)
-        servers = ServerService.get_servers()
+        servers = ServerService.get_servers(self.service)
         for server in servers:
             self.server_combo.addItem(server.name, server.id)
         index = self.server_combo.findData(character.server_id)
@@ -79,7 +82,7 @@ class BotSettingsModal(Dialog):
         self.breed_combo.setFixedWidth(100)
         self.breed_widget_layout.addWidget(self.breed_combo)
 
-        breeds = BreedService.get_breeds()
+        breeds = BreedService.get_breeds(self.service)
         for breed in sorted(breeds, key=lambda elem: elem.name):
             self.breed_combo.addItem(breed.name, breed.id)
         index = self.breed_combo.findData(character.breed_id)
@@ -113,7 +116,8 @@ class BotSettingsModal(Dialog):
 
         self.form_job_infos: list[tuple[CharacterJobInfoSchema, Form]] = []
         job_infos = sorted(
-            CharacterService.get_job_infos(character.id), key=lambda elem: elem.job.name
+            CharacterService.get_job_infos(self.service, character.id),
+            key=lambda elem: elem.job.name,
         )
 
         GROUP_COUNT = 4
@@ -144,19 +148,21 @@ class BotSettingsModal(Dialog):
         lvl = int(self.bot_lvl_form.line_edit.text())
         is_sub = self.sub_checkbox.isChecked()
 
-        character = self.module_manager.character
+        character = self.module_manager.character_state.character
 
         character.lvl = lvl
         character.server_id = server_id
         character.breed_id = breed_id
         character.is_sub = is_sub
 
-        CharacterService.update_character(character)
+        CharacterService.update_character(self.service, character)
 
         for job_info, form_job in self.form_job_infos:
             job_lvl = int(form_job.line_edit.text())
             if job_info.lvl == job_lvl:
                 continue
-            CharacterService.update_job_info(character.id, job_info.job_id, job_lvl)
+            CharacterService.update_job_info(
+                self.service, character.id, job_info.job_id, job_lvl
+            )
 
         self.close()

@@ -1,3 +1,4 @@
+from logging import Logger
 from EzreD2Shared.shared.consts.adaptative.positions import (
     BANK_ASTRUB_IN,
     BANK_ASTRUB_OUT,
@@ -6,12 +7,26 @@ from EzreD2Shared.shared.consts.adaptative.positions import (
 )
 from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
 
+from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.maps import get_astrub_bank_map, get_bonta_bank_map
-from src.bots.dofus.walker.walker_system import WalkerSystem
 from src.entities.building_info import BuildingInfo
+from src.image_manager.screen_objects.image_manager import ImageManager
+from src.window_manager.controller import Controller
 
 
-class BankBuilding(WalkerSystem):
+class BankBuilding:
+    def __init__(
+        self,
+        core_walker_sys: CoreWalkerSystem,
+        logger: Logger,
+        controller: Controller,
+        image_manager: ImageManager,
+    ) -> None:
+        self.core_walker_sys = core_walker_sys
+        self.logger = logger
+        self.controller = controller
+        self.image_manager = image_manager
+
     @property
     def _banks(self) -> list[BuildingInfo]:
         return [
@@ -28,26 +43,27 @@ class BankBuilding(WalkerSystem):
         ]
 
     def go_to_bank(self):
-        return self.go_in_building(self._banks)
+        return self.core_walker_sys.go_in_building(self._banks)
 
     def __go_in_bank_astrub(self):
-        self.log_info("Go in bank astrub")
-        self.click(BANK_ASTRUB_IN)
-        return self.wait_for_new_map()
+        self.logger.info("Go in bank astrub")
+        self.controller.click(BANK_ASTRUB_IN)
+        return self.core_walker_sys.wait_for_new_map()
 
     def __go_out_bank_astrub(self):
-        self.log_info("Go out bank astrub")
-        self.click(BANK_ASTRUB_OUT)
-        return self.wait_for_new_map()
+        self.logger.info("Go out bank astrub")
+        self.controller.click(BANK_ASTRUB_OUT)
+        return self.core_walker_sys.wait_for_new_map()
 
     def __go_in_bank_bonta(self):
-        self.log_info("Go in bank bonta")
-        self.click(BANK_BONTA_IN)
-        return self.wait_on_screen(ObjectConfigs.Bank.owl_bonta)
+        self.logger.info("Go in bank bonta")
+        self.controller.click(BANK_BONTA_IN)
+        return self.image_manager.wait_on_screen(ObjectConfigs.Bank.owl_bonta)
 
     def __go_out_bank_bonta(self):
-        self.log_info("Go out bank bonta")
-        self.click(BANK_BONTA_OUT)
-        return self.wait_on_screen(
-            ObjectConfigs.PathFinding.zaapi, map_id=self.get_curr_map_info().map.id
+        self.logger.info("Go out bank bonta")
+        self.controller.click(BANK_BONTA_OUT)
+        return self.image_manager.wait_on_screen(
+            ObjectConfigs.PathFinding.zaapi,
+            map_id=self.core_walker_sys.get_curr_map_info().map.id,
         )

@@ -16,9 +16,9 @@ from EzreD2Shared.shared.schemas.region import RegionSchema
 from src.consts import ASSET_FOLDER_PATH
 from src.image_manager.analysis import get_position_template_in_image
 from src.image_manager.masks import get_not_brown_masked
-from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.image_manager.transformation import crop_image
 from src.services.item import ItemService
+from src.services.session import ServiceSession
 
 PATH_ICONS = os.path.join(ASSET_FOLDER_PATH, "icons")
 
@@ -26,9 +26,12 @@ STORAGE_COUNT_CELL_X = 5
 STORAGE_COUNT_CELL_Y = 10
 
 
-class IconSearcher(ObjectSearcher):
+class IconSearcher:
+    def __init__(self, service: ServiceSession) -> None:
+        self.service = service
+
     def get_icon_item_img(self, item: ItemSchema) -> numpy.ndarray | None:
-        img_icon = ItemService.get_icon_img(item.id)
+        img_icon = ItemService.get_icon_img(self.service, item.id)
         if img_icon is None:
             return None
         height, width = img_icon.shape[:2]
@@ -79,3 +82,4 @@ class IconSearcher(ObjectSearcher):
                 )
                 if pos is not None:
                     return pos
+        return None

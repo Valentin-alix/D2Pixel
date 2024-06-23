@@ -1,3 +1,4 @@
+from logging import Logger
 import traceback
 from threading import Lock
 from time import perf_counter, sleep
@@ -17,11 +18,16 @@ from EzreD2Shared.shared.utils.randomizer import (
 from EzreD2Shared.shared.utils.text_similarity import are_similar_text
 
 from src.bots.dofus.connection.connection_system import ConnectionSystem
+from src.bots.dofus.elements.bank import BankSystem
+from src.bots.dofus.fight.fight_system import FightSystem
+from src.bots.dofus.hud.hud_system import HudSystem
 from src.bots.dofus.hud.info_bar import is_full_pods
 from src.bots.dofus.hud.infobulle import iter_infobulles_contours
 from src.bots.dofus.sub_area_farming.sub_area_farming_system import (
+    SubAreaFarming,
     SubAreaFarmingSystem,
 )
+from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.exceptions import (
     CharacterIsStuckException,
     StoppedException,
@@ -29,9 +35,15 @@ from src.exceptions import (
 )
 from src.image_manager.masks import get_white_masked
 from src.image_manager.ocr import BASE_CONFIG, get_text_from_image
+from src.image_manager.screen_objects.image_manager import ImageManager
+from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.image_manager.transformation import crop_image
 from src.services.character import CharacterService
+from src.services.session import ServiceSession
 from src.services.sub_area import SubAreaService
+from src.states.character_state import CharacterState
+from src.window_manager.capturer import Capturer
+from src.window_manager.controller import Controller
 
 
 def get_group_lvl(img: numpy.ndarray, region: RegionSchema) -> int | None:
@@ -49,6 +61,8 @@ def get_group_lvl(img: numpy.ndarray, region: RegionSchema) -> int | None:
         except ValueError:
             return None
 
+    return None
+
 
 MULTIPLIER_LVL = 1.5
 OFFSET_LVL = 5
@@ -58,15 +72,40 @@ TIME_FIGHTER = 60 * 60 * 1
 fighter_choose_sub_area_lock = Lock()
 
 
-class Fighter(SubAreaFarmingSystem, ConnectionSystem):
+class Fighter:
     def __init__(
         self,
+        service: ServiceSession,
+        character_state: CharacterState,
+        sub_area_farming: SubAreaFarming,
+        sub_area_farming_sys: SubAreaFarmingSystem,
+        core_walker_sys: CoreWalkerSystem,
+        hud_sys: HudSystem,
+        fight_sys: FightSystem,
+        bank_sys: BankSystem,
+        connection_sys: ConnectionSystem,
+        controller: Controller,
+        object_searcher: ObjectSearcher,
+        capturer: Capturer,
+        image_manager: ImageManager,
+        logger: Logger,
         fighter_maps_time: dict[MapSchema, float],
         fighter_sub_areas_farming_ids: list[int],
-        *args,
-        **kwargs,
     ):
-        super().__init__(*args, **kwargs)
+        self.service = service
+        self.capturer = capturer
+        self.controller = controller
+        self.object_searcher = object_searcher
+        self.image_manager = image_manager
+        self.character_state = character_state
+        self.core_walker_sys = core_walker_sys
+        self.hud_sys = hud_sys
+        self.fight_sys = fight_sys
+        self.bank_sys = bank_sys
+        self.sub_area_farming_sys = sub_area_farming_sys
+        self.sub_area_farming = sub_area_farming
+        self.connection_sys = connection_sys
+        self.logger = logger
         self.fighter_maps_time = fighter_maps_time
         self.fighter_sub_areas_farming_ids = fighter_sub_areas_farming_ids
 
@@ -77,17 +116,18 @@ class Fighter(SubAreaFarmingSystem, ConnectionSystem):
         sub_areas_farmed_history: set[SubAreaSchema] = set()
 
         valid_sub_area_ids = SubAreaService.get_valid_sub_areas_fighter(
-            self.character.id
+            self.service, self.character_state.character.id
         )
         self.weight_by_map_fighter = SubAreaService.get_weights_fight_map(
-            self.character.server_id,
+            self.service,
+            self.character_state.character.server_id,
             [elem.id for elem in valid_sub_area_ids],
-            self.character.lvl,
+            self.character_state.character.lvl,
         )
 
         while perf_counter() - initial_time < limit_time:
             with fighter_choose_sub_area_lock:
-                sub_areas = self.get_random_grouped_sub_area(
+                sub_areas = self.sub_area_farming.get_random_grouped_sub_area(
                     self.fighter_sub_areas_farming_ids,
                     self.weight_by_map_fighter,
                     valid_sub_area_ids,
@@ -97,13 +137,13 @@ class Fighter(SubAreaFarmingSystem, ConnectionSystem):
                 )
 
             try:
-                self.log_info(f"Gonna farm {sub_areas}")
+                self.logger.info(f"Gonna farm {sub_areas}")
                 self._fight_sub_area(sub_areas)
             except StoppedException:
                 raise
             except (UnknowStateException, CharacterIsStuckException):
-                self.log_error(traceback.format_exc())
-                self.deblock_character()
+                self.logger.error(traceback.format_exc())
+                self.connection_sys.deblock_character()
             finally:
                 sub_areas_farmed_history.update(sub_areas)
                 for sub_area in sub_areas:
@@ -111,9 +151,11 @@ class Fighter(SubAreaFarmingSystem, ConnectionSystem):
 
         dropped_item_ids: set[int] = set()
         for sub_area in sub_areas_farmed_history:
-            for item in SubAreaService.get_dropable_items(sub_area.id):
+            for item in SubAreaService.get_dropable_items(self.service, sub_area.id):
                 dropped_item_ids.add(item.id)
-        CharacterService.add_bank_items(self.character.id, list(dropped_item_ids))
+        CharacterService.add_bank_items(
+            self.service, self.character_state.character.id, list(dropped_item_ids)
+        )
 
     def __get_valid_group_infobul_on_img(
         self, img: numpy.ndarray
@@ -122,29 +164,40 @@ class Fighter(SubAreaFarmingSystem, ConnectionSystem):
             _, x, y, width, height = infobull_info
             area = RegionSchema(left=x, right=x + width, top=y, bot=y + height)
             lvl = get_group_lvl(img, area)
-            self.log_info(f"lvl : {lvl}")
-            if lvl and (lvl / MULTIPLIER_LVL) - OFFSET_LVL < self.character.lvl:
+            self.logger.info(f"lvl : {lvl}")
+            if (
+                lvl
+                and (lvl / MULTIPLIER_LVL) - OFFSET_LVL
+                < self.character_state.character.lvl
+            ):
                 yield area
 
     def __get_area_group_enemy(self) -> Iterator[RegionSchema]:
-        with self.hold("z"):
+        with self.controller.hold("z"):
             sleep(0.3)
-            img = self.capture()
+            img = self.capturer.capture()
 
         yield from self.__get_valid_group_infobul_on_img(img)
 
     def __attack_enemy_in_group(self, infobul_area: RegionSchema) -> bool:
         center = (infobul_area.left + infobul_area.right) // 2
-        with self.set_focus():
+        with self.controller.set_focus():
             for y in range(infobul_area.bot + 15, infobul_area.bot + 50, 5):
                 curr_pos = Position(x_pos=center, y_pos=y)
-                self.move(curr_pos)
+                self.controller.move(curr_pos)
                 if (
-                    next((self.__get_valid_group_infobul_on_img(self.capture())), None)
+                    next(
+                        (
+                            self.__get_valid_group_infobul_on_img(
+                                self.capturer.capture()
+                            )
+                        ),
+                        None,
+                    )
                     is None
                 ):
                     continue
-                self.click(curr_pos)
+                self.controller.click(curr_pos)
                 return True
         return False
 
@@ -156,7 +209,7 @@ class Fighter(SubAreaFarmingSystem, ConnectionSystem):
         else:
             return False
 
-        in_fight_info = self.wait_on_screen(ObjectConfigs.Fight.in_fight)
+        in_fight_info = self.image_manager.wait_on_screen(ObjectConfigs.Fight.in_fight)
         if in_fight_info is None:
             return self._attack_enemy()
 
@@ -167,26 +220,30 @@ class Fighter(SubAreaFarmingSystem, ConnectionSystem):
             in_fight = self._attack_enemy()
             if not in_fight:
                 return False
-            img, was_teleported = self.play_fight()
+            img, was_teleported = self.fight_sys.play_fight()
             if is_full_pods(img):
-                new_img = self.bank_clear_inventory()
-                self.close_modals(
+                new_img = self.bank_sys.bank_clear_inventory()
+                self.hud_sys.close_modals(
                     new_img,
                     ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
                 )
-                self.go_inside_grouped_sub_area(sub_areas)
+                self.sub_area_farming_sys.go_inside_grouped_sub_area(sub_areas)
                 return True
             elif was_teleported:
-                self.go_inside_grouped_sub_area(sub_areas)
+                self.sub_area_farming_sys.go_inside_grouped_sub_area(sub_areas)
                 return True
 
     def _fight_sub_area(self, sub_areas: list[SubAreaSchema]):
-        max_time = SubAreaService.get_max_time_fighter([elem.id for elem in sub_areas])
+        max_time = SubAreaService.get_max_time_fighter(
+            self.service, [elem.id for elem in sub_areas]
+        )
 
-        self.go_inside_grouped_sub_area(sub_areas)
+        self.sub_area_farming_sys.go_inside_grouped_sub_area(sub_areas)
 
         initial_time: float = perf_counter()
-        self.fighter_maps_time[self.get_curr_map_info().map] = perf_counter()
+        self.fighter_maps_time[self.core_walker_sys.get_curr_map_info().map] = (
+            perf_counter()
+        )
 
         is_new_map: bool = True
 
@@ -196,21 +253,26 @@ class Fighter(SubAreaFarmingSystem, ConnectionSystem):
                 if did_moved:
                     continue
 
-            map_direction = self.get_next_direction_sub_area(
+            map_direction = self.sub_area_farming_sys.get_next_direction_sub_area(
                 sub_areas, self.fighter_maps_time, self.weight_by_map_fighter
             )
             if map_direction is None:
-                self.log_info("Did not found neighbor in sub_area")
-                if self.get_curr_map_info().map.sub_area not in sub_areas:
-                    self.go_inside_grouped_sub_area(sub_areas)
+                self.logger.info("Did not found neighbor in sub_area")
+                if (
+                    self.core_walker_sys.get_curr_map_info().map.sub_area
+                    not in sub_areas
+                ):
+                    self.sub_area_farming_sys.go_inside_grouped_sub_area(sub_areas)
                     continue
                 raise CharacterIsStuckException()
 
-            new_img, was_teleported = self.go_to_neighbor(
+            new_img, was_teleported = self.core_walker_sys.go_to_neighbor(
                 map_direction, do_trust=True, use_shift=False
             )
             if was_teleported:
-                new_img = self.go_inside_grouped_sub_area(sub_areas)
+                new_img = self.sub_area_farming_sys.go_inside_grouped_sub_area(
+                    sub_areas
+                )
 
             if new_img is None:
                 is_new_map = False

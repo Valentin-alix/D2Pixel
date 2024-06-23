@@ -18,11 +18,15 @@ from src.gui.fragments.sidebar.settings.pc_settings_modal import (
 )
 from src.gui.fragments.sidebar.sidebar_signals import SideBarSignals
 from src.gui.signals.app_signals import AppSignals
+from src.services.session import ServiceSession
 
 
 class SideBarMenuItem(QWidget):
-    def __init__(self, module_manager: ModuleManager, *args, **kwargs) -> None:
+    def __init__(
+        self, service: ServiceSession, module_manager: ModuleManager, *args, **kwargs
+    ) -> None:
         super().__init__(*args, **kwargs)
+        self.service = service
         self.main_layout = HorizontalLayout()
         self.setLayout(self.main_layout)
         self.module_manager = module_manager
@@ -31,7 +35,7 @@ class SideBarMenuItem(QWidget):
             width=150, height=80, icon_size=32, checkable=True, filename="people.svg"
         )
         self.btn_char.setLayoutDirection(Qt.LeftToRight)
-        self.btn_char.setText(module_manager.character.id)
+        self.btn_char.setText(module_manager.character_state.character.id)
         self.main_layout.addWidget(self.btn_char)
 
         self.bot_settings_btn = PushButtonIcon(
@@ -42,7 +46,7 @@ class SideBarMenuItem(QWidget):
 
     @pyqtSlot()
     def on_click_settings(self):
-        modal = BotSettingsModal(self.module_manager)
+        modal = BotSettingsModal(self.service, self.module_manager)
         modal.open()
 
 
@@ -51,6 +55,7 @@ class SideBarMenu(QWidget):
 
     def __init__(
         self,
+        service: ServiceSession,
         side_bar_signals: SideBarSignals,
         app_signals: AppSignals,
         *args,
@@ -58,6 +63,7 @@ class SideBarMenu(QWidget):
     ) -> None:
         super().__init__(*args, **kwargs)
         self.setProperty("class", "border-right-slim")
+        self.service = service
         self.app_signals = app_signals
         self.side_bar_signals = side_bar_signals
         self.current_index = 0
@@ -115,7 +121,9 @@ class SideBarMenu(QWidget):
         self.bot_items = []
         self.current_index = 0
         for index, module_manager in enumerate(module_managers):
-            bot_item = SideBarMenuItem(module_manager=module_manager, parent=self)
+            bot_item = SideBarMenuItem(
+                self.service, module_manager=module_manager, parent=self
+            )
             bot_item.btn_char.clicked.connect(partial(self.on_clicked_bot, index))
 
             self.bot_list_layout.addWidget(bot_item)

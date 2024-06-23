@@ -5,16 +5,19 @@ from src.gui.components.organization import VerticalLayout
 from src.gui.pages.stats.benefit_craft_tab.benefit_craft_tab import (
     BenefitCraftTab,
 )
+from src.services.session import ServiceSession
 
 
 class StatsPage(QWidget):
     def __init__(
         self,
+        service: ServiceSession,
         module_manager: ModuleManager,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        self.service = service
         self.module_manager = module_manager
 
         self.v_layout = VerticalLayout()
@@ -22,7 +25,8 @@ class StatsPage(QWidget):
 
         self.tabs = QTabWidget()
         self.scrapping_craft_tab = BenefitCraftTab(
-            server_id=self.module_manager.character.server_id
+            self.service,
+            server_id=self.module_manager.character_state.character.server_id,
         )
         self.tabs.addTab(self.scrapping_craft_tab, "Craft")
         self.v_layout.addWidget(self.tabs)

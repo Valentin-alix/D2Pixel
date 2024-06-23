@@ -1,11 +1,9 @@
-from threading import RLock
-
+from threading import Event
 import psutil
 import win32gui
 import win32process
 from pydantic import BaseModel
 
-from src.common.loggers.common_logger import CommonLogger
 from src.exceptions import StoppedException
 from src.window_manager.win32 import adjust_window_size
 
@@ -18,23 +16,19 @@ class WindowInfo(BaseModel):
         return self.hwnd.__hash__()
 
 
-class Organizer(CommonLogger):
+class Organizer:
     def __init__(
         self,
         window_info: WindowInfo,
-        is_paused: bool,
+        is_paused: Event,
         target_window_size: tuple[int, int],
-        *args,
-        **kwargs,
     ) -> None:
-        self.action_lock = RLock()
         self.is_paused = is_paused
         self.window_info = window_info
         self.target_window_size = target_window_size
-        return super().__init__(*args, **kwargs)
 
     def adjust_window_size(self):
-        if self.is_paused:
+        if self.is_paused.is_set():
             raise StoppedException()
         if self.target_window_size is not None:
             adjust_window_size(self.window_info.hwnd, *self.target_window_size)

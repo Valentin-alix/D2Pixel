@@ -1,5 +1,5 @@
 from functools import cache
-from src.services.session import logged_session
+from src.services.session import ServiceSession
 from EzreD2Shared.shared.enums import FromDirection
 from EzreD2Shared.shared.schemas.map import MapSchema
 from EzreD2Shared.shared.schemas.map_direction import MapDirectionSchema
@@ -9,9 +9,10 @@ from src.consts import BACKEND_URL
 MAP_URL = BACKEND_URL + "/map/"
 
 
-class MapService:
+class MapService(ServiceSession):
     @staticmethod
     def find_path(
+        service: ServiceSession,
         is_sub: bool,
         use_transport: bool,
         map_id: int,
@@ -19,7 +20,7 @@ class MapService:
         available_waypoints_ids: list[int],
         target_map_ids: list[int],
     ) -> list[MapWithActionSchema] | None:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{MAP_URL}find_path/",
                 params={
@@ -39,15 +40,17 @@ class MapService:
 
     @staticmethod
     @cache
-    def get_map(map_id: int) -> MapSchema:
-        with logged_session() as session:
+    def get_map(service: ServiceSession, map_id: int) -> MapSchema:
+        with service.logged_session() as session:
             resp = session.get(f"{MAP_URL}{map_id}")
             return MapSchema(**resp.json())
 
     @staticmethod
     @cache
-    def get_related_map(x: int, y: int, world_id: int) -> MapSchema:
-        with logged_session() as session:
+    def get_related_map(
+        service: ServiceSession, x: int, y: int, world_id: int
+    ) -> MapSchema:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{MAP_URL}related/", params={"x": x, "y": y, "world_id": world_id}
             )
@@ -55,11 +58,12 @@ class MapService:
 
     @staticmethod
     def get_map_from_hud(
+        service: ServiceSession,
         zone_text: str,
         from_map_id: int | None,
         coordinates: list[str],
     ) -> MapSchema | None:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{MAP_URL}from_coordinate/",
                 params={
@@ -75,9 +79,10 @@ class MapService:
     @staticmethod
     @cache
     def get_near_map_allow_havre(
+        service: ServiceSession,
         map_id: int,
     ) -> MapSchema:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{MAP_URL}{map_id}/near_map_allowing_havre/",
             )
@@ -85,9 +90,11 @@ class MapService:
 
     @staticmethod
     def get_map_neighbors(
-        map_id: int, from_direction: FromDirection | None = None
+        service: ServiceSession,
+        map_id: int,
+        from_direction: FromDirection | None = None,
     ) -> list[MapDirectionSchema]:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{MAP_URL}{map_id}/map_direction/",
                 params={
@@ -98,10 +105,11 @@ class MapService:
 
     @staticmethod
     def get_limit_maps_sub_area(
+        service: ServiceSession,
         sub_area_ids: list[int],
         is_sub: bool,
     ) -> list[MapSchema]:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{MAP_URL}limit_maps_sub_area/",
                 params={"is_sub": is_sub},
@@ -111,9 +119,9 @@ class MapService:
 
     @staticmethod
     def confirm_map_direction(
-        map_direction_id: int, to_map_id: int
+        service: ServiceSession, map_direction_id: int, to_map_id: int
     ) -> MapDirectionSchema:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.put(
                 f"{MAP_URL}map_direction/{map_direction_id}/confirm/",
                 params={"to_map_id": to_map_id},
@@ -121,8 +129,8 @@ class MapService:
             return MapDirectionSchema(**resp.json())
 
     @staticmethod
-    def delete_map_direction(map_direction_id: int):
-        with logged_session() as session:
+    def delete_map_direction(service: ServiceSession, map_direction_id: int):
+        with service.logged_session() as session:
             session.delete(
                 f"{MAP_URL}map_direction/{map_direction_id}",
             )

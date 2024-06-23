@@ -7,22 +7,25 @@ from src.bots.dofus.fight.grid.cell import Cell, TypeCellEnum
 from src.bots.dofus.fight.grid.grid import Grid
 
 
-class LdvGrid(Grid):
+class LdvGrid:
+    def __init__(self, grid: Grid) -> None:
+        self.grid = grid
+
     @timeit
     def get_near_movable_for_ldv_enemy(self, max_dist: int) -> tuple[Cell, Cell] | None:
-        assert (curr_cell := self.character_cell) is not None
+        assert (curr_cell := self.grid.character_cell) is not None
 
         near_enemy_with_move_cell: (
             tuple[tuple[Cell, Cell], tuple[float, float]] | None
         ) = None
 
-        accessible_cell = self.movable_cells.copy()
-        if self.character_cell is not None:
-            accessible_cell.append(self.character_cell)
+        accessible_cell = self.grid.movable_cells.copy()
+        if self.grid.character_cell is not None:
+            accessible_cell.append(self.grid.character_cell)
 
-        random.shuffle(self.enemy_cells)
-        random.shuffle(self.movable_cells)
-        for enemy_cell in self.enemy_cells:
+        random.shuffle(self.grid.enemy_cells)
+        random.shuffle(self.grid.movable_cells)
+        for enemy_cell in self.grid.enemy_cells:
             if enemy_cell.get_dist_cell(curr_cell) <= 1:
                 return curr_cell, enemy_cell
 
@@ -62,7 +65,7 @@ class LdvGrid(Grid):
         )[1:-1]
 
         for col, line in passed_coord:
-            if self.cells[(col, line)].type_cell in [
+            if self.grid.cells[(col, line)].type_cell in [
                 TypeCellEnum.OCCUPED,
                 TypeCellEnum.OPAQUE,
             ]:

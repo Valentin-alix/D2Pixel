@@ -3,6 +3,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QComboBox, QWidget
 
 from src.gui.components.organization import VerticalLayout
+from src.services.session import ServiceSession
 from src.services.type_item import TypeItemService
 
 
@@ -10,8 +11,9 @@ class BenefitCraftFilters(QWidget):
     class FilterSignals(QObject):
         changed_filters = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, service: ServiceSession):
         super().__init__()
+        self.service = service
         self.filter_signals = self.FilterSignals()
 
         self.main_layout = VerticalLayout()
@@ -40,7 +42,8 @@ class BenefitCraftFilters(QWidget):
         self.combo_type_item.addItem("")
         if category is not None:
             for type_item in sorted(
-                TypeItemService.get_type_items(category), key=lambda elem: elem.name
+                TypeItemService.get_type_items(self.service, category),
+                key=lambda elem: elem.name,
             ):
                 self.combo_type_item.addItem(type_item.name, type_item.id)
         self.emit_change()

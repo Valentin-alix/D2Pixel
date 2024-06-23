@@ -1,3 +1,4 @@
+from logging import Logger
 import traceback
 from time import sleep
 
@@ -24,22 +25,31 @@ from EzreD2Shared.shared.schemas.item import ItemSchema
 from EzreD2Shared.shared.schemas.region import RegionSchema
 from EzreD2Shared.shared.utils.randomizer import wait
 
-from src.bots.dofus.elements.bank import BankSystem
+from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.entities_map.sale_hotel import (
     get_sales_hotels_by_category,
 )
-from src.common.loggers.dofus_logger import DofusLogger
 from src.exceptions import UnknowStateException
 from src.image_manager.ocr import (
     BASE_CONFIG,
     get_text_from_image,
     set_config_for_ocr_number,
 )
+from src.image_manager.screen_objects.icon_searcher import IconSearcher
+from src.image_manager.screen_objects.image_manager import ImageManager
+from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.image_manager.transformation import crop_image
 from src.services.price import PriceService
+from src.services.session import ServiceSession
+from src.states.character_state import CharacterState
+from src.window_manager.capturer import Capturer
+from src.window_manager.controller import Controller
 
 
-class SaleHotel(DofusLogger):
+class SaleHotel:
+    def __init__(self, logger: Logger) -> None:
+        self.logger = logger
+
     def sale_hotel_get_current_quantity_item(self, img: numpy.ndarray) -> int | None:
         """need to be in hdv & item selected, return quantity displayed
 
@@ -117,7 +127,7 @@ class SaleHotel(DofusLogger):
             price = self.sale_hotel_get_price_by_area_item(img, area_price)
             if price is None:
                 continue
-            self.log_info(f"Found price {price} for quantity {quantity}")
+            self.logger.info(f"Found price {price} for quantity {quantity}")
             sum_prices += price
             quantity_found += quantity
 
@@ -139,17 +149,17 @@ class SaleHotel(DofusLogger):
         """
         quantity = self.sale_hotel_get_current_quantity_item(img)
         if quantity is None:
-            self.log_info("No quantity found.")
+            self.logger.info("No quantity found.")
             return None
 
         area_price = self.sale_hotel_get_area_price_by_quantity(quantity)
         if (
             price := self.sale_hotel_get_price_by_area_item(img, area_price)
         ) is not None:
-            self.log_info(f"Found price {price} for quantity {quantity}")
+            self.logger.info(f"Found price {price} for quantity {quantity}")
             return price, quantity
 
-        self.log_info(
+        self.logger.info(
             f"No price found for {quantity}, calculating price from other quantities"
         )
         other_quantities = [
@@ -166,13 +176,15 @@ class SaleHotel(DofusLogger):
                 prices.append(int(price * quantity / other_quantity))
 
         if len(prices) > 0:
-            self.log_info(
+            self.logger.info(
                 f"Got price from other quantities (divided for curr quantity) : {prices}"
             )
             return min(prices), quantity
 
         # no price display on hdv
-        self.log_info("Found no price display, return average price multiplied by 1.3")
+        self.logger.info(
+            "Found no price display, return average price multiplied by 1.3"
+        )
         return int(quantity * price_average * 1.3), quantity
 
     def sale_hotel_get_count_remaining_slot(self, img: numpy.ndarray) -> int:
@@ -192,23 +204,51 @@ class SaleHotel(DofusLogger):
             curr_slot, max_slot = text.split("/")
             return int(max_slot) - int(curr_slot)
         except ValueError:
-            self.log_error(traceback.format_exc())
+            self.logger.error(traceback.format_exc())
             raise UnknowStateException(img, "value_error_slot")
 
 
-class SaleHotelSystem(BankSystem, SaleHotel):
-    def sale_hotel_choose_biggest_quantity(self) -> numpy.ndarray:
-        self.log_info("Choosing biggest quantity")
-        self.click(HOTEL_OPEN_QUANTITY_PANEL_POSITION)
-        img = self.capture()
+class SaleHotelSystem:
+    def __init__(
+        self,
+        core_walker_sys: CoreWalkerSystem,
+        sale_hotel: SaleHotel,
+        controller: Controller,
+        capturer: Capturer,
+        object_searcher: ObjectSearcher,
+        icon_searcher: IconSearcher,
+        logger: Logger,
+        image_manager: ImageManager,
+        service: ServiceSession,
+        character_state: CharacterState,
+    ) -> None:
+        self.capturer = capturer
+        self.sale_hotel = sale_hotel
+        self.object_searcher = object_searcher
+        self.icon_searcher = icon_searcher
+        self.core_walker_sys = core_walker_sys
+        self.controller = controller
+        self.image_manager = image_manager
+        self.service = service
+        self.logger = logger
+        self.character_state = character_state
 
-        hundred_info = self.get_position(img, ObjectConfigs.SaleHotel.hundred_quantity)
+    def sale_hotel_choose_biggest_quantity(self) -> numpy.ndarray:
+        self.logger.info("Choosing biggest quantity")
+        self.controller.click(HOTEL_OPEN_QUANTITY_PANEL_POSITION)
+        img = self.capturer.capture()
+
+        hundred_info = self.object_searcher.get_position(
+            img, ObjectConfigs.SaleHotel.hundred_quantity
+        )
         if hundred_info:
-            self.click(hundred_info[0])
-            img = self.capture()
-        elif ten_info := self.get_position(img, ObjectConfigs.SaleHotel.ten_quantity):
-            self.click(ten_info[0])
-            img = self.capture()
+            self.controller.click(hundred_info[0])
+            img = self.capturer.capture()
+        elif ten_info := self.object_searcher.get_position(
+            img, ObjectConfigs.SaleHotel.ten_quantity
+        ):
+            self.controller.click(ten_info[0])
+            img = self.capturer.capture()
         return img
 
     def sale_hotel_sell_items_inv(
@@ -219,48 +259,58 @@ class SaleHotelSystem(BankSystem, SaleHotel):
         Returns:
             bool: True if full place, False if no more object
         """
-        self.click(SALE_HOTEL_ALL_CATEGORY_POSITION)
+        self.controller.click(SALE_HOTEL_ALL_CATEGORY_POSITION)
 
-        img = self.capture()
-        count_remaining_slot: int = self.sale_hotel_get_count_remaining_slot(img)
-        self.log_info(f"Remaining Slots : {count_remaining_slot}")
+        img = self.capturer.capture()
+        count_remaining_slot: int = self.sale_hotel.sale_hotel_get_count_remaining_slot(
+            img
+        )
+        self.logger.info(f"Remaining Slots : {count_remaining_slot}")
 
-        if self.get_position(img, ObjectConfigs.Check.medium_inventory) is None:
-            self.click(SALE_HOTEL_FILTER_OBJECTS_POSITION)
+        if (
+            self.object_searcher.get_position(img, ObjectConfigs.Check.medium_inventory)
+            is None
+        ):
+            self.controller.click(SALE_HOTEL_FILTER_OBJECTS_POSITION)
             sleep(0.3)
-            img = self.capture()
+            img = self.capturer.capture()
 
         completed_items: list[int] = []
         for item_inv in items_inventory:
             wait()
-            img = self.capture()
-            self.log_info(f"Treating item : {item_inv}")
-            pos_item_inv = self.search_icon_item(
+            img = self.capturer.capture()
+            self.logger.info(f"Treating item : {item_inv}")
+            pos_item_inv = self.icon_searcher.search_icon_item(
                 item_inv, img, RIGHT_INVENTORY_SALE_HOTEL
             )
             if pos_item_inv is None:
-                self.log_warning(f"Did not found icon for item {item_inv}")
+                self.logger.warning(f"Did not found icon for item {item_inv}")
                 continue
-            self.click(pos_item_inv)
+            self.controller.click(pos_item_inv)
             wait()
             img = self.sale_hotel_choose_biggest_quantity()
 
-            price_average = self.sale_hotel_get_price_average_item(img)
-            self.log_info(f"Got average price from hud : {price_average}")
+            price_average = self.sale_hotel.sale_hotel_get_price_average_item(img)
+            self.logger.info(f"Got average price from hud : {price_average}")
             if price_average is None:
                 continue
             price = PriceService.update_or_create_price(
-                item_inv.id, self.character.server_id, price_average
+                self.service,
+                item_inv.id,
+                self.character_state.character.server_id,
+                price_average,
             )
             price_average = price.average
-            self.log_info(f"Got average price : {price_average}")
+            self.logger.info(f"Got average price : {price_average}")
             if price_average is None:
                 continue
 
             old_price: int | None = None
             old_quantity: int | None = None
             while True:
-                price_info = self.sale_hotel_get_price_item(img, price_average)
+                price_info = self.sale_hotel.sale_hotel_get_price_item(
+                    img, price_average
+                )
                 if price_info is None:
                     break
                 curr_price, curr_quantity = price_info
@@ -271,20 +321,22 @@ class SaleHotelSystem(BankSystem, SaleHotel):
                     or abs(curr_price - old_price) > 10
                 ):
                     new_price = max(curr_price - 1, 2)
-                    self.click(HOTEL_PRICE_INPUT_POSITION, count=2)
-                    self.send_text(str(new_price))
+                    self.controller.click(HOTEL_PRICE_INPUT_POSITION, count=2)
+                    self.controller.send_text(str(new_price))
                     old_quantity = curr_quantity
                     old_price = new_price
                 else:
-                    self.key(win32con.VK_RETURN)
+                    self.controller.key(win32con.VK_RETURN)
                 wait()
-                img = self.capture()
-                pos_info_yes = self.get_position(img, ObjectConfigs.Button.yes)
+                img = self.capturer.capture()
+                pos_info_yes = self.object_searcher.get_position(
+                    img, ObjectConfigs.Button.yes
+                )
                 if pos_info_yes is not None:
-                    self.log_info("Confirming price.")
-                    self.click(pos_info_yes[0])
+                    self.logger.info("Confirming price.")
+                    self.controller.click(pos_info_yes[0])
                     wait()
-                    img = self.capture()
+                    img = self.capturer.capture()
 
                 count_remaining_slot -= 1
                 if count_remaining_slot == 0:
@@ -294,8 +346,10 @@ class SaleHotelSystem(BankSystem, SaleHotel):
 
     def go_to_sale_hotel(self, category: CategoryEnum):
         sale_hotels = get_sales_hotels_by_category(category)
-        sale_hotel_entity = self.go_near_entity_map(sale_hotels)
-        self.click(sale_hotel_entity.position)
-        pos = self.wait_on_screen(ObjectConfigs.SaleHotel.sale_category, force=True)[0]
-        self.click(pos)
+        sale_hotel_entity = self.core_walker_sys.go_near_entity_map(sale_hotels)
+        self.controller.click(sale_hotel_entity.position)
+        pos = self.image_manager.wait_on_screen(
+            ObjectConfigs.SaleHotel.sale_category, force=True
+        )[0]
+        self.controller.click(pos)
         wait((1, 1.5))

@@ -1,3 +1,4 @@
+from logging import Logger
 from time import sleep
 
 import numpy
@@ -8,7 +9,7 @@ from EzreD2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from EzreD2Shared.shared.entities.position import Position
 from EzreD2Shared.shared.schemas.region import RegionSchema
 
-from src.bots.dofus.dofus_bot import DofusBot
+
 from src.bots.dofus.hud.info_popup.info_popup import EventInfoPopup
 from src.bots.dofus.hud.info_popup.job_level import (
     get_job_level_from_impossible_recolt,
@@ -20,11 +21,31 @@ from src.image_manager.ocr import (
     get_text_from_image,
     set_config_for_ocr_number,
 )
+from src.image_manager.screen_objects.image_manager import ImageManager
+from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.image_manager.transformation import crop_image
 from src.services.character import CharacterService
+from src.services.session import ServiceSession
+from src.states.character_state import CharacterState
+from src.window_manager.capturer import Capturer
+from src.window_manager.controller import Controller
 
 
-class Hud(DofusBot):
+class Hud:
+    def __init__(
+        self,
+        service: ServiceSession,
+        controller: Controller,
+        image_manager: ImageManager,
+        character_state: CharacterState,
+        logger: Logger,
+    ) -> None:
+        self.service = service
+        self.controller = controller
+        self.character_state = character_state
+        self.image_manager = image_manager
+        self.logger = logger
+
     def get_level_up_number(
         self, img: numpy.ndarray, level_up_text_position: Position, region: RegionSchema
     ) -> int:
@@ -44,51 +65,88 @@ class Hud(DofusBot):
                 raise UnknowStateException(img, "lvl_up_number")
 
 
-class HudSystem(Hud):
+class HudSystem:
+    def __init__(
+        self,
+        hud: Hud,
+        image_manager: ImageManager,
+        character_state: CharacterState,
+        service: ServiceSession,
+        controller: Controller,
+        object_searcher: ObjectSearcher,
+        capturer: Capturer,
+        logger: Logger,
+    ) -> None:
+        self.object_searcher = object_searcher
+        self.capturer = capturer
+        self.hud = hud
+        self.character_state = character_state
+        self.image_manager = image_manager
+        self.service = service
+        self.controller = controller
+        self.logger = logger
+
     def handle_level_up(
         self, img: numpy.ndarray, pos: Position, region: RegionSchema
     ) -> numpy.ndarray:
-        new_level = self.get_level_up_number(img, pos, region)
+        new_level = self.hud.get_level_up_number(img, pos, region)
 
-        self.character.lvl = new_level
-        self.character = CharacterService.update_character(self.character)
+        self.character_state.character.lvl = new_level
+        self.character_state.character = CharacterService.update_character(
+            self.service, self.character_state.character
+        )
 
-        modal_ok_info = self.get_position(img, ObjectConfigs.Button.ok, force=True)
-        self.click(modal_ok_info[0])
-        return self.capture()
+        modal_ok_info = self.object_searcher.get_position(
+            img, ObjectConfigs.Button.ok, force=True
+        )
+        self.controller.click(modal_ok_info[0])
+        return self.image_manager.capturer.capture()
 
     def handle_info_modal(
         self, img: numpy.ndarray
     ) -> tuple[numpy.ndarray, set[EventInfoPopup]]:
         events_info_modal: set[EventInfoPopup] = set()
 
-        if (quit_info := self.get_position(img, ObjectConfigs.Cross.green)) is None:
+        if (
+            quit_info := self.image_manager.object_searcher.get_position(
+                img, ObjectConfigs.Cross.green
+            )
+        ) is None:
             return img, events_info_modal
 
-        self.log_info("Found modal info")
-        if imp_recolt_info := self.get_position(
+        self.logger.info("Found modal info")
+        if imp_recolt_info := self.image_manager.object_searcher.get_position(
             img, ObjectConfigs.Harvest.impossible_recolt_text
         ):
             job_info = get_job_level_from_impossible_recolt(
-                img, RegionSchema.model_validate(imp_recolt_info[1].region)
+                self.service,
+                img,
+                RegionSchema.model_validate(imp_recolt_info[1].region),
             )
             if job_info:
                 job, level = job_info
-                CharacterService.update_job_info(self.character.id, job.id, level)
-                self.log_info(f"new character job lvl : {job}:{level}")
+                CharacterService.update_job_info(
+                    self.service, self.character_state.character.id, job.id, level
+                )
+                self.logger.info(f"new character job lvl : {job}:{level}")
                 if (level % 10) == 0:
                     events_info_modal.add(EventInfoPopup.LVL_UP_JOB)
-        elif lvl_up_info := self.get_position(img, ObjectConfigs.Job.level_up):
+        elif lvl_up_info := self.object_searcher.get_position(
+            img, ObjectConfigs.Job.level_up
+        ):
             job, level = get_job_level_from_level_up(
+                self.service,
                 img,
                 RegionSchema.model_validate(lvl_up_info[1].region),
             )
-            CharacterService.update_job_info(self.character.id, job.id, level)
+            CharacterService.update_job_info(
+                self.service, self.character_state.character.id, job.id, level
+            )
             if (level % 10) == 0:
                 events_info_modal.add(EventInfoPopup.LVL_UP_JOB)
 
-        self.click(quit_info[0])
-        img = self.capture()
+        self.controller.click(quit_info[0])
+        img = self.capturer.capture()
         return img, events_info_modal
 
     def close_modal(
@@ -96,23 +154,23 @@ class HudSystem(Hud):
     ) -> tuple[bool, numpy.ndarray]:
         """close modal by configs provided, return True if no modal found"""
         for config in ordered_configs:
-            pos_info = self.get_position(img, config)
+            pos_info = self.object_searcher.get_position(img, config)
             if pos_info is None:
                 continue
             pos, template_found_place = pos_info
-            self.click(pos)
+            self.controller.click(pos)
             sleep(0.3)
-            img = self.capture()
+            img = self.capturer.capture()
             if (
                 next(
-                    self.iter_position_from_template_info(
+                    self.object_searcher.iter_position_from_template_info(
                         img, config, [template_found_place]
                     ),
                     None,
                 )
                 is None
             ):
-                self.log_info(f"Closed modal with {config.id}")
+                self.logger.info(f"Closed modal with {config.id}")
                 return False, img
         return True, img
 

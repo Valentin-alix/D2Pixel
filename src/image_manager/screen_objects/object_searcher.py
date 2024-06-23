@@ -13,7 +13,6 @@ from EzreD2Shared.shared.schemas.template_found import (
     TemplateFoundPlacementSchema,
 )
 
-from src.common.loggers.common_logger import CommonLogger
 from src.consts import ASSET_FOLDER_PATH
 from src.exceptions import UnknowStateException
 from src.image_manager.analysis import (
@@ -24,6 +23,7 @@ from src.image_manager.transformation import (
     img_to_gray,
     img_to_hsv,
 )
+from src.services.session import ServiceSession
 from src.services.template import TemplateService
 
 TEMPLATE_FOLDER = os.path.join(ASSET_FOLDER_PATH, "templates")
@@ -70,7 +70,10 @@ def get_region_from_template(template: numpy.ndarray, pos: Position) -> RegionSc
     )
 
 
-class ObjectSearcher(CommonLogger):
+class ObjectSearcher:
+    def __init__(self, service: ServiceSession) -> None:
+        self.service = service
+
     def iter_position_from_template_info(
         self,
         img: numpy.ndarray,
@@ -103,7 +106,7 @@ class ObjectSearcher(CommonLogger):
             config.cache_info is not None
             and (
                 templates_place := TemplateService.get_template_from_config(
-                    config, map_id
+                    self.service, config, map_id
                 )
             )
             is not None
@@ -169,6 +172,7 @@ class ObjectSearcher(CommonLogger):
                 and config.cache_info.min_parsed_count_on_map is not None
             ):
                 template_found_place = TemplateService.get_place_or_create(
+                    self.service,
                     config=config,
                     filename=template_found_info.filename,
                     region_schema=template_found_info.region,
@@ -176,7 +180,7 @@ class ObjectSearcher(CommonLogger):
                 )
                 if template_found_place.template_found_map_id is not None:
                     TemplateService.increment_count_template_map(
-                        template_found_place.template_found_map_id
+                        self.service, template_found_place.template_found_map_id
                     )
             return pos, template_found_info
         return None
@@ -193,6 +197,7 @@ class ObjectSearcher(CommonLogger):
             incremented_template_found_map_ids: set[int] = set()
             for _, template_found_info in pos_infos:
                 template_found_place = TemplateService.get_place_or_create(
+                    self.service,
                     config=config,
                     filename=template_found_info.filename,
                     region_schema=template_found_info.region,
@@ -205,7 +210,7 @@ class ObjectSearcher(CommonLogger):
                 ):
                     continue
                 TemplateService.increment_count_template_map(
-                    template_found_place.template_found_map_id
+                    self.service, template_found_place.template_found_map_id
                 )
 
         return [(pos_info[0], pos_info[1]) for pos_info in pos_infos]

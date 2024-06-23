@@ -1,3 +1,4 @@
+from logging import Logger
 import socket
 import traceback
 from threading import Event
@@ -7,11 +8,16 @@ import numpy
 from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
 
 from src.bots.dofus.fight.fight_system import FightSystem
+from src.bots.dofus.hud.hud_system import HudSystem
 from src.exceptions import (
     CharacterIsStuckException,
     StoppedException,
     UnknowStateException,
 )
+from src.image_manager.screen_objects.image_manager import ImageManager
+from src.image_manager.screen_objects.object_searcher import ObjectSearcher
+from src.window_manager.capturer import Capturer
+from src.window_manager.controller import Controller
 
 
 def has_internet_connection(host="8.8.8.8", port=53, timeout=3) -> bool:
@@ -29,27 +35,43 @@ def has_internet_connection(host="8.8.8.8", port=53, timeout=3) -> bool:
         return False
 
 
-class ConnectionSystem(FightSystem):
+class ConnectionSystem:
     def __init__(
         self,
-        *args,
-        **kwargs,
+        fight_system: FightSystem,
+        hud_system: HudSystem,
+        controller: Controller,
+        object_searcher: ObjectSearcher,
+        capturer: Capturer,
+        image_manager: ImageManager,
+        logger: Logger,
+        is_connected: Event,
+        is_dead: Event,
     ) -> None:
-        super().__init__(*args, **kwargs)
-        self.is_connected: Event = Event()
+        self.object_searcher = object_searcher
+        self.capturer = capturer
+        self.fight_system = fight_system
+        self.controller = controller
+        self.image_manager = image_manager
+        self.logger = logger
+        self.is_connected = is_connected
+        self.hud_system = hud_system
+        self.is_dead = is_dead
 
     def connect_character(self, img: numpy.ndarray) -> tuple[numpy.ndarray, bool]:
         """return false if not connected"""
-        img = self.clean_interface(img)
-        if self.get_position(img, ObjectConfigs.in_game) is not None:
-            self.log_info("Is in game")
+        img = self.hud_system.clean_interface(img)
+        if self.object_searcher.get_position(img, ObjectConfigs.in_game) is not None:
+            self.logger.info("Is in game")
             self.is_connected.set()
             return img, True
-        pos_launcher_info = self.get_position(img, ObjectConfigs.Connection.launcher)
+        pos_launcher_info = self.object_searcher.get_position(
+            img, ObjectConfigs.Connection.launcher
+        )
         if pos_launcher_info is not None:
-            self.log_info("Found Launcher Connection Button")
-            self.click(pos_launcher_info[0])
-            pos_infos = self.wait_multiple_or_template(
+            self.logger.info("Found Launcher Connection Button")
+            self.controller.click(pos_launcher_info[0])
+            pos_infos = self.image_manager.wait_multiple_or_template(
                 [ObjectConfigs.Connection.play, ObjectConfigs.in_game]
             )
             if pos_infos is not None:
@@ -58,37 +80,39 @@ class ConnectionSystem(FightSystem):
                     self.is_connected.set()
                     return img, True
 
-        pos_play_info = self.get_position(img, ObjectConfigs.Connection.play)
+        pos_play_info = self.object_searcher.get_position(
+            img, ObjectConfigs.Connection.play
+        )
         if pos_play_info is not None:
-            self.log_info("Found Play Character Button")
-            self.click(pos_play_info[0])
-            in_game_info = self.wait_on_screen(ObjectConfigs.in_game)
+            self.logger.info("Found Play Character Button")
+            self.controller.click(pos_play_info[0])
+            in_game_info = self.image_manager.wait_on_screen(ObjectConfigs.in_game)
             if in_game_info is not None:
                 self.is_connected.set()
                 return in_game_info[2], True
 
-        self.log_info("Still not connected")
+        self.logger.info("Still not connected")
         return img, False
 
     def deblock_character(self):
-        self.log_info("Deblocking character...")
+        self.logger.info("Deblocking character...")
         while not has_internet_connection():
-            self.log_info("Waiting for connection to be available...")
+            self.logger.info("Waiting for connection to be available...")
             sleep(2)
         try:
-            img = self.capture()
+            img = self.capturer.capture()
             img, connected = self.connect_character(img)
             if not connected:
-                self.log_info("Still not connected")
+                self.logger.info("Still not connected")
                 return self.deblock_character()
-            if self.is_dead:
-                self.on_dead_character(img)
-            elif self.get_position(img, ObjectConfigs.Fight.in_fight):
-                img, _ = self.play_fight()
+            if self.is_dead.is_set():
+                self.fight_system.on_dead_character(img)
+            elif self.object_searcher.get_position(img, ObjectConfigs.Fight.in_fight):
+                img, _ = self.fight_system.play_fight()
         except StoppedException:
             raise
         except (UnknowStateException, CharacterIsStuckException):
-            self.log_error(traceback.format_exc())
+            self.logger.error(traceback.format_exc())
             return self.deblock_character()
-        self.clean_interface(self.capture())
-        self.log_info("Character deblocked")
+        self.hud_system.clean_interface(self.capturer.capture())
+        self.logger.info("Character deblocked")

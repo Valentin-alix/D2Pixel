@@ -13,10 +13,11 @@ from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
 from EzreD2Shared.shared.entities.position import Position
 from EzreD2Shared.shared.utils.debugger import timeit
 
-from src.bots.dofus.dofus_bot import DofusBot
+
 from src.bots.dofus.fight.grid.cell import Cell, TypeCellEnum
 from src.image_manager.analysis import is_color_in_range
 from src.image_manager.debug import ColorBGR, draw_form, draw_text
+from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.image_manager.transformation import crop_image
 
 COUNT_WIDTH_CELL = 14
@@ -77,19 +78,14 @@ def get_base_cells() -> dict[tuple[int, int], Cell]:
     return cells_by_xy
 
 
-class Grid(DofusBot):
-    character_cell: Cell | None
-    enemy_cells: list[Cell]
-    ally_cells: list[Cell]
-    movable_cells: list[Cell]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class Grid:
+    def __init__(self, object_searcher: ObjectSearcher):
+        self.object_searcher = object_searcher
         self._cells: dict[tuple[int, int], Cell] | None = None
-        self.character_cell = None
-        self.enemy_cells = []
-        self.ally_cells = []
-        self.movable_cells = []
+        self.character_cell: Cell | None = None
+        self.enemy_cells: list[Cell] = []
+        self.ally_cells: list[Cell] = []
+        self.movable_cells: list[Cell] = []
 
     @property
     def cells(self):
@@ -204,7 +200,9 @@ class Grid(DofusBot):
     def _is_enemy_cell(self, cell: Cell, img: numpy.ndarray) -> bool:
         cell_img = crop_image(img, cell.get_region((5, 5, 25, 5)))
         return (
-            self.get_position(cell_img, ObjectConfigs.Fight.enemy, with_crop=False)
+            self.object_searcher.get_position(
+                cell_img, ObjectConfigs.Fight.enemy, with_crop=False
+            )
             is not None
         )
 

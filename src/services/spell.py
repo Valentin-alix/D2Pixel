@@ -2,17 +2,20 @@ from functools import cache
 from EzreD2Shared.shared.enums import CharacteristicEnum, ElemEnum
 from EzreD2Shared.shared.schemas.character import CharacterSchema
 from EzreD2Shared.shared.schemas.spell_lvl import CurrentBoostSchema, SpellLevelSchema
-from src.services.session import logged_session
+
 from src.consts import BACKEND_URL
+from src.services.session import ServiceSession
 
 SPELL_URL = BACKEND_URL + "/spell/"
 
 
-class SpellService:
+class SpellService(ServiceSession):
     @staticmethod
     @cache
-    def get_spell_lvls(character_lvl: int, breed_id: int) -> list[SpellLevelSchema]:
-        with logged_session() as session:
+    def get_spell_lvls(
+        service: ServiceSession, character_lvl: int, breed_id: int
+    ) -> list[SpellLevelSchema]:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SPELL_URL}spell_lvl/",
                 params={"character_lvl": character_lvl, "breed_id": breed_id},
@@ -22,9 +25,12 @@ class SpellService:
     @staticmethod
     @cache
     def get_spell_lvl_for_boost(
-        character_lvl: int, breed_id: int, characteristic: CharacteristicEnum
+        service: ServiceSession,
+        character_lvl: int,
+        breed_id: int,
+        characteristic: CharacteristicEnum,
     ) -> SpellLevelSchema | None:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SPELL_URL}spell_lvl/for_boost/",
                 params={
@@ -40,9 +46,11 @@ class SpellService:
     @staticmethod
     @cache
     def check_if_boost_for_characteristic(
-        spell_lvl: SpellLevelSchema, characteristic: CharacteristicEnum
+        service: ServiceSession,
+        spell_lvl: SpellLevelSchema,
+        characteristic: CharacteristicEnum,
     ) -> bool:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SPELL_URL}spell_lvl/{spell_lvl.id}/is_boost_for_char/",
                 params={"characteristic": characteristic},
@@ -51,9 +59,12 @@ class SpellService:
 
     @staticmethod
     def get_max_range_valuable_dmg_spell(
-        prefered_elem: ElemEnum, po_bonus: int, spell_lvl_ids: list[int]
+        service: ServiceSession,
+        prefered_elem: ElemEnum,
+        po_bonus: int,
+        spell_lvl_ids: list[int],
     ) -> int:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SPELL_URL}spell_lvl/max_range_valuable_dmg_spell/",
                 params={
@@ -66,6 +77,7 @@ class SpellService:
 
     @staticmethod
     def get_best_combination(
+        service: ServiceSession,
         dist_from_enemy: float | None,
         spell_lvls_ids: list[int],
         useful_boost_chars: list[CharacteristicEnum],
@@ -75,7 +87,7 @@ class SpellService:
         spell_used_ids_with_count: dict[int, int],
         current_boosts: list[CurrentBoostSchema],
     ) -> list[SpellLevelSchema]:
-        with logged_session() as session:
+        with service.logged_session() as session:
             resp = session.get(
                 f"{SPELL_URL}spell_lvl/best_combination/",
                 params={

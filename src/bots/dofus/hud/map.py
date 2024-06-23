@@ -18,10 +18,11 @@ from src.image_manager.ocr import (
 )
 from src.image_manager.transformation import crop_image, get_inverted_image
 from src.services.map import MapService
+from src.services.session import ServiceSession
 
 
 def get_map(
-    img: numpy.ndarray, from_map: MapSchema | None = None
+    service:ServiceSession, img: numpy.ndarray, from_map: MapSchema | None = None
 ) -> tuple[MapSchema, str]:
     img = get_inverted_image(img)
 
@@ -59,7 +60,7 @@ def get_map(
         raise UnknowStateException(img, f"map_coordinates_{pos_text.replace(" ", "_")}")
 
     map = MapService.get_map_from_hud(
-        zone_text, from_map.id if from_map else None, coordinates
+        service, zone_text, from_map.id if from_map else None, coordinates
     )
     if map is None:
         raise UnknowStateException(

@@ -8,16 +8,20 @@ from EzreD2Shared.shared.schemas.template_found import TemplateFoundPlacementSch
 from src.common.retry import RetryTimeArgs, retry_time
 from src.exceptions import UnknowStateException
 from src.image_manager.analysis import are_same_image
-from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.cursor import (
     CursorType,
     get_cursor_images,
 )
-from src.image_manager.screen_objects.icon_searcher import IconSearcher
+from src.image_manager.screen_objects.object_searcher import ObjectSearcher
+from src.window_manager.capturer import Capturer
 from src.window_manager.win32 import get_cursor_icon
 
 
-class ImageManager(IconSearcher, AnimationManager):
+class ImageManager:
+    def __init__(self, capturer: Capturer, object_searcher: ObjectSearcher) -> None:
+        self.object_searcher = object_searcher
+        self.capturer = capturer
+
     @overload
     def wait_multiple_or_template(
         self,
@@ -60,16 +64,18 @@ class ImageManager(IconSearcher, AnimationManager):
             ]
             | None
         ):
-            img = self.capture()
+            img = self.capturer.capture()
             for config in configs:
-                if (pos_info := self.get_position(img, config, map_id)) is not None:
+                if (
+                    pos_info := self.object_searcher.get_position(img, config, map_id)
+                ) is not None:
                     return *pos_info, config, img
             return None
 
         res = retry_time(retry_time_args)(found_template)()
         if force is True and res is None:
             raise UnknowStateException(
-                self.capture(),
+                self.capturer.capture(),
                 "-".join([config.ref.replace(".", "_") for config in configs]),
             )
         return res
@@ -102,14 +108,18 @@ class ImageManager(IconSearcher, AnimationManager):
         def found_template() -> (
             tuple[Position, TemplateFoundPlacementSchema, numpy.ndarray] | None
         ):
-            img = self.capture()
-            if (pos_info := self.get_position(img, config, map_id)) is not None:
+            img = self.capturer.capture()
+            if (
+                pos_info := self.object_searcher.get_position(img, config, map_id)
+            ) is not None:
                 return *pos_info, img
             return None
 
         res = retry_time(retry_time_args)(found_template)()
         if force is True and res is None:
-            raise UnknowStateException(self.capture(), config.ref.replace(".", "_"))
+            raise UnknowStateException(
+                self.capturer.capture(), config.ref.replace(".", "_")
+            )
         return res
 
     @overload
@@ -141,14 +151,16 @@ class ImageManager(IconSearcher, AnimationManager):
             lambda: self._not_found_template(config, map_id)
         )()
         if force is True and res is None:
-            raise UnknowStateException(self.capture(), config.ref.replace(".", "_"))
+            raise UnknowStateException(
+                self.capturer.capture(), config.ref.replace(".", "_")
+            )
         return res
 
     def _not_found_template(
         self, config: ObjectSearchConfig, map_id: int | None = None
     ) -> numpy.ndarray | None:
-        img = self.capture()
-        return self.is_not_on_screen(img, config, map_id)
+        img = self.capturer.capture()
+        return self.object_searcher.is_not_on_screen(img, config, map_id)
 
     def is_cursor_type(self, cursor_type: CursorType) -> bool:
         current_icon = get_cursor_icon()

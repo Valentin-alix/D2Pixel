@@ -1,5 +1,6 @@
 from contextlib import contextmanager
-from threading import RLock
+from logging import Logger
+from threading import Event, RLock
 from time import sleep
 
 import pyperclip
@@ -12,7 +13,7 @@ from EzreD2Shared.shared.utils.randomizer import PAUSE
 from win32api import VkKeyScan
 
 from src.exceptions import StoppedException
-from src.window_manager.organizer import Organizer
+from src.window_manager.organizer import Organizer, WindowInfo
 from src.window_manager.win32 import (
     get_foreground_window,
     kill_window,
@@ -35,13 +36,20 @@ def get_long_param(pos: Position) -> float:
 focus_lock: RLock = RLock()
 
 
-class Controller(Organizer):
+class Controller:
     def __init__(
         self,
-        *args,
-        **kwargs,
+        logger: Logger,
+        window_info: WindowInfo,
+        is_paused: Event,
+        organizer: Organizer,
+        action_lock: RLock,
     ) -> None:
-        super().__init__(*args, **kwargs)
+        self.logger = logger
+        self.window_info = window_info
+        self.is_paused = is_paused
+        self.organizer = organizer
+        self.action_lock = action_lock
 
     def kill_window(self):
         with self.action_lock:
@@ -49,7 +57,7 @@ class Controller(Organizer):
 
     @contextmanager
     def set_focus(self):
-        if self.is_paused:
+        if self.is_paused.is_set():
             raise StoppedException()
         try:
             focus_lock.acquire()
@@ -60,12 +68,12 @@ class Controller(Organizer):
             focus_lock.release()
 
     def click(self, pos: Position, count: int = 1):
-        if self.is_paused:
+        if self.is_paused.is_set():
             raise StoppedException()
         with self.action_lock:
             long_param = get_long_param(pos)
-            self.log_debug(f"{count} click at {pos}")
-            self.adjust_window_size()
+            self.logger.debug(f"{count} click at {pos}")
+            self.organizer.adjust_window_size()
             for _ in range(count):
                 win32gui.PostMessage(
                     self.window_info.hwnd,
@@ -86,40 +94,40 @@ class Controller(Organizer):
         self.click(EMPTY_POSITION)
 
     def move(self, pos: Position):
-        if self.is_paused:
+        if self.is_paused.is_set():
             raise StoppedException()
         with (
             self.set_focus(),
             self.action_lock,
         ):  # because we need the mouse to be on window area
-            self.log_debug(f"move {pos}")
+            self.logger.debug(f"move {pos}")
             long_param = get_long_param(pos)
-            self.adjust_window_size()
+            self.organizer.adjust_window_size()
             win32gui.PostMessage(
                 self.window_info.hwnd, win32con.WM_MOUSEMOVE, 0, long_param
             )
             sleep(0.2)
 
     def key_down(self, char: Key):
-        if self.is_paused:
+        if self.is_paused.is_set():
             raise StoppedException()
         with self.action_lock:
-            self.log_debug(f"keydown {char}")
+            self.logger.debug(f"keydown {char}")
             w_param = get_related_wparam(char)
             win32gui.PostMessage(self.window_info.hwnd, win32con.WM_KEYDOWN, w_param, 0)
             sleep(PAUSE)
 
     def key_up(self, char: Key):
-        if self.is_paused:
+        if self.is_paused.is_set():
             raise StoppedException()
         with self.action_lock:
-            self.log_debug(f"keyup {char}")
+            self.logger.debug(f"keyup {char}")
             w_param = get_related_wparam(char)
             win32gui.PostMessage(self.window_info.hwnd, win32con.WM_KEYUP, w_param, 0)
             sleep(PAUSE)
 
     def key(self, key: Key):
-        if self.is_paused:
+        if self.is_paused.is_set():
             raise StoppedException()
         with self.action_lock:
             self.key_down(key)
@@ -127,7 +135,7 @@ class Controller(Organizer):
 
     @contextmanager
     def hold(self, key: Key):
-        if self.is_paused:
+        if self.is_paused.is_set():
             raise StoppedException()
         with self.action_lock:
             self.key_down(key)
@@ -135,7 +143,7 @@ class Controller(Organizer):
             self.key_up(key)
 
     def send_text(self, text: str, with_enter=True, pos: Position | None = None):
-        if self.is_paused:
+        if self.is_paused.is_set():
             raise StoppedException()
         with self.action_lock:
             if pos is not None:
@@ -148,7 +156,7 @@ class Controller(Organizer):
                 self.key(win32con.VK_RETURN)
 
     def get_selected_text(self):
-        if self.is_paused:
+        if self.is_paused.is_set():
             raise StoppedException()
         with self.action_lock:
             self.key_down(win32con.VK_CONTROL)

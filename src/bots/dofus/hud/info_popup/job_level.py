@@ -14,13 +14,16 @@ from src.bots.dofus.hud.info_popup.info_popup import clean_info_popup_img
 from src.exceptions import UnknowStateException
 from src.image_manager.ocr import get_text_from_image
 from src.services.job import JobService
+from src.services.session import ServiceSession
 
 
-def parse_job_level_info_impossible(text: str) -> tuple[JobSchema, int] | None:
+def parse_job_level_info_impossible(
+    service: ServiceSession, text: str
+) -> tuple[JobSchema, int] | None:
     res = text.split("\n")
     job_text = unidecode.unidecode(res[0].split(" ")[0], "utf-8")
 
-    job = JobService.find_job_by_text(job_text)
+    job = JobService.find_job_by_text(service, job_text)
     if job is None:
         return None
 
@@ -28,7 +31,7 @@ def parse_job_level_info_impossible(text: str) -> tuple[JobSchema, int] | None:
     return job, actual_lvl
 
 
-def parse_job_new_level(text: str) -> tuple[JobSchema, int]:
+def parse_job_new_level(service: ServiceSession, text: str) -> tuple[JobSchema, int]:
     print(text)
 
     text = text.replace(",", ".")
@@ -50,7 +53,7 @@ def parse_job_new_level(text: str) -> tuple[JobSchema, int]:
         key=lambda elem: elem[1],
     )
 
-    job = JobService.find_job_by_text(job_info[2])
+    job = JobService.find_job_by_text(service, job_info[2])
     if job is None:
         raise ValueError(f"job cannot be None, from text : {text}")
 
@@ -60,7 +63,7 @@ def parse_job_new_level(text: str) -> tuple[JobSchema, int]:
 
 
 def get_job_level_from_level_up(
-    img: numpy.ndarray, area: RegionSchema
+    service: ServiceSession, img: numpy.ndarray, area: RegionSchema
 ) -> tuple[JobSchema, int]:
     def get_area_info_from_level_up(region_level_up: RegionSchema) -> RegionSchema:
         return RegionSchema(
@@ -84,14 +87,14 @@ def get_job_level_from_level_up(
     try:
         job_lvl_area = get_area_info_from_level_up(area)
         job_text = get_info_modal_level_up_job(img, job_lvl_area)
-        job, level = parse_job_new_level(job_text)
+        job, level = parse_job_new_level(service, job_text)
         return job, level
     except ValueError:
         raise UnknowStateException(img, "job_lvl_up_parse")
 
 
 def get_job_level_from_impossible_recolt(
-    img: numpy.ndarray, area: RegionSchema
+    service: ServiceSession, img: numpy.ndarray, area: RegionSchema
 ) -> tuple[JobSchema, int] | None:
     def get_area_info_from_impossible_recolt(
         region_impossible_recolt: RegionSchema,
@@ -110,7 +113,7 @@ def get_job_level_from_impossible_recolt(
 
     job_lvl_area = get_area_info_from_impossible_recolt(area)
     job_text = get_info_modal_impossible_recolt(img, job_lvl_area)
-    job_info = parse_job_level_info_impossible(job_text)
+    job_info = parse_job_level_info_impossible(service, job_text)
     if job_info is None:
         return None
     return job_info

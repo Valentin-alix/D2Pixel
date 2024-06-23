@@ -1,4 +1,5 @@
 import ctypes
+from logging import Logger
 import os
 from time import sleep
 from typing import cast
@@ -28,6 +29,7 @@ from src.gui.fragments.header.sub_header import SubHeader
 from src.gui.fragments.sidebar.sidebar import SideBar
 from src.gui.pages.modules.module_page import ModulesPage
 from src.gui.signals.app_signals import AppSignals
+from src.services.session import ServiceSession
 
 TITLE = "EvokerBot"
 
@@ -35,11 +37,15 @@ TITLE = "EvokerBot"
 class WorkerSetupBots(QObject):
     def __init__(
         self,
+        logger: Logger,
+        service: ServiceSession,
         app_signals: AppSignals,
         stacked_frames: QStackedWidget,
         *args,
         **kwargs,
     ) -> None:
+        self.logger = logger
+        self.service = service
         self.app_signals = app_signals
         self.stacked_frames = stacked_frames
         super().__init__(*args, **kwargs)
@@ -63,7 +69,7 @@ class WorkerSetupBots(QObject):
                 elem.thread_run.quit()
                 elem.thread_run.wait()
 
-        bots_manager = BotsManager(self.app_signals)
+        bots_manager = BotsManager(self.logger, self.service, self.app_signals)
         self.app_signals.bots_initialized.emit(bots_manager.module_managers)
 
 
@@ -91,11 +97,15 @@ class MainWindow(QMainWindow):
 
     def __init__(
         self,
+        logger: Logger,
+        service: ServiceSession,
         app_signals: AppSignals,
         *args,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
+        self.service = service
+        self.logger = logger
         self.thread_setup_bots: QThread | None = None
         self.module_managers: list[ModuleManager] = []
 
@@ -124,7 +134,7 @@ class MainWindow(QMainWindow):
         self.main_content.setLayout(self.main_content_layout)
 
         # sidebar
-        self.sidebar = SideBar(self.app_signals)
+        self.sidebar = SideBar(self.service, self.app_signals)
         self.sidebar.side_bar_menu.button_refresh.clicked.connect(self.setup_bots)
         self.main_content_layout.addWidget(self.sidebar)
 
@@ -149,7 +159,10 @@ class MainWindow(QMainWindow):
             self.thread_setup_bots.wait()
 
         self.worker_setup_bots = WorkerSetupBots(
-            self.app_signals, stacked_frames=self.stacked_frames
+            self.logger,
+            self.service,
+            self.app_signals,
+            stacked_frames=self.stacked_frames,
         )
         self.thread_setup_bots = QThread()
 
@@ -179,7 +192,7 @@ class MainWindow(QMainWindow):
             self.stacked_frames.removeWidget(widget)
 
         for module_manager in module_managers:
-            sub_header = SubHeader(module_manager)
+            sub_header = SubHeader(self.service, module_manager)
             self.stacked_frames.addWidget(sub_header)
 
     def closeEvent(self, _: QCloseEvent):

@@ -1,31 +1,38 @@
 from collections import defaultdict
 
+
 from EzreD2Shared.shared.schemas.spell_lvl import CurrentBoostSchema
-
 from src.bots.dofus.fight.grid.grid import Grid
+from src.services.session import ServiceSession
 from src.services.spell import SpellService
+from src.states.character_state import CharacterState
 
 
-class SpellManager(Grid):
-    _pa: int = 6
-    _spell_used_ids_with_count: dict[int, int]
-    _current_boosts: set[CurrentBoostSchema]
-    _turn: int = 0
+class SpellManager:
     _max_range_spell: int
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self._spell_used_ids_with_count = defaultdict(lambda: 0)
-        self._current_boosts = set()
+    def __init__(
+        self, grid: Grid, service: ServiceSession, character_state: CharacterState
+    ) -> None:
+        self.grid = grid
+        self._pa: int = 6
+        self._turn: int = 0
+        self._spell_used_ids_with_count: dict[int, int] = defaultdict(lambda: 0)
+        self._current_boosts: set[CurrentBoostSchema] = set()
+        self.service = service
+        self.character_state = character_state
 
     def on_start_fight_spells(self):
         self._max_range_spell = SpellService.get_max_range_valuable_dmg_spell(
-            self.character.elem,
-            self.character.po_bonus,
+            self.service,
+            self.character_state.character.elem,
+            self.character_state.character.po_bonus,
             [
                 elem.id
                 for elem in SpellService.get_spell_lvls(
-                    self.character.lvl, self.character.breed_id
+                    self.service,
+                    self.character_state.character.lvl,
+                    self.character_state.character.breed_id,
                 )
             ],
         )

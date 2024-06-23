@@ -1,28 +1,55 @@
+from logging import Logger
 import numpy
 
 from src.bots.dofus.fight.grid.cell import Cell
+from src.bots.dofus.fight.grid.grid import Grid
+from src.bots.dofus.fight.grid.path_grid import AstarGrid
 from src.bots.dofus.fight.ias.base import IaBaseFightSystem
+from src.bots.dofus.fight.spells.spell_manager import SpellManager
+from src.bots.dofus.fight.spells.spell_system import SpellSystem
+from src.services.session import ServiceSession
 from src.services.spell import SpellService
+from src.states.character_state import CharacterState
 
 
-class IaBruteFightSystem(IaBaseFightSystem):
+class IaBruteFightSystem:
+    def __init__(
+        self,
+        ia_base_fight_sys: IaBaseFightSystem,
+        spell_system: SpellSystem,
+        spell_manager: SpellManager,
+        astar_grid: AstarGrid,
+        grid: Grid,
+        logger: Logger,
+        service: ServiceSession,
+        character_state: CharacterState,
+    ) -> None:
+        self.ia_base_fight_sys = ia_base_fight_sys
+        self.spell_system = spell_system
+        self.spell_manager = spell_manager
+        self.astar_grid = astar_grid
+        self.grid = grid
+        self.logger = logger
+        self.service = service
+        self.character_state = character_state
+
     def play_turn_brute(self, img: numpy.ndarray) -> bool:
         while True:
-            img, enemy_cell = self.reach_attackable_enemy(img)
+            img, enemy_cell = self.ia_base_fight_sys.reach_attackable_enemy(img)
             if enemy_cell is None:
                 break
             img, in_focus, in_fight = self.hit_enemy_brute(img, enemy_cell)
             if not in_fight:
                 return False
             if in_focus:
-                self.log_info("Still focus on enemy")
+                self.logger.info("Still focus on enemy")
                 break
 
-        self.log_info("No more enemy attackable, reach enemy")
-        near_mov = self.get_near_movable_to_reach_enemy(enemy_cell)
+        self.logger.info("No more enemy attackable, reach enemy")
+        near_mov = self.astar_grid.get_near_movable_to_reach_enemy(enemy_cell)
         if near_mov is not None:
-            self.log_info(f"Find near mov to reach enemy : {near_mov}")
-            img = self.move_to_cell(near_mov, img)[0]
+            self.logger.info(f"Find near mov to reach enemy : {near_mov}")
+            img = self.ia_base_fight_sys.move_to_cell(near_mov, img)[0]
 
         return True
 
@@ -36,33 +63,36 @@ class IaBruteFightSystem(IaBaseFightSystem):
         Returns:
             tuple[numpy.ndarray, bool, bool]: the new img, is focus on enemy, is in fight
         """
-        if self.character_cell and enemy_cell:
-            dist_from_enemy = self.character_cell.get_dist_cell(enemy_cell)
+        if self.grid.character_cell and enemy_cell:
+            dist_from_enemy = self.grid.character_cell.get_dist_cell(enemy_cell)
         else:
             dist_from_enemy = None
 
         spells = SpellService.get_best_combination(
+            self.service,
             dist_from_enemy,
             [
                 elem.id
                 for elem in SpellService.get_spell_lvls(
-                    self.character.lvl, self.character.breed_id
+                    self.service,
+                    self.character_state.character.lvl,
+                    self.character_state.character.breed_id,
                 )
             ],
             [],
             False,
-            self.character,
-            self._pa,
-            self._spell_used_ids_with_count,
-            list(self._current_boosts),
+            self.character_state.character,
+            self.spell_manager._pa,
+            self.spell_manager._spell_used_ids_with_count,
+            list(self.spell_manager._current_boosts),
         )
-        self.log_info(f"Choosed spells : {spells}")
+        self.logger.info(f"Choosed spells : {spells}")
 
         for spell in spells:
             assert spell.on_enemy is True
-            img, in_fight = self.launch_spell_at_enemy(spell, enemy_cell)
+            img, in_fight = self.spell_system.launch_spell_at_enemy(spell, enemy_cell)
             if not in_fight:
                 return img, False, False
-            if enemy_cell not in self.enemy_cells:
+            if enemy_cell not in self.grid.enemy_cells:
                 return img, False, True
         return img, True, True

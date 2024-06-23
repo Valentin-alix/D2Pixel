@@ -4,11 +4,13 @@ from PyQt5.QtWidgets import QLabel, QTableWidgetItem, QWidget
 from src.gui.components.organization import VerticalLayout
 from src.gui.components.table import TableWidget
 from src.services.recipe import RecipeService
+from src.services.session import ServiceSession
 
 
 class BenefitRecipeTable(QWidget):
-    def __init__(self):
+    def __init__(self, service: ServiceSession):
         super().__init__()
+        self.service = service
         v_layout = VerticalLayout(space=8)
         self.setLayout(v_layout)
 
@@ -30,7 +32,7 @@ class BenefitRecipeTable(QWidget):
 
         rows = 100
         benefit_recipe = RecipeService.get_best_recipe_benefits(
-            server_id, category, type_item_id, rows
+            self.service, server_id, category, type_item_id, rows
         )
         self.table_benefit_recipe.setRowCount(len(benefit_recipe))
         for index, (name, benefit) in enumerate(benefit_recipe):

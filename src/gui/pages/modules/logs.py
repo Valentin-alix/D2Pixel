@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QListWidget, QListWidgetItem
 
 from src.gui.components.organization import VerticalLayout
-from src.gui.signals.dofus_signals import DofusSignals
+from src.gui.signals.dofus_signals import BotSignals
 
 
 class LogBox(QGroupBox):
@@ -34,7 +34,7 @@ class LogBox(QGroupBox):
             painter.drawText(option.rect, QtCore.Qt.AlignLeft, log_msg)
             painter.restore()
 
-    def __init__(self, bot_signals: DofusSignals, *args, **kwargs):
+    def __init__(self, bot_signals: BotSignals, *args, **kwargs):
         super().__init__(title="Logs", *args, **kwargs)
         self.log_box_layout = VerticalLayout()
         self.log_box_layout.setAlignment(Qt.AlignTop)

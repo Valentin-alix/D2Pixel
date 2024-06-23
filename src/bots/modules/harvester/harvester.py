@@ -1,3 +1,4 @@
+from logging import Logger
 import traceback
 from threading import Lock
 from time import perf_counter, sleep
@@ -18,13 +19,16 @@ from EzreD2Shared.shared.utils.randomizer import (
 )
 
 from src.bots.dofus.connection.connection_system import ConnectionSystem
+from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.hud.highlight import remove_highlighted_zone
+from src.bots.dofus.hud.hud_system import HudSystem
 from src.bots.dofus.hud.info_bar import is_full_pods
 from src.bots.dofus.hud.info_popup.info_popup import (
     EventInfoPopup,
 )
 from src.bots.dofus.hud.infobulle import replace_infobulle
 from src.bots.dofus.sub_area_farming.sub_area_farming_system import (
+    SubAreaFarming,
     SubAreaFarmingSystem,
 )
 from src.bots.dofus.walker.core_walker_system import WaitForNewMapWalking
@@ -32,6 +36,7 @@ from src.bots.dofus.walker.directions import (
     get_pos_from_direction,
     get_pos_to_direction,
 )
+from src.bots.dofus.walker.walker_system import WalkerSystem
 from src.bots.modules.harvester.path_positions import (
     find_dumby_optimal_path_positions,
     find_optimal_path_positions,
@@ -41,9 +46,15 @@ from src.exceptions import (
     StoppedException,
     UnknowStateException,
 )
+from src.image_manager.screen_objects.image_manager import ImageManager
+from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.character import CharacterService
 from src.services.collectable import CollectableService
+from src.services.session import ServiceSession
 from src.services.sub_area import SubAreaService
+from src.states.character_state import CharacterState
+from src.window_manager.capturer import Capturer
+from src.window_manager.controller import Controller
 
 
 def clean_image_after_collect(
@@ -59,21 +70,45 @@ TIME_HARVEST = 60 * 60 * 4
 harvester_choose_sub_area_lock = Lock()
 
 
-class Harvester(SubAreaFarmingSystem, ConnectionSystem):
+class Harvester:
     def __init__(
         self,
+        service: ServiceSession,
+        character_state: CharacterState,
+        sub_area_farming_sys: SubAreaFarmingSystem,
+        sub_area_farming: SubAreaFarming,
+        connection_sys: ConnectionSystem,
+        walker_sys: WalkerSystem,
+        hud_sys: HudSystem,
+        bank_sys: BankSystem,
+        controller: Controller,
+        object_searcher: ObjectSearcher,
+        capturer: Capturer,
+        image_manager: ImageManager,
+        logger: Logger,
         harvest_sub_areas_farming_ids: list[int],
         harvest_map_time: dict[MapSchema, float],
-        *args,
-        **kwargs,
     ):
-        super().__init__(*args, **kwargs)
+        self.service = service
+        self.object_searcher = object_searcher
+        self.capturer = capturer
+        self.character_state = character_state
+        self.sub_area_farming_sys = sub_area_farming_sys
+        self.sub_area_farming = sub_area_farming
+        self.connection_sys = connection_sys
+        self.bank_sys = bank_sys
+        self.walker_sys = walker_sys
+        self.hud_sys = hud_sys
+        self.controller = controller
+        self.image_manager = image_manager
+        self.logger = logger
+
         self.weight_by_map_harvest: dict[int, float] = {}
         self.harvest_sub_areas_farming_ids = harvest_sub_areas_farming_ids
         self.harvest_map_time = harvest_map_time
 
     def run_harvest(self) -> None:
-        if self.character.lvl < 10:
+        if self.character_state.character.lvl < 10:
             return None
 
         limit_time = TIME_HARVEST * multiply_offset(RANGE_DURATION_ACTIVITY)
@@ -81,26 +116,31 @@ class Harvester(SubAreaFarmingSystem, ConnectionSystem):
         initial_time = perf_counter()
         possible_collectable_ids = [
             elem.id
-            for elem in CharacterService.get_possible_collectable(self.character.id)
+            for elem in CharacterService.get_possible_collectable(
+                self.service, self.character_state.character.id
+            )
         ]
         valid_sub_areas = SubAreaService.get_valid_sub_areas_harvester(
-            self.character.id
+            self.service, self.character_state.character.id
         )
         valid_sub_area_ids = [elem.id for elem in valid_sub_areas]
         self.weight_by_map_harvest = SubAreaService.get_weights_harvest_map(
-            self.character.server_id, possible_collectable_ids, valid_sub_area_ids
+            self.service,
+            self.character_state.character.server_id,
+            possible_collectable_ids,
+            valid_sub_area_ids,
         )
 
         while perf_counter() - initial_time < limit_time:
             with harvester_choose_sub_area_lock:
-                sub_areas = self.get_random_grouped_sub_area(
+                sub_areas = self.sub_area_farming.get_random_grouped_sub_area(
                     self.harvest_sub_areas_farming_ids,
                     self.weight_by_map_harvest,
                     valid_sub_areas,
                 )
             self.harvest_sub_areas_farming_ids.extend((elem.id for elem in sub_areas))
             try:
-                self.log_info(f"Harvest : gonna farm {sub_areas}")
+                self.logger.info(f"Harvest : gonna farm {sub_areas}")
                 self.collect_sub_areas(
                     sub_areas,
                     wait_default_args=WaitForNewMapWalking(
@@ -110,34 +150,39 @@ class Harvester(SubAreaFarmingSystem, ConnectionSystem):
             except StoppedException:
                 raise
             except (UnknowStateException, CharacterIsStuckException):
-                self.log_error(traceback.format_exc())
-                self.deblock_character()
+                self.logger.error(traceback.format_exc())
+                self.connection_sys.deblock_character()
             finally:
                 for sub_area in sub_areas:
                     self.harvest_sub_areas_farming_ids.remove(sub_area.id)
 
         item_ids = [
             elem.item_id
-            for elem in CharacterService.get_possible_collectable(self.character.id)
+            for elem in CharacterService.get_possible_collectable(
+                self.service, self.character_state.character.id
+            )
         ]
-        CharacterService.add_bank_items(self.character.id, item_ids)
+        CharacterService.add_bank_items(
+            self.service, self.character_state.character.id, item_ids
+        )
 
     def _on_info_modal(self, img: numpy.ndarray) -> numpy.ndarray:
-        img, events = self.handle_info_modal(img)
+        img, events = self.hud_sys.handle_info_modal(img)
         for event in events:
             if event == EventInfoPopup.LVL_UP_JOB:
                 possible_collectable_ids = [
                     elem.id
                     for elem in CharacterService.get_possible_collectable(
-                        self.character.id
+                        self.service, self.character_state.character.id
                     )
                 ]
                 valid_sub_areas = SubAreaService.get_valid_sub_areas_harvester(
-                    self.character.id
+                    self.service, self.character_state.character.id
                 )
                 valid_sub_area_ids = [elem.id for elem in valid_sub_areas]
                 self.weight_by_map_harvest = SubAreaService.get_weights_harvest_map(
-                    self.character.server_id,
+                    self.service,
+                    self.character_state.character.server_id,
                     possible_collectable_ids,
                     valid_sub_area_ids,
                 )
@@ -149,31 +194,33 @@ class Harvester(SubAreaFarmingSystem, ConnectionSystem):
         wait_default_args: WaitForNewMapWalking = WaitForNewMapWalking(),
     ):
         max_time = SubAreaService.get_max_time_harvester(
-            [elem.id for elem in sub_areas]
+            self.service, [elem.id for elem in sub_areas]
         )
 
-        img = self.go_inside_grouped_sub_area(sub_areas)
+        img = self.sub_area_farming_sys.go_inside_grouped_sub_area(sub_areas)
 
         initial_time: float = perf_counter()
-        self.harvest_map_time[self.get_curr_map_info().map] = perf_counter()
+        self.harvest_map_time[self.walker_sys.get_curr_map_info().map] = perf_counter()
 
         is_new_map: bool = True
 
         while perf_counter() - initial_time < max_time:
-            map_direction = self.get_next_direction_sub_area(
+            map_direction = self.sub_area_farming_sys.get_next_direction_sub_area(
                 sub_areas, self.harvest_map_time, self.weight_by_map_harvest
             )
             if map_direction is None:
-                self.log_info("Did not found neighbor in sub_area")
-                if self.get_curr_map_info().map.sub_area not in sub_areas:
-                    img = self.go_inside_grouped_sub_area(sub_areas)
+                self.logger.info("Did not found neighbor in sub_area")
+                if self.walker_sys.get_curr_map_info().map.sub_area not in sub_areas:
+                    img = self.sub_area_farming_sys.go_inside_grouped_sub_area(
+                        sub_areas
+                    )
                     continue
                 raise CharacterIsStuckException()
 
             if is_new_map:
                 collecting_count = self.collect_map(
                     img,
-                    self.get_curr_map_info().map,
+                    self.walker_sys.get_curr_map_info().map,
                     map_direction.to_direction,
                 )
                 timeout = 15 + collecting_count * 5
@@ -183,7 +230,7 @@ class Harvester(SubAreaFarmingSystem, ConnectionSystem):
             else:
                 wait_args = wait_default_args
 
-            new_img, was_teleported = self.go_to_neighbor(
+            new_img, was_teleported = self.walker_sys.go_to_neighbor(
                 map_direction,
                 do_trust=True,
                 use_shift=is_new_map,
@@ -191,26 +238,30 @@ class Harvester(SubAreaFarmingSystem, ConnectionSystem):
             )
 
             if was_teleported:
-                new_img = self.go_inside_grouped_sub_area(sub_areas)
+                new_img = self.sub_area_farming_sys.go_inside_grouped_sub_area(
+                    sub_areas
+                )
 
             if new_img is None:
                 is_new_map = False
                 continue
 
-            self.harvest_map_time[self.get_curr_map_info().map] = perf_counter()
+            self.harvest_map_time[self.walker_sys.get_curr_map_info().map] = (
+                perf_counter()
+            )
             img = new_img
             is_new_map = True
 
             if is_full_pods(img):
-                img = self.bank_clear_inventory()
-                img = self.close_modals(
+                img = self.bank_sys.bank_clear_inventory()
+                img = self.hud_sys.close_modals(
                     img,
                     ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
                 )
-                img = self.go_inside_grouped_sub_area(sub_areas)
+                img = self.sub_area_farming_sys.go_inside_grouped_sub_area(sub_areas)
 
         self._current_zone = None
-        self.log_info("Zone finished")
+        self.logger.info("Zone finished")
 
     @timeit
     def get_pos_configs(
@@ -219,10 +270,10 @@ class Harvester(SubAreaFarmingSystem, ConnectionSystem):
         positions_infos: list[
             tuple[Position, InfoTemplateFoundPlacementSchema, ObjectSearchConfig]
         ] = []
-        self.log_info(f"Searching configs : {configs}")
+        self.logger.info(f"Searching configs : {configs}")
         for config in configs:
-            for pos_info in self.get_multiple_position(
-                img, config, self.get_curr_map_info().map.id
+            for pos_info in self.object_searcher.get_multiple_position(
+                img, config, self.walker_sys.get_curr_map_info().map.id
             ):
                 positions_infos.append((*pos_info, config))
         return positions_infos
@@ -233,18 +284,20 @@ class Harvester(SubAreaFarmingSystem, ConnectionSystem):
         map: MapSchema,
         next_direction: ToDirection,
     ) -> int:
-        start_pos = get_pos_from_direction(self.get_curr_direction())
+        start_pos = get_pos_from_direction(self.walker_sys.get_curr_direction())
         end_pos = get_pos_to_direction(next_direction)
 
         possible_colls = [
             elem.id
-            for elem in CharacterService.get_possible_collectable(self.character.id)
+            for elem in CharacterService.get_possible_collectable(
+                self.service, self.character_state.character.id
+            )
         ]
 
         collectable_configs = CollectableService.get_possible_config_on_map(
-            map.id, possible_colls
+            self.service, map.id, possible_colls
         )
-        self.log_info(f"Searching for {collectable_configs}")
+        self.logger.info(f"Searching for {collectable_configs}")
 
         positions_infos = self.get_pos_configs(img, set(collectable_configs))
 
@@ -257,11 +310,11 @@ class Harvester(SubAreaFarmingSystem, ConnectionSystem):
             if (len(positions) + (1 if start_pos else 0) + (1 if end_pos else 0)) > 13
             else find_optimal_path_positions(positions, start_pos, end_pos)[1]
         )
-        self.log_info(f"Collect path : {optimal_path}")
+        self.logger.info(f"Collect path : {optimal_path}")
 
         positions_infos.sort(key=lambda pos_info: optimal_path.index(pos_info[0]))
         collected_count = 0
-        with self.hold(win32con.VK_SHIFT):
+        with self.controller.hold(win32con.VK_SHIFT):
             for index, (pos, template_found_place, config) in enumerate(
                 positions_infos
             ):
@@ -269,7 +322,7 @@ class Harvester(SubAreaFarmingSystem, ConnectionSystem):
                     # not first pos, check if pos still valid
                     pos_info = next(
                         (
-                            self.iter_position_from_template_info(
+                            self.object_searcher.iter_position_from_template_info(
                                 img, config, [template_found_place]
                             )
                         ),
@@ -277,13 +330,13 @@ class Harvester(SubAreaFarmingSystem, ConnectionSystem):
                     )
                     if pos_info is None:
                         continue
-                self.click(pos)
+                self.controller.click(pos)
                 sleep(0.3)
                 collected_count += 1
                 if len(positions_infos) <= index + 1:
                     # no more pos after
                     continue
-                high_img = self.capture()
+                high_img = self.capturer.capture()
                 img = clean_image_after_collect(img, high_img, pos)
 
         return collected_count

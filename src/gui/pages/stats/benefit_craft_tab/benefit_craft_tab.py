@@ -7,19 +7,21 @@ from src.gui.pages.stats.benefit_craft_tab.benefit_craft_filters import (
 from src.gui.pages.stats.benefit_craft_tab.benefit_recipe_table import (
     BenefitRecipeTable,
 )
+from src.services.session import ServiceSession
 
 
 class BenefitCraftTab(QWidget):
-    def __init__(self, server_id: int):
+    def __init__(self, service: ServiceSession, server_id: int):
         super().__init__()
         self.server_id = server_id
+        self.service = service
         v_layout = VerticalLayout(space=4)
         self.setLayout(v_layout)
 
-        self.benefit_recipe_filters = BenefitCraftFilters()
+        self.benefit_recipe_filters = BenefitCraftFilters(self.service)
         v_layout.addWidget(self.benefit_recipe_filters)
 
-        self.benefit_recipe_table = BenefitRecipeTable()
+        self.benefit_recipe_table = BenefitRecipeTable(self.service)
         v_layout.addWidget(self.benefit_recipe_table)
 
         self.benefit_recipe_filters.filter_signals.changed_filters.connect(
