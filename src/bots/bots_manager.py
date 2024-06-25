@@ -1,6 +1,5 @@
 from collections import defaultdict
 from logging import Logger
-from threading import Event
 
 from EzreD2Shared.shared.schemas.map import MapSchema
 
@@ -23,10 +22,8 @@ class BotsManager:
         self.service = service
         self.fake_sentence = FakeSentence()
         self.logger = logger
-        self.is_paused = Event()
         self.app_signals.is_connecting_bots.emit(True)
-
-        self.ankama_launcher = AnkamaLauncher(self.logger, self.is_paused, self.service)
+        self.ankama_launcher = AnkamaLauncher(self.logger, self.service)
         dofus_windows = self.ankama_launcher.connect_all()
         self._setup_farmers(dofus_windows)
 
@@ -43,7 +40,6 @@ class BotsManager:
             module_manager = ModuleManager(
                 self.service,
                 window,
-                self.is_paused,
                 self.fake_sentence,
                 fighter_map_time,
                 fighter_sub_area_farming_ids,

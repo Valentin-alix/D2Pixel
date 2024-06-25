@@ -1,18 +1,19 @@
+from logging import Logger
 import os
 import sys
 from pathlib import Path
+from threading import Event
 from typing import Iterator
 
 import cv2
 import numpy
+from pyparsing import RLock
 
-sys.path.append(
-    os.path.dirname(os.path.dirname(os.path.dirname((os.path.dirname(__file__)))))
-)
+sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from src.consts import ANKAMA_WINDOW_SIZE, DOFUS_WINDOW_SIZE
 from src.window_manager.capturer import Capturer
-from src.window_manager.organizer import get_windows_by_process_and_name
+from src.window_manager.organizer import Organizer, get_windows_by_process_and_name
 
 os.makedirs(os.path.join(Path(__file__).parent, "output", "captures"), exist_ok=True)
 
@@ -20,12 +21,22 @@ os.makedirs(os.path.join(Path(__file__).parent, "output", "captures"), exist_ok=
 def iter_img(
     target_window_size: tuple[int, int], target_process_name="Dofus.exe"
 ) -> Iterator[numpy.ndarray]:
+
     for window_info in get_windows_by_process_and_name(target_process_name):
-        capturer = Capturer(
-            log_header="temp",
+        is_paused = Event()
+        logger = Logger("root")
+        organizer = Organizer(
             window_info=window_info,
+            is_paused=is_paused,
             target_window_size=target_window_size,
-            is_paused=False,
+            logger=logger,
+        )
+        capturer = Capturer(
+            action_lock=RLock(),
+            organizer=organizer,
+            is_paused=is_paused,
+            window_info=window_info,
+            logger=logger,
         )
         yield capturer.capture()
 
@@ -56,4 +67,4 @@ def get_sc_ankama():
 
 if __name__ == "__main__":
     # sleep(4)
-    get_sc_dofus()
+    get_sc_ankama()

@@ -2,6 +2,7 @@ from logging import Logger
 from time import sleep
 
 import numpy
+from pydantic import BaseModel, ConfigDict
 import tesserocr
 from EzreD2Shared.shared.consts.adaptative.consts import MODAL_LVLUP_OFFSET_RIGHT
 from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
@@ -11,10 +12,7 @@ from EzreD2Shared.shared.schemas.region import RegionSchema
 
 
 from src.bots.dofus.hud.info_popup.info_popup import EventInfoPopup
-from src.bots.dofus.hud.info_popup.job_level import (
-    get_job_level_from_impossible_recolt,
-    get_job_level_from_level_up,
-)
+from src.bots.dofus.hud.info_popup.job_level import JobParser
 from src.exceptions import UnknowStateException
 from src.image_manager.ocr import (
     BASE_CONFIG,
@@ -31,20 +29,10 @@ from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
 
-class Hud:
-    def __init__(
-        self,
-        service: ServiceSession,
-        controller: Controller,
-        image_manager: ImageManager,
-        character_state: CharacterState,
-        logger: Logger,
-    ) -> None:
-        self.service = service
-        self.controller = controller
-        self.character_state = character_state
-        self.image_manager = image_manager
-        self.logger = logger
+class Hud(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    logger: Logger
 
     def get_level_up_number(
         self, img: numpy.ndarray, level_up_text_position: Position, region: RegionSchema
@@ -65,26 +53,18 @@ class Hud:
                 raise UnknowStateException(img, "lvl_up_number")
 
 
-class HudSystem:
-    def __init__(
-        self,
-        hud: Hud,
-        image_manager: ImageManager,
-        character_state: CharacterState,
-        service: ServiceSession,
-        controller: Controller,
-        object_searcher: ObjectSearcher,
-        capturer: Capturer,
-        logger: Logger,
-    ) -> None:
-        self.object_searcher = object_searcher
-        self.capturer = capturer
-        self.hud = hud
-        self.character_state = character_state
-        self.image_manager = image_manager
-        self.service = service
-        self.controller = controller
-        self.logger = logger
+class HudSystem(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    hud: Hud
+    image_manager: ImageManager
+    character_state: CharacterState
+    service: ServiceSession
+    controller: Controller
+    object_searcher: ObjectSearcher
+    capturer: Capturer
+    logger: Logger
+    job_parser: JobParser
 
     def handle_level_up(
         self, img: numpy.ndarray, pos: Position, region: RegionSchema
@@ -118,10 +98,8 @@ class HudSystem:
         if imp_recolt_info := self.image_manager.object_searcher.get_position(
             img, ObjectConfigs.Harvest.impossible_recolt_text
         ):
-            job_info = get_job_level_from_impossible_recolt(
-                self.service,
-                img,
-                RegionSchema.model_validate(imp_recolt_info[1].region),
+            job_info = self.job_parser.get_job_level_from_impossible_recolt(
+                img, imp_recolt_info[1].region
             )
             if job_info:
                 job, level = job_info
@@ -134,10 +112,8 @@ class HudSystem:
         elif lvl_up_info := self.object_searcher.get_position(
             img, ObjectConfigs.Job.level_up
         ):
-            job, level = get_job_level_from_level_up(
-                self.service,
-                img,
-                RegionSchema.model_validate(lvl_up_info[1].region),
+            job, level = self.job_parser.get_job_level_from_level_up(
+                img, lvl_up_info[1].region
             )
             CharacterService.update_job_info(
                 self.service, self.character_state.character.id, job.id, level

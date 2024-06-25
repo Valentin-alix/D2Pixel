@@ -55,7 +55,7 @@ class WalkerSystem(CoreWalkerSystem):
     def wait_for_new_map_walking(
         self, args: WaitForNewMapWalking = WaitForNewMapWalking()
     ) -> tuple[numpy.ndarray | None, bool]:
-        self._prev_img = self.capturer.capture()
+        self.animation_manager._prev_img = self.capturer.capture()
 
         initial_time = perf_counter()
         was_teleported: bool = False

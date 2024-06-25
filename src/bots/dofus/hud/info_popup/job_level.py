@@ -1,4 +1,6 @@
+from logging import Logger
 import numpy
+from pydantic import BaseModel, ConfigDict
 import unidecode
 from EzreD2Shared.shared.consts.adaptative.consts import (
     INFO_JOB_IMPOSSIBLE_OFFSET_BOT,
@@ -17,103 +19,108 @@ from src.services.job import JobService
 from src.services.session import ServiceSession
 
 
-def parse_job_level_info_impossible(
-    service: ServiceSession, text: str
-) -> tuple[JobSchema, int] | None:
-    res = text.split("\n")
-    job_text = unidecode.unidecode(res[0].split(" ")[0], "utf-8")
+class JobParser(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    job = JobService.find_job_by_text(service, job_text)
-    if job is None:
-        return None
+    service: ServiceSession
+    logger: Logger
 
-    actual_lvl = int(res[1].split(" ")[2])
-    return job, actual_lvl
+    def parse_job_level_info_impossible(
+        self, text: str
+    ) -> tuple[JobSchema, int] | None:
+        res = text.split("\n")
+        job_text = unidecode.unidecode(res[0].split(" ")[0], "utf-8")
 
+        job = JobService.find_job_by_text(self.service, job_text)
+        if job is None:
+            return None
 
-def parse_job_new_level(service: ServiceSession, text: str) -> tuple[JobSchema, int]:
-    print(text)
+        actual_lvl = int(res[1].split(" ")[2])
+        return job, actual_lvl
 
-    text = text.replace(",", ".")
-    first_line = text.split(".")[0]
-    job_info = unidecode.unidecode(
-        first_line.replace("[", "")
-        .replace("]", "")
-        .replace(".", "")
-        .replace("\n", " "),
-        "utf-8",
-    ).split(" ")
-    print(job_info)
+    def parse_job_new_level(self, text: str) -> tuple[JobSchema, int]:
+        self.logger.info(text)
 
-    level_index, _ = max(
-        [
-            (index + 1, get_similarity(word, "niveau"))
-            for index, word in enumerate(job_info)
-        ],
-        key=lambda elem: elem[1],
-    )
+        text = text.replace(",", ".")
+        first_line = text.split(".")[0]
+        job_info = unidecode.unidecode(
+            first_line.replace("[", "")
+            .replace("]", "")
+            .replace(".", "")
+            .replace("\n", " "),
+            "utf-8",
+        ).split(" ")
+        self.logger.info(job_info)
 
-    job = JobService.find_job_by_text(service, job_info[2])
-    if job is None:
-        raise ValueError(f"job cannot be None, from text : {text}")
-
-    level_index = int(job_info[level_index])
-
-    return job, level_index
-
-
-def get_job_level_from_level_up(
-    service: ServiceSession, img: numpy.ndarray, area: RegionSchema
-) -> tuple[JobSchema, int]:
-    def get_area_info_from_level_up(region_level_up: RegionSchema) -> RegionSchema:
-        return RegionSchema(
-            left=region_level_up.left,
-            right=region_level_up.right + INFO_JOB_LVLUP_OFFSET_RIGHT,
-            top=region_level_up.bot,
-            bot=region_level_up.bot + INFO_JOB_LVLUP_OFFSET_BOT,
+        level_index, _ = max(
+            [
+                (index + 1, get_similarity(word, "niveau"))
+                for index, word in enumerate(job_info)
+            ],
+            key=lambda elem: elem[1],
         )
 
-    def clean_info_modal_level_up_img(
-        img: numpy.ndarray, area: RegionSchema
-    ) -> numpy.ndarray:
-        img = clean_info_popup_img(img, area)
-        return img
+        job = JobService.find_job_by_text(self.service, job_info[2])
+        if job is None:
+            raise ValueError(f"job cannot be None, from text : {text}")
 
-    def get_info_modal_level_up_job(img: numpy.ndarray, area: RegionSchema) -> str:
-        img = clean_info_modal_level_up_img(img, area)
-        text = get_text_from_image(img)
-        return text
+        level_index = int(job_info[level_index])
 
-    try:
-        job_lvl_area = get_area_info_from_level_up(area)
-        job_text = get_info_modal_level_up_job(img, job_lvl_area)
-        job, level = parse_job_new_level(service, job_text)
-        return job, level
-    except ValueError:
-        raise UnknowStateException(img, "job_lvl_up_parse")
+        return job, level_index
 
+    def get_job_level_from_level_up(
+        self, img: numpy.ndarray, area: RegionSchema
+    ) -> tuple[JobSchema, int]:
+        def get_area_info_from_level_up(region_level_up: RegionSchema) -> RegionSchema:
+            return RegionSchema(
+                left=region_level_up.left,
+                right=region_level_up.right + INFO_JOB_LVLUP_OFFSET_RIGHT,
+                top=region_level_up.bot,
+                bot=region_level_up.bot + INFO_JOB_LVLUP_OFFSET_BOT,
+            )
 
-def get_job_level_from_impossible_recolt(
-    service: ServiceSession, img: numpy.ndarray, area: RegionSchema
-) -> tuple[JobSchema, int] | None:
-    def get_area_info_from_impossible_recolt(
-        region_impossible_recolt: RegionSchema,
-    ) -> RegionSchema:
-        return RegionSchema(
-            left=region_impossible_recolt.left,
-            right=region_impossible_recolt.right + INFO_JOB_IMPOSSIBLE_OFFSET_RIGHT,
-            top=region_impossible_recolt.bot,
-            bot=region_impossible_recolt.bot + INFO_JOB_IMPOSSIBLE_OFFSET_BOT,
-        )
+        def clean_info_modal_level_up_img(
+            img: numpy.ndarray, area: RegionSchema
+        ) -> numpy.ndarray:
+            img = clean_info_popup_img(img, area)
+            return img
 
-    def get_info_modal_impossible_recolt(img: numpy.ndarray, area: RegionSchema) -> str:
-        img = clean_info_popup_img(img, area)
-        text = get_text_from_image(img)
-        return text
+        def get_info_modal_level_up_job(img: numpy.ndarray, area: RegionSchema) -> str:
+            img = clean_info_modal_level_up_img(img, area)
+            text = get_text_from_image(img)
+            return text
 
-    job_lvl_area = get_area_info_from_impossible_recolt(area)
-    job_text = get_info_modal_impossible_recolt(img, job_lvl_area)
-    job_info = parse_job_level_info_impossible(service, job_text)
-    if job_info is None:
-        return None
-    return job_info
+        try:
+            job_lvl_area = get_area_info_from_level_up(area)
+            job_text = get_info_modal_level_up_job(img, job_lvl_area)
+            job, level = self.parse_job_new_level(job_text)
+            return job, level
+        except ValueError:
+            raise UnknowStateException(img, "job_lvl_up_parse")
+
+    def get_job_level_from_impossible_recolt(
+        self, img: numpy.ndarray, area: RegionSchema
+    ) -> tuple[JobSchema, int] | None:
+        def get_area_info_from_impossible_recolt(
+            region_impossible_recolt: RegionSchema,
+        ) -> RegionSchema:
+            return RegionSchema(
+                left=region_impossible_recolt.left,
+                right=region_impossible_recolt.right + INFO_JOB_IMPOSSIBLE_OFFSET_RIGHT,
+                top=region_impossible_recolt.bot,
+                bot=region_impossible_recolt.bot + INFO_JOB_IMPOSSIBLE_OFFSET_BOT,
+            )
+
+        def get_info_modal_impossible_recolt(
+            img: numpy.ndarray, area: RegionSchema
+        ) -> str:
+            img = clean_info_popup_img(img, area)
+            text = get_text_from_image(img)
+            return text
+
+        job_lvl_area = get_area_info_from_impossible_recolt(area)
+        job_text = get_info_modal_impossible_recolt(img, job_lvl_area)
+        job_info = self.parse_job_level_info_impossible(job_text)
+        if job_info is None:
+            return None
+        return job_info

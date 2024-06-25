@@ -1,4 +1,5 @@
 import ctypes
+from logging import Logger
 import threading
 from ctypes import windll
 from ctypes.wintypes import DWORD, HWND, RECT
@@ -85,7 +86,7 @@ def get_size_with_shadows(hwnd: int) -> tuple[int, int, Rect, Rect]:
 dc_lock = threading.Lock()  # used to avoid conflict between dc
 
 
-def capture(hwnd: int) -> numpy.ndarray:
+def capture(hwnd: int, logger: Logger) -> numpy.ndarray:
     def get_window_dimensions(hwnd: int) -> tuple[int, int]:
         windll.user32.SetProcessDPIAware()
         left, top, right, bot = win32gui.GetClientRect(hwnd)
@@ -107,6 +108,7 @@ def capture(hwnd: int) -> numpy.ndarray:
 
     window_place = win32gui.GetWindowPlacement(hwnd)[1]
     if window_place == win32con.SW_SHOWMINIMIZED:
+        logger.info("restoring")
         set_restore(hwnd)
         sleep(1)
 
@@ -165,13 +167,15 @@ def get_cursor_icon() -> numpy.ndarray:
     return img
 
 
-def adjust_window_size(hwnd: int, target_width: int, target_height: int):
+def adjust_window_size(
+    hwnd: int, target_width: int, target_height: int, logger: Logger
+):
     _, _, client_width, client_height = win32gui.GetClientRect(hwnd)
 
     if client_height == target_height and client_width == target_width:
         return
 
-    print(f"Adjusting window to {target_width, target_height}")
+    logger.info(f"Adjusting window to {target_width, target_height}")
 
     start_x, start_y, end_x, end_y = win32gui.GetWindowRect(hwnd)
 

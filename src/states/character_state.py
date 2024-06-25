@@ -5,8 +5,6 @@ from src.services.session import ServiceSession
 
 
 class CharacterState:
-    pods: int
-
     def __init__(self, service: ServiceSession, character_id: str) -> None:
         self._character: CharacterSchema | None = None
         self.service = service

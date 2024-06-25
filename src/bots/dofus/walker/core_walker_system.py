@@ -31,6 +31,7 @@ from src.bots.dofus.walker.directions import (
 )
 from src.bots.dofus.walker.entities_map.entity_map import EntityMap
 from src.bots.dofus.walker.maps import get_portal_map_id_by_world
+from src.bots.dofus.walker.zaapis import get_position_by_zaapi_category
 from src.common.retry import (
     MAX_RETRY,
     RetryTimeArgs,
@@ -233,7 +234,7 @@ class CoreWalkerSystem:
         tp_pos, _, img = self.image_manager.wait_on_screen(
             ObjectConfigs.PathFinding.teleport_zaap, force=True
         )
-        self.controller.click(zaapi.category.value)
+        self.controller.click(get_position_by_zaapi_category(zaapi.category))
         self.controller.send_text(zaapi.text, pos=ZAAPI_SEARCH_POSITION)
 
         new_img = self.wait_for_new_map()

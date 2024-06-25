@@ -98,7 +98,7 @@ class SpellSystem:
     def wait_end_animation_launch_spell_enemy(
         self, img: numpy.ndarray
     ) -> numpy.ndarray:
-        self._prev_img = img
+        self.animation_manager._prev_img = img
 
         res = retry_time(RetryTimeArgs(repeat_time=0.3, wait_end=(0.1, 0.2)))(
             [
@@ -109,5 +109,7 @@ class SpellSystem:
             ]
         )()
         if res is None:
-            raise UnknowStateException(self._prev_img, "animation_launch_spell")
+            raise UnknowStateException(
+                self.animation_manager._prev_img, "animation_launch_spell"
+            )
         return res

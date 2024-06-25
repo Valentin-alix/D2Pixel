@@ -20,6 +20,7 @@ from src.bots.dofus.fight.ias.brute import IaBruteFightSystem
 from src.bots.dofus.fight.spells.spell_manager import SpellManager
 from src.bots.dofus.fight.spells.spell_system import SpellSystem
 from src.bots.dofus.hud.hud_system import Hud, HudSystem
+from src.bots.dofus.hud.info_popup.job_level import JobParser
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.modules.module_manager import ModuleManager
 from src.common.retry import RetryTimeArgs
@@ -70,9 +71,7 @@ def launch_launcher():
 
 
 class AnkamaLauncher:
-    def __init__(
-        self, logger: Logger, is_paused: Event, service: ServiceSession
-    ) -> None:
+    def __init__(self, logger: Logger, service: ServiceSession) -> None:
         if not (window_info := get_ankama_window_info()):
             # launcher not found, launch...
             launch_launcher()
@@ -86,21 +85,26 @@ class AnkamaLauncher:
         self.window_info = window_info
         self.action_lock = RLock()
         self.logger = logger
-        self.is_paused = is_paused
+        self.is_paused = Event()
         self.organizer = Organizer(
             window_info=window_info,
-            is_paused=is_paused,
+            is_paused=self.is_paused,
             target_window_size=ANKAMA_WINDOW_SIZE,
+            logger=self.logger,
         )
         self.controller = Controller(
             logger=self.logger,
             window_info=window_info,
-            is_paused=is_paused,
+            is_paused=self.is_paused,
             organizer=self.organizer,
             action_lock=self.action_lock,
         )
         capturer = Capturer(
-            self.action_lock, self.organizer, self.is_paused, window_info
+            action_lock=self.action_lock,
+            organizer=self.organizer,
+            is_paused=self.is_paused,
+            window_info=window_info,
+            logger=self.logger,
         )
         object_searcher = ObjectSearcher(self.service)
         self.image_manager = ImageManager(capturer, object_searcher)
@@ -126,12 +130,21 @@ class AnkamaLauncher:
         return windows_dofus
 
     def connect_window(self, window_info: WindowInfo, wait_play: bool = False):
-        organizer = Organizer(window_info, self.is_paused, DOFUS_WINDOW_SIZE)
-        action_lock = RLock()
-        capturer = Capturer(action_lock, organizer, self.is_paused, window_info)
-        animation_manager = AnimationManager(
-            action_lock, organizer, self.is_paused, window_info
+        organizer = Organizer(
+            window_info=window_info,
+            is_paused=self.is_paused,
+            target_window_size=DOFUS_WINDOW_SIZE,
+            logger=self.logger,
         )
+        action_lock = RLock()
+        capturer = Capturer(
+            action_lock=action_lock,
+            organizer=organizer,
+            is_paused=self.is_paused,
+            window_info=window_info,
+            logger=self.logger,
+        )
+        animation_manager = AnimationManager(capturer=capturer)
         object_searcher = ObjectSearcher(self.service)
         image_manager = ImageManager(capturer, object_searcher)
         grid = Grid(object_searcher)
@@ -175,16 +188,18 @@ class AnkamaLauncher:
             self.service,
             character_state,
         )
-        hud = Hud(self.service, controller, image_manager, character_state, self.logger)
+        hud = Hud(logger=self.logger)
+        job_parser = JobParser(service=self.service, logger=self.logger)
         hud_sys = HudSystem(
-            hud,
-            image_manager,
-            character_state,
-            self.service,
-            controller,
-            object_searcher,
-            capturer,
-            self.logger,
+            hud=hud,
+            image_manager=image_manager,
+            character_state=character_state,
+            service=self.service,
+            controller=controller,
+            object_searcher=object_searcher,
+            capturer=capturer,
+            logger=self.logger,
+            job_parser=job_parser,
         )
         map_state = MapState()
         core_walker_sys = CoreWalkerSystem(
@@ -214,6 +229,7 @@ class AnkamaLauncher:
             grid,
             Event(),
             self.service,
+            Event(),
         )
         connecter = ConnectionSystem(
             fight_sys,
@@ -259,8 +275,7 @@ class AnkamaLauncher:
             def pause_bot(module_manager: ModuleManager):
                 if not module_manager.is_playing.is_set():
                     return
-                while module_manager.fighter.fight_sys.in_fight:
-                    sleep(0.5)
+                module_manager.fighter.fight_sys.not_in_fight.wait()
                 module_manager.internal_pause.set()
                 with module_manager.action_lock:
                     module_manager.logger.info("Paused bot")

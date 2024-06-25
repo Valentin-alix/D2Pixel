@@ -1,8 +1,9 @@
+from logging import Logger
 from threading import Event
 import psutil
 import win32gui
 import win32process
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from src.exceptions import StoppedException
 from src.window_manager.win32 import adjust_window_size
@@ -16,22 +17,21 @@ class WindowInfo(BaseModel):
         return self.hwnd.__hash__()
 
 
-class Organizer:
-    def __init__(
-        self,
-        window_info: WindowInfo,
-        is_paused: Event,
-        target_window_size: tuple[int, int],
-    ) -> None:
-        self.is_paused = is_paused
-        self.window_info = window_info
-        self.target_window_size = target_window_size
+class Organizer(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    window_info: WindowInfo
+    is_paused: Event
+    target_window_size: tuple[int, int]
+    logger: Logger
 
     def adjust_window_size(self):
         if self.is_paused.is_set():
             raise StoppedException()
         if self.target_window_size is not None:
-            adjust_window_size(self.window_info.hwnd, *self.target_window_size)
+            adjust_window_size(
+                self.window_info.hwnd, *self.target_window_size, self.logger
+            )
 
 
 def get_windows() -> list[WindowInfo]:

@@ -2,6 +2,7 @@ from time import sleep
 from typing import Literal, overload
 
 import numpy
+from pydantic import BaseModel, ConfigDict
 from EzreD2Shared.shared.schemas.region import RegionSchema
 
 from src.common.retry import RetryTimeArgs, retry_time
@@ -25,14 +26,17 @@ def prepare_img_animation(
     return img_to_gray(img)
 
 
-class AnimationManager(Capturer):
+class AnimationManager(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    capturer: Capturer
     _prev_img: numpy.ndarray | None = None
 
     def _is_end_animation(
         self, region: RegionSchema | None = None, img: numpy.ndarray | None = None
     ) -> numpy.ndarray | None:
         if img is None:
-            img = self.capture()
+            img = self.capturer.capture()
 
         if self._prev_img is not None:
             region_prev_img = prepare_img_animation(self._prev_img, region)
@@ -49,7 +53,7 @@ class AnimationManager(Capturer):
         self, region: RegionSchema | None = None, img: numpy.ndarray | None = None
     ) -> numpy.ndarray | None:
         if img is None:
-            img = self.capture()
+            img = self.capturer.capture()
 
         if self._prev_img is not None:
             region_prev_img = prepare_img_animation(self._prev_img, region)

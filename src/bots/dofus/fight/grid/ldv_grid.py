@@ -1,6 +1,6 @@
 import random
 
-from EzreD2Shared.shared.utils.algos.bresenhman import bresenham
+from EzreD2Shared.shared.utils.algos.bresenhman import bresenham_dofus
 from EzreD2Shared.shared.utils.debugger import timeit
 
 from src.bots.dofus.fight.grid.cell import Cell, TypeCellEnum
@@ -56,11 +56,11 @@ class LdvGrid:
 
     def has_ldv(self, curr_cell: Cell, target_cell: Cell) -> bool:
         passed_coord = list(
-            bresenham(
+            bresenham_dofus(
                 curr_cell.col,
-                curr_cell.line,
+                curr_cell.row,
                 target_cell.col,
-                target_cell.line,
+                target_cell.row,
             )
         )[1:-1]
 

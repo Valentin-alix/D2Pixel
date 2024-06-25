@@ -1,9 +1,14 @@
+from logging import Logger
 import os
 import unittest
 
 import cv2
 
+from src.bots.dofus.fight.grid.dofus_grid import Grid
+from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
 from src.bots.dofus.fight.grid.path_grid import AstarGrid
+from src.image_manager.screen_objects.object_searcher import ObjectSearcher
+from src.services.session import ServiceSession
 from tests.utils import PATH_FIXTURES
 
 PATH_FIXTURES_FIGHT = os.path.join(PATH_FIXTURES, "fight")
@@ -11,7 +16,12 @@ PATH_FIXTURES_FIGHT = os.path.join(PATH_FIXTURES, "fight")
 
 class TestGridFight(unittest.TestCase):
     def setUp(self) -> None:
-        self.grid = AstarGrid()
+        logger = Logger("root")
+        service = ServiceSession(Logger("root"))
+        object_searcher = ObjectSearcher(service)
+        self.grid = Grid(object_searcher)
+        self.astar_grid = AstarGrid(self.grid, logger)
+        self.ldv_grid = LdvGrid(self.grid)
         return super().setUp()
 
     def test_grid(self):
@@ -19,25 +29,26 @@ class TestGridFight(unittest.TestCase):
         SELF_CELLS_FOLDER = os.path.join(PATH_FIXTURES_FIGHT, "turn")
 
         for filename in os.listdir(SELF_CELLS_FOLDER):
-            # if filename != "15.png":
+            # if filename != "5.png":
             #     continue
-            print(filename)
             img = cv2.imread(os.path.join(SELF_CELLS_FOLDER, filename))
 
             self.grid.init_grid(img)
-            self.grid.parse_grid(img)
 
-            path = self.grid.get_near_movable_to_reach_enemy()
-            print(self.grid.enemy_cells)
+            self.grid.parse_grid(img)
 
             self.grid.draw_grid(img)
 
-            self.grid.clear_grid()
+            temp_cell = self.astar_grid.get_near_movable_to_reach_enemy()
+            print(temp_cell)
 
+            near_mv = self.ldv_grid.get_near_movable_for_ldv_enemy(5)
+            print(near_mv)
             cv2.imshow("i", img)
             cv2.waitKey()
-
             # break
+
+            self.grid.clear_grid()
 
     def test_grid_prep(self):
         FIGHT_PREP_CELLS_FOLDER = os.path.join(PATH_FIXTURES_FIGHT, "fight_prep")
@@ -48,7 +59,7 @@ class TestGridFight(unittest.TestCase):
 
             self.grid.parse_grid_prep(img)
 
-            path = self.grid.get_near_movable_to_reach_enemy()
+            path = self.astar_grid.get_near_movable_to_reach_enemy()
             print(path)
 
             break

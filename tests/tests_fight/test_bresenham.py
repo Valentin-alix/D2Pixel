@@ -61,9 +61,9 @@ class TestSpellsFight(unittest.TestCase):
         passed = list(
             bresenham(
                 curr_cell.col,
-                curr_cell.line,
+                curr_cell.row,
                 target_cell.col,
-                target_cell.line,
+                target_cell.row,
             )
         )
         print(passed)

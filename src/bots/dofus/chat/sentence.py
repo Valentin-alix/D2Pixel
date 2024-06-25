@@ -1,8 +1,11 @@
 from faker import Faker
+from pydantic import BaseModel, ConfigDict
 
 
-class FakeSentence:
-    faker = Faker("fr_FR")
+class FakeSentence(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    _faker = Faker("fr_FR")
 
     def get_random_sentence(self) -> str:
-        return self.faker.sentence()
+        return self._faker.sentence()

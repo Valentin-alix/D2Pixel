@@ -3,7 +3,6 @@ from typing import Iterator
 import cv2
 import numpy
 from EzreD2Shared.shared.consts.adaptative.consts import (
-    GRID_CELL_ENEMY_OFFSET_TOP,
     GRID_CELL_HEIGHT,
     GRID_CELL_WIDTH,
     GRID_START_X,
@@ -21,7 +20,7 @@ from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.image_manager.transformation import crop_image
 
 COUNT_WIDTH_CELL = 14
-COUNT_HEIHT_CELL = 20
+COUNT_HEIHT_CELL = 40
 
 COLOR_SELF_CELL = [
     (numpy.array([55, 120, 80]), numpy.array([65, 125, 95])),
@@ -43,36 +42,40 @@ RANGES_COLOR_MOVABLE_PREP_CELL: list[tuple[numpy.ndarray, numpy.ndarray]] = [
 
 @timeit
 def get_base_cells() -> dict[tuple[int, int], Cell]:
-    def get_default_neighbor_col_line(col: int, line: int) -> list[tuple[int, int]]:
-        return [(col, line + 1), (col, line - 1), (col + 1, line), (col - 1, line)]
+    def get_default_neighbor_col_row(col: int, row: int) -> list[tuple[int, int]]:
+        if (row % 2) == 0:
+            return [
+                (col, row - 1),
+                (col - 1, row - 1),
+                (col - 1, row + 1),
+                (col, row + 1),
+            ]
+        else:
+            return [
+                (col + 1, row - 1),
+                (col, row - 1),
+                (col, row + 1),
+                (col + 1, row + 1),
+            ]
 
     cells_by_xy: dict[tuple[int, int], Cell] = {}
 
-    for line in range(COUNT_HEIHT_CELL):
+    start_grid_x = GRID_START_X + GRID_CELL_WIDTH // 2
+    start_grid_y = GRID_START_Y + GRID_CELL_HEIGHT // 2
+
+    for row in range(COUNT_HEIHT_CELL):
         for col in range(COUNT_WIDTH_CELL):
-            coord = (line + col, line - col)
+            cell_x = (
+                col * GRID_CELL_WIDTH + (row % 2) * (GRID_CELL_WIDTH / 2) + start_grid_x
+            )
+            cell_y = (row * GRID_CELL_HEIGHT / 2) + 0 + start_grid_y
 
-            cell_pair_pos = Position(
-                x_pos=int(col * GRID_CELL_WIDTH + GRID_CELL_WIDTH // 2 + GRID_START_X),
-                y_pos=int(
-                    line * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT // 2 + GRID_START_Y
-                ),
-            )
-            cells_by_xy[(coord[0], coord[1])] = Cell(
-                col=coord[0], line=coord[1], center_pos=cell_pair_pos
-            )
-
-            cell_impair_pos = Position(
-                x_pos=int(col * GRID_CELL_WIDTH + GRID_CELL_WIDTH + GRID_START_X),
-                y_pos=int(line * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT) + GRID_START_Y,
-            )
-            cells_by_xy[(coord[0] + 1, coord[1])] = Cell(
-                col=coord[0] + 1, line=coord[1], center_pos=cell_impair_pos
-            )
+            cell_pos = Position(x_pos=int(cell_x), y_pos=int(cell_y))
+            cells_by_xy[(col, row)] = Cell(col=col, row=row, center_pos=cell_pos)
 
     for cell in cells_by_xy.values():
-        for col, line in get_default_neighbor_col_line(cell.col, cell.line):
-            if (related_cell := cells_by_xy.get((col, line))) is not None:
+        for col, row in get_default_neighbor_col_row(cell.col, cell.row):
+            if (related_cell := cells_by_xy.get((col, row))) is not None:
                 cell._neighbors.append(related_cell)
 
     return cells_by_xy
@@ -230,33 +233,12 @@ class Grid:
             for range_color in RANGES_COLOR_MOVABLE_PREP_CELL
         )
 
-    def get_col_line_by_pos(self, pos: Position) -> tuple[int, int]:
-        _pos = Position(
-            x_pos=int(pos.x_pos - GRID_START_X), y_pos=pos.y_pos - GRID_START_Y
-        )
-
-        n_col = _pos.x_pos / GRID_CELL_WIDTH - 1
-        n_line = _pos.y_pos / GRID_CELL_HEIGHT - 1
-
-        n_col = round(n_col * 2) / 2
-        n_line = round(n_line * 2) / 2
-
-        col, line = int(n_line + n_col + 1), int(n_line - n_col)
-
-        return col, line
-
     def get_neighbors_movable_cell(self, curr_cell: Cell) -> Iterator[Cell]:
         return (
             cell
             for cell in curr_cell.neighbors
             if cell.type_cell in [TypeCellEnum.NORMAL, TypeCellEnum.UNKNOWN]
         )
-
-    def get_cell_enemy_by_pos(self, enemy_pos: Position) -> Cell:
-        offset_pos = Position(
-            x_pos=enemy_pos.x_pos, y_pos=enemy_pos.y_pos + GRID_CELL_ENEMY_OFFSET_TOP
-        )
-        return self.cells[self.get_col_line_by_pos(offset_pos)]
 
     def draw_grid(self, img: numpy.ndarray):
         for cell in self.cells.values():
@@ -275,7 +257,7 @@ class Grid:
 
             draw_text(
                 img,
-                text=f"{cell.col}:{cell.line}",
+                text=f"{cell.row}:{cell.col}",
                 position=Position(
                     x_pos=cell.center_pos.x_pos - 15, y_pos=cell.center_pos.y_pos
                 ),

@@ -10,7 +10,7 @@ from src.gui.signals.app_signals import AppSignals
 
 
 class ServiceSession:
-    def __init__(self, logger: Logger, app_signals: AppSignals) -> None:
+    def __init__(self, logger: Logger, app_signals: AppSignals | None = None) -> None:
         self.app_signals = app_signals
         self.logger = logger
 

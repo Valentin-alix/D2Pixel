@@ -22,6 +22,7 @@ from src.bots.dofus.fight.ias.brute import IaBruteFightSystem
 from src.bots.dofus.fight.spells.spell_manager import SpellManager
 from src.bots.dofus.fight.spells.spell_system import SpellSystem
 from src.bots.dofus.hud.hud_system import Hud, HudSystem
+from src.bots.dofus.hud.info_popup.job_level import JobParser
 from src.bots.dofus.sub_area_farming.sub_area_farming_system import (
     SubAreaFarming,
     SubAreaFarmingSystem,
@@ -62,7 +63,6 @@ class ModuleManager:
         self,
         service: ServiceSession,
         window_info: WindowInfo,
-        is_paused: Event,
         fake_sentence: FakeSentence,
         fighter_maps_time: dict[MapSchema, float],
         fighter_sub_areas_farming_ids: list[int],
@@ -74,22 +74,30 @@ class ModuleManager:
         self.bot_signals = BotSignals()
         self.fake_sentence = fake_sentence
         self.service = service
-        self.is_paused = is_paused
+        self.is_paused = Event()
         self.internal_pause = Event()
         self.is_playing = Event()
         self.is_connected = Event()
         self.is_dead = Event()
+        self.not_in_fight = Event()
         self.action_lock = RLock()
         self.logger = BotLogger(character_id, self.bot_signals)
 
-        self.organizer = Organizer(window_info, self.is_paused, DOFUS_WINDOW_SIZE)
+        self.organizer = Organizer(
+            window_info=window_info,
+            is_paused=self.is_paused,
+            target_window_size=DOFUS_WINDOW_SIZE,
+            logger=self.logger,
+        )
         self.capturer = Capturer(
-            self.action_lock, self.organizer, self.is_paused, self.window_info
+            action_lock=self.action_lock,
+            organizer=self.organizer,
+            is_paused=self.is_paused,
+            window_info=self.window_info,
+            logger=self.logger,
         )
         self.icon_searcher = IconSearcher(self.service)
-        self.animation_manager = AnimationManager(
-            self.action_lock, self.organizer, self.is_paused, self.window_info
-        )
+        self.animation_manager = AnimationManager(capturer=self.capturer)
         self.object_searcher = ObjectSearcher(self.service)
         self.image_manager = ImageManager(self.capturer, self.object_searcher)
         grid = Grid(self.object_searcher)
@@ -133,22 +141,18 @@ class ModuleManager:
             self.service,
             self.character_state,
         )
-        self.hud = Hud(
-            self.service,
-            self.controller,
-            self.image_manager,
-            self.character_state,
-            self.logger,
-        )
+        self.hud = Hud(logger=self.logger)
+        self.job_parser = JobParser(service=self.service, logger=self.logger)
         self.hud_sys = HudSystem(
-            self.hud,
-            self.image_manager,
-            self.character_state,
-            self.service,
-            self.controller,
-            self.object_searcher,
-            self.capturer,
-            self.logger,
+            hud=self.hud,
+            image_manager=self.image_manager,
+            character_state=self.character_state,
+            service=self.service,
+            controller=self.controller,
+            object_searcher=self.object_searcher,
+            capturer=self.capturer,
+            logger=self.logger,
+            job_parser=self.job_parser,
         )
         self.map_state = MapState()
         core_walker_sys = CoreWalkerSystem(
@@ -178,6 +182,7 @@ class ModuleManager:
             grid,
             self.is_dead,
             self.service,
+            self.not_in_fight,
         )
         walker_sys = WalkerSystem(
             fight_sys,

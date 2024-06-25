@@ -1,8 +1,12 @@
 from enum import Enum
+import math
 from typing import Any
 
 import numpy
-from EzreD2Shared.shared.consts.adaptative.consts import GRID_CELL_WIDTH
+from EzreD2Shared.shared.consts.adaptative.consts import (
+    GRID_CELL_HEIGHT,
+    GRID_CELL_WIDTH,
+)
 from EzreD2Shared.shared.entities.position import Position
 from EzreD2Shared.shared.schemas.region import RegionSchema
 from pydantic import BaseModel, ConfigDict, Field
@@ -20,7 +24,7 @@ class Cell(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     col: int = Field(frozen=True)
-    line: int = Field(frozen=True)
+    row: int = Field(frozen=True)
     center_pos: Position = Field(frozen=True)
     type_cell: TypeCellEnum = TypeCellEnum.UNKNOWN
 
@@ -32,8 +36,9 @@ class Cell(BaseModel):
 
     def get_region(
         self, offset: tuple[int, int, int, int] = (0, 0, 0, 0)
-    ) -> RegionSchema:  # We use an area instead of a form for better performance when checking color of cell
-        from EzreD2Shared.shared.consts.adaptative.consts import GRID_CELL_HEIGHT
+    ) -> (
+        RegionSchema
+    ):  # We use an area instead of a form for better performance when checking color of cell
 
         x_center, y_center = self.center_pos.to_xy()
 
@@ -55,15 +60,14 @@ class Cell(BaseModel):
         Returns:
             RegionSchema: region of top of of cell
         """
-        from EzreD2Shared.shared.consts.adaptative.consts import GRID_CELL_HEIGHT
 
         x_center, y_center = self.center_pos.to_xy()
 
         area = RegionSchema(
-            left=int(x_center - GRID_CELL_WIDTH / 8),
-            top=int(y_center - GRID_CELL_HEIGHT / 2 + GRID_CELL_HEIGHT / 8),
-            right=int(x_center + GRID_CELL_WIDTH / 8),
-            bot=int(y_center - GRID_CELL_HEIGHT / 8),
+            left=int(x_center - GRID_CELL_WIDTH / 8) + 1,
+            top=int(y_center - GRID_CELL_HEIGHT / 2 + GRID_CELL_HEIGHT / 8) + 1,
+            right=int(x_center + GRID_CELL_WIDTH / 8) - 1,
+            bot=int(y_center - GRID_CELL_HEIGHT / 8) - 1,
         )
         return area
 
@@ -74,7 +78,6 @@ class Cell(BaseModel):
         Returns:
             numpy.ndarray
         """
-        from EzreD2Shared.shared.consts.adaptative.consts import GRID_CELL_HEIGHT
 
         x_center, y_center = self.center_pos.to_xy()
 
@@ -91,20 +94,18 @@ class Cell(BaseModel):
         return pts
 
     def __hash__(self) -> int:
-        return (self.line, self.col).__hash__()
+        return (self.row, self.col).__hash__()
 
     def __str__(self) -> str:
-        return f"{self.col}:{self.line}"
+        return f"{self.col}:{self.row}"
 
     def __eq__(self, value: "Any") -> bool:
         return (
-            isinstance(value, Cell)
-            and self.col == value.col
-            and self.line == value.line
+            isinstance(value, Cell) and self.col == value.col and self.row == value.row
         )
 
-    def get_dist_cell(self, cell: "Cell") -> float:
-        return abs(self.col - cell.col) + abs(self.line - cell.line)
+    def get_dist_cell(self, cell: "Cell") -> int:
+        return round(math.sqrt((self.col - cell.col) ** 2 + (self.row - cell.row) ** 2))
 
     def is_closer(self, cell: "Cell|None", target_cell: "Cell") -> bool:
         if cell is None:

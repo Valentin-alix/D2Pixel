@@ -50,6 +50,7 @@ class FightSystem:
         grid: Grid,
         is_dead: Event,
         service: ServiceSession,
+        not_in_fight: Event,
     ) -> None:
         self.capturer = capturer
         self.object_searcher = object_searcher
@@ -65,10 +66,11 @@ class FightSystem:
         self.controller = controller
         self.grid = grid
         self.service = service
+        self.not_in_fight = not_in_fight
 
     def play_fight(self) -> tuple[numpy.ndarray, bool]:
         """Return True if was teleported"""
-        self.in_fight = True
+        self.not_in_fight.clear()
         wait((0.1, 3))
 
         self.logger.info("Playing fight")
@@ -90,7 +92,7 @@ class FightSystem:
 
         img, was_teleported = self.handle_post_fight()
 
-        self.in_fight = False
+        self.not_in_fight.set()
 
         return img, was_teleported
 
