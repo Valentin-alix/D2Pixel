@@ -18,6 +18,9 @@ from src.bots.dofus.walker.buildings.workshop_building import WorkshopBuilding
 from src.entities.item import ItemProcessedStatus
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
+from src.services.character import CharacterService
+from src.services.session import ServiceSession
+from src.states.character_state import CharacterState
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
@@ -33,6 +36,8 @@ class Crafter:
         capturer: Capturer,
         controller: Controller,
         workshop_building: WorkshopBuilding,
+        service: ServiceSession,
+        character_state: CharacterState,
     ) -> None:
         self.hud_sys = hud_sys
         self.bank_sys = bank_sys
@@ -43,6 +48,8 @@ class Crafter:
         self.controller = controller
         self.workshop_building = workshop_building
         self.hud_sys = hud_sys
+        self.service = service
+        self.character_state = character_state
 
     def craft_from_inventory(self, recipes: set[RecipeSchema]):
         """craft item in order of receipes given
@@ -89,6 +96,11 @@ class Crafter:
                 self.controller.key(win32con.VK_RETURN)
                 self.controller.click(MERGE_CRAFT_POSITION)
                 wait()
+                CharacterService.add_bank_items(
+                    self.service,
+                    self.character_state.character.id,
+                    [recipe.result_item_id],
+                )
 
         img, _ = self.hud_sys.handle_info_modal(self.capturer.capture())
         if current_job is not None:

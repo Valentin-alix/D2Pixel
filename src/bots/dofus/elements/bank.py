@@ -230,17 +230,19 @@ class BankSystem:
         ):
             # we can pick atleast ingredients for one of that item
             self.controller.click(transfer_icon_position)
-            if (
-                max_craft_round := (
-                    self.character_state.pods // recipe.receipe_pod_cost
-                )
-            ) < (max_craft_total := int(self.controller.get_selected_text())):
+
+            max_craft_round = self.character_state.pods // sum(
+                (elem.item.weight for elem in recipe.ingredients)
+            )
+            if max_craft_round < (
+                max_craft_total := int(self.controller.get_selected_text())
+            ):
                 self.controller.send_text("0" + str(max_craft_round))
-                self.character_state.pods -= max_craft_round * recipe.receipe_pod_cost
+                self.character_state.pods -= max_craft_round
                 item_craft_status = ItemProcessedStatus.PROCESSED
             else:
                 # we got the max possible craft for this item
-                self.character_state.pods -= max_craft_total * recipe.receipe_pod_cost
+                self.character_state.pods -= max_craft_total
                 item_craft_status = ItemProcessedStatus.MAX_PROCESSED
                 self.controller.key(win32con.VK_RETURN)
             wait()

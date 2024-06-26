@@ -268,6 +268,8 @@ class ModuleManager:
             self.capturer,
             self.controller,
             workshop_building,
+            self.service,
+            self.character_state,
         )
         seller = Seller(
             self.service,

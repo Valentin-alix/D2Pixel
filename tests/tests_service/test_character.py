@@ -5,10 +5,10 @@ import unittest
 from pathlib import Path
 
 
-from EzreD2Shared.shared.consts.maps import BONTA_BANK_MAP_ID
-from EzreD2Shared.shared.enums import FromDirection
 from src.gui.signals.app_signals import AppSignals
-from src.services.map import MapService
+from src.services.character import CharacterService
+from src.services.item import ItemService
+from src.services.recipe import RecipeService
 from src.services.session import ServiceSession
 
 sys.path.append(os.path.join(Path(__file__).parent.parent.parent))
@@ -21,7 +21,16 @@ class TestServiceCharacter(unittest.TestCase):
     def test_get_or_create(self):
         service = ServiceSession(Logger("temp"), AppSignals())
 
-        paths = MapService.find_path(
-            service, True, True, 212730627, FromDirection.LEFT, [], [BONTA_BANK_MAP_ID]
+        character = CharacterService.get_or_create_character(service, "temp")
+        items = CharacterService.get_possible_collectable(service, character.id)
+        CharacterService.add_bank_items(
+            service, character.id, [elem.item_id for elem in items]
         )
-        print(paths)
+        recipes = RecipeService.get_default_recipes(service, character.id)
+        for recipe in recipes:
+            print(recipe.result_item.name)
+
+        sell_items = ItemService.get_default_sellable_items(
+            service, character.id, [elem.id for elem in recipes]
+        )
+        print(sell_items)
