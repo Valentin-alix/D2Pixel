@@ -246,6 +246,7 @@ class ModuleManager:
             self.service,
             core_walker_sys,
             self.character_state,
+            self.logger,
         )
         self.chat_sys = ChatSystem(self.controller, self.logger, self.fake_sentence)
         self.afk_starter = AfkStarter(

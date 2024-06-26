@@ -1,15 +1,16 @@
 from logging import Logger
-from typing import Iterator
 
 from EzreD2Shared.shared.utils.algos.astar import find_path
 from EzreD2Shared.shared.utils.debugger import timeit
 from EzreD2Shared.shared.utils.randomizer import multiply_offset
 
-from src.bots.dofus.fight.grid.cell import Cell
+from EzreD2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 
 
-def get_dist_cell_to_multiple_cells(current: Cell, ends: set[Cell]) -> float:
+def get_dist_cell_to_multiple_cells(
+    current: CellSchema, ends: set[CellSchema]
+) -> float:
     return min(current.get_dist_cell(end) for end in ends) * multiply_offset()
 
 
@@ -20,9 +21,9 @@ class AstarGrid:
 
     @timeit
     def get_near_movable_to_reach_enemy(
-        self, target_cell: Cell | None = None
-    ) -> Cell | None:
-        target_cells: list[Cell] = (
+        self, target_cell: CellSchema | None = None
+    ) -> CellSchema | None:
+        target_cells: list[CellSchema] = (
             [target_cell] if target_cell is not None else self.grid.enemy_cells
         )
 
@@ -30,7 +31,7 @@ class AstarGrid:
             return None
 
         if (curr_cell := self.grid.character_cell) is not None:
-            path_to_enemy: Iterator[Cell] | None = None
+            path_to_enemy: list[CellSchema] | None = None
             for cell in sorted(
                 target_cells, key=lambda cell: cell.get_dist_cell(curr_cell)
             ):

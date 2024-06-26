@@ -4,7 +4,8 @@ import unittest
 
 import cv2
 
-from src.bots.dofus.fight.grid.dofus_grid import Grid
+
+from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
 from src.bots.dofus.fight.grid.path_grid import AstarGrid
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
@@ -46,7 +47,7 @@ class TestGridFight(unittest.TestCase):
             print(near_mv)
             cv2.imshow("i", img)
             cv2.waitKey()
-            # break
+            break
 
             self.grid.clear_grid()
 

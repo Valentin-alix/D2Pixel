@@ -5,7 +5,7 @@ import numpy
 from EzreD2Shared.shared.consts.adaptative.regions import CONTENT_REGION
 from EzreD2Shared.shared.enums import CharacteristicEnum
 
-from src.bots.dofus.fight.grid.cell import Cell
+from EzreD2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
 from src.bots.dofus.fight.spells.spell_system import SpellSystem
@@ -40,7 +40,7 @@ class IaBaseFightSystem:
 
     def reach_attackable_enemy(
         self, img: numpy.ndarray
-    ) -> tuple[numpy.ndarray, Cell | None]:
+    ) -> tuple[numpy.ndarray, CellSchema | None]:
         max_range_dmg_spell = SpellService.get_max_range_valuable_dmg_spell(
             self.service,
             self.character_state.character.elem,
@@ -87,7 +87,7 @@ class IaBaseFightSystem:
         return img, enemy_cell
 
     def move_to_cell(
-        self, cell: Cell, img: numpy.ndarray
+        self, cell: CellSchema, img: numpy.ndarray
     ) -> tuple[numpy.ndarray, bool]:
         """Move character to cell
 

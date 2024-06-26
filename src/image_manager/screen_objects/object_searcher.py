@@ -111,6 +111,7 @@ class ObjectSearcher:
                 )
             )
             is not None
+            and with_crop
         ):
             for (
                 position,

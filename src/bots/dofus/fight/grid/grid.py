@@ -10,10 +10,11 @@ from EzreD2Shared.shared.consts.adaptative.consts import (
 )
 from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
 from EzreD2Shared.shared.entities.position import Position
+from EzreD2Shared.shared.enums import TypeCellEnum
 from EzreD2Shared.shared.utils.debugger import timeit
 
 
-from src.bots.dofus.fight.grid.cell import Cell, TypeCellEnum
+from EzreD2Shared.shared.schemas.cell import CellSchema
 from src.image_manager.analysis import is_color_in_range
 from src.image_manager.debug import ColorBGR, draw_form, draw_text
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
@@ -41,7 +42,7 @@ RANGES_COLOR_MOVABLE_PREP_CELL: list[tuple[numpy.ndarray, numpy.ndarray]] = [
 
 
 @timeit
-def get_base_cells() -> dict[tuple[int, int], Cell]:
+def get_base_cells() -> dict[tuple[int, int], CellSchema]:
     def get_default_neighbor_col_row(col: int, row: int) -> list[tuple[int, int]]:
         if (row % 2) == 0:
             return [
@@ -58,7 +59,7 @@ def get_base_cells() -> dict[tuple[int, int], Cell]:
                 (col + 1, row + 1),
             ]
 
-    cells_by_xy: dict[tuple[int, int], Cell] = {}
+    cells_by_xy: dict[tuple[int, int], CellSchema] = {}
 
     start_grid_x = GRID_START_X + GRID_CELL_WIDTH // 2
     start_grid_y = GRID_START_Y + GRID_CELL_HEIGHT // 2
@@ -71,7 +72,7 @@ def get_base_cells() -> dict[tuple[int, int], Cell]:
             cell_y = (row * GRID_CELL_HEIGHT / 2) + 0 + start_grid_y
 
             cell_pos = Position(x_pos=int(cell_x), y_pos=int(cell_y))
-            cells_by_xy[(col, row)] = Cell(col=col, row=row, center_pos=cell_pos)
+            cells_by_xy[(col, row)] = CellSchema(col=col, row=row, center_pos=cell_pos)
 
     for cell in cells_by_xy.values():
         for col, row in get_default_neighbor_col_row(cell.col, cell.row):
@@ -84,11 +85,11 @@ def get_base_cells() -> dict[tuple[int, int], Cell]:
 class Grid:
     def __init__(self, object_searcher: ObjectSearcher):
         self.object_searcher = object_searcher
-        self._cells: dict[tuple[int, int], Cell] | None = None
-        self.character_cell: Cell | None = None
-        self.enemy_cells: list[Cell] = []
-        self.ally_cells: list[Cell] = []
-        self.movable_cells: list[Cell] = []
+        self._cells: dict[tuple[int, int], CellSchema] | None = None
+        self.character_cell: CellSchema | None = None
+        self.enemy_cells: list[CellSchema] = []
+        self.ally_cells: list[CellSchema] = []
+        self.movable_cells: list[CellSchema] = []
 
     @property
     def cells(self):
@@ -146,7 +147,7 @@ class Grid:
 
     @timeit
     def parse_grid(
-        self, img: numpy.ndarray, expected_character_cell: Cell | None = None
+        self, img: numpy.ndarray, expected_character_cell: CellSchema | None = None
     ) -> None:
         """refresh allies cell, enemy cell, need to be in fight (not in fight prep)"""
         self.clear_grid()
@@ -200,7 +201,7 @@ class Grid:
         mask_green = cv2.inRange(cell_img, *COLOR_SELF_CELL[0])
         return cv2.countNonZero(mask_green) > 5
 
-    def _is_enemy_cell(self, cell: Cell, img: numpy.ndarray) -> bool:
+    def _is_enemy_cell(self, cell: CellSchema, img: numpy.ndarray) -> bool:
         cell_img = crop_image(img, cell.get_region((5, 5, 25, 5)))
         return (
             self.object_searcher.get_position(
@@ -233,7 +234,7 @@ class Grid:
             for range_color in RANGES_COLOR_MOVABLE_PREP_CELL
         )
 
-    def get_neighbors_movable_cell(self, curr_cell: Cell) -> Iterator[Cell]:
+    def get_neighbors_movable_cell(self, curr_cell: CellSchema) -> Iterator[CellSchema]:
         return (
             cell
             for cell in curr_cell.neighbors

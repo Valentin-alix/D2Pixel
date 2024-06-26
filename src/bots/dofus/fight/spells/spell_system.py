@@ -6,7 +6,7 @@ from EzreD2Shared.shared.enums import CharacteristicEnum
 from EzreD2Shared.shared.schemas.spell_lvl import CurrentBoostSchema, SpellLevelSchema
 from EzreD2Shared.shared.utils.randomizer import wait
 
-from src.bots.dofus.fight.grid.cell import Cell
+from EzreD2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.spells.spell_manager import SpellManager
 from src.bots.dofus.hud.pa import get_pa
@@ -83,7 +83,7 @@ class SpellSystem:
         return img
 
     def launch_spell_at_enemy(
-        self, spell_lvl: SpellLevelSchema, enemy_cell: Cell
+        self, spell_lvl: SpellLevelSchema, enemy_cell: CellSchema
     ) -> tuple[numpy.ndarray, bool]:
         self.logger.info(f"Gonna launch spell : {spell_lvl} for enemy at {enemy_cell}")
         self.controller.click(spell_lvl.get_pos_spell())

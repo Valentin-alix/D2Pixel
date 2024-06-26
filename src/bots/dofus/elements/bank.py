@@ -1,3 +1,4 @@
+from logging import Logger
 from time import sleep
 
 import numpy
@@ -82,6 +83,7 @@ class BankSystem:
         service: ServiceSession,
         core_walker_sys: CoreWalkerSystem,
         character_state: CharacterState,
+        logger: Logger,
     ) -> None:
         self.bank_building = bank_building
         self.capturer = capturer
@@ -92,6 +94,7 @@ class BankSystem:
         self.controller = controller
         self.service = service
         self.character_state = character_state
+        self.logger = logger
 
     def _bank_open_chest(self):
         consult_chest_info = self.image_manager.wait_on_screen(
@@ -230,22 +233,25 @@ class BankSystem:
         ):
             # we can pick atleast ingredients for one of that item
             self.controller.click(transfer_icon_position)
+            sleep(0.3)
 
-            max_craft_round = self.character_state.pods // sum(
-                (elem.item.weight for elem in recipe.ingredients)
+            receipe_pod_cost = sum(
+                [elem.item.weight * elem.quantity for elem in recipe.ingredients]
             )
-            if max_craft_round < (
-                max_craft_total := int(self.controller.get_selected_text())
-            ):
-                self.controller.send_text("0" + str(max_craft_round))
-                self.character_state.pods -= max_craft_round
+            max_craft_round = self.character_state.pods // receipe_pod_cost
+            self.logger.info(f"Max craft possible in one round : {max_craft_round}")
+            self.controller.send_text(str(max_craft_round))
+            wait()
+
+            self.character_state.pods -= max_craft_round * receipe_pod_cost
+            slot_area_img = crop_image(img, slot_area)
+            pos_check = self.object_searcher.get_position(
+                slot_area_img, ObjectConfigs.Check.small, with_crop=False
+            )
+            if pos_check is None:
                 item_craft_status = ItemProcessedStatus.PROCESSED
             else:
-                # we got the max possible craft for this item
-                self.character_state.pods -= max_craft_total
                 item_craft_status = ItemProcessedStatus.MAX_PROCESSED
-                self.controller.key(win32con.VK_RETURN)
-            wait()
 
             img = self.capturer.capture()
             if get_percentage_inventory_bar_normal(self.capturer.capture()) > 0.9:

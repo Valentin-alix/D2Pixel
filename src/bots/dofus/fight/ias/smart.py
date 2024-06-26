@@ -2,7 +2,7 @@ from logging import Logger
 import numpy
 from EzreD2Shared.shared.enums import CharacteristicEnum
 
-from src.bots.dofus.fight.grid.cell import Cell
+from EzreD2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.path_grid import AstarGrid
 from src.bots.dofus.fight.ias.base import IaBaseFightSystem
@@ -110,7 +110,7 @@ class IaSmartFightSystem:
         return True
 
     def hit_enemy_smart(
-        self, img: numpy.ndarray, is_full_hp: bool, enemy_cell: Cell
+        self, img: numpy.ndarray, is_full_hp: bool, enemy_cell: CellSchema
     ) -> tuple[numpy.ndarray, bool, bool]:
         """Hit single enemy
 

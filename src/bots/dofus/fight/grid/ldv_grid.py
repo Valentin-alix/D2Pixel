@@ -1,9 +1,10 @@
 import random
 
+from EzreD2Shared.shared.enums import TypeCellEnum
 from EzreD2Shared.shared.utils.algos.bresenhman import bresenham_dofus
 from EzreD2Shared.shared.utils.debugger import timeit
 
-from src.bots.dofus.fight.grid.cell import Cell, TypeCellEnum
+from EzreD2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 
 
@@ -12,11 +13,13 @@ class LdvGrid:
         self.grid = grid
 
     @timeit
-    def get_near_movable_for_ldv_enemy(self, max_dist: int) -> tuple[Cell, Cell] | None:
+    def get_near_movable_for_ldv_enemy(
+        self, max_dist: int
+    ) -> tuple[CellSchema, CellSchema] | None:
         assert (curr_cell := self.grid.character_cell) is not None
 
         near_enemy_with_move_cell: (
-            tuple[tuple[Cell, Cell], tuple[float, float]] | None
+            tuple[tuple[CellSchema, CellSchema], tuple[float, float]] | None
         ) = None
 
         accessible_cell = self.grid.movable_cells.copy()
@@ -54,7 +57,7 @@ class LdvGrid:
             else None
         )
 
-    def has_ldv(self, curr_cell: Cell, target_cell: Cell) -> bool:
+    def has_ldv(self, curr_cell: CellSchema, target_cell: CellSchema) -> bool:
         passed_coord = list(
             bresenham_dofus(
                 curr_cell.col,

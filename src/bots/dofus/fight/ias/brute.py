@@ -1,7 +1,7 @@
 from logging import Logger
 import numpy
 
-from src.bots.dofus.fight.grid.cell import Cell
+from EzreD2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.path_grid import AstarGrid
 from src.bots.dofus.fight.ias.base import IaBaseFightSystem
@@ -54,7 +54,7 @@ class IaBruteFightSystem:
         return True
 
     def hit_enemy_brute(
-        self, img: numpy.ndarray, enemy_cell: Cell
+        self, img: numpy.ndarray, enemy_cell: CellSchema
     ) -> tuple[numpy.ndarray, bool, bool]:
         """Hit single enemy
 

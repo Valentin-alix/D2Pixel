@@ -3,7 +3,6 @@ from logging import Logger
 from threading import Event, RLock
 from time import sleep
 
-import pyperclip
 import win32api
 import win32con
 import win32gui
@@ -108,22 +107,26 @@ class Controller:
             )
             sleep(0.2)
 
-    def key_down(self, char: Key):
+    def key_down(self, char: Key, l_param: int = 0):
         if self.is_paused.is_set():
             raise StoppedException()
         with self.action_lock:
             self.logger.debug(f"keydown {char}")
             w_param = get_related_wparam(char)
-            win32gui.PostMessage(self.window_info.hwnd, win32con.WM_KEYDOWN, w_param, 0)
+            win32gui.PostMessage(
+                self.window_info.hwnd, win32con.WM_KEYDOWN, w_param, l_param
+            )
             sleep(PAUSE)
 
-    def key_up(self, char: Key):
+    def key_up(self, char: Key, l_param: int = 0):
         if self.is_paused.is_set():
             raise StoppedException()
         with self.action_lock:
             self.logger.debug(f"keyup {char}")
             w_param = get_related_wparam(char)
-            win32gui.PostMessage(self.window_info.hwnd, win32con.WM_KEYUP, w_param, 0)
+            win32gui.PostMessage(
+                self.window_info.hwnd, win32con.WM_KEYUP, w_param, l_param
+            )
             sleep(PAUSE)
 
     def key(self, key: Key):
@@ -152,15 +155,6 @@ class Controller:
                 win32gui.PostMessage(
                     self.window_info.hwnd, win32con.WM_CHAR, ord(char), 0
                 )
+            sleep(PAUSE)
             if with_enter:
                 self.key(win32con.VK_RETURN)
-
-    def get_selected_text(self):
-        if self.is_paused.is_set():
-            raise StoppedException()
-        with self.action_lock:
-            self.key_down(win32con.VK_CONTROL)
-            self.key("c")
-            self.key_up(win32con.VK_CONTROL)
-            text = pyperclip.paste()
-        return text

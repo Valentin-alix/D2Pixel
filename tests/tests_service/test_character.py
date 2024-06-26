@@ -5,9 +5,14 @@ import unittest
 from pathlib import Path
 
 
+from EzreD2Shared.shared.consts.maps import (
+    BONTA_WORKSHOP_WOODCUTTER_MAP_ID,
+)
+from EzreD2Shared.shared.enums import FromDirection
 from src.gui.signals.app_signals import AppSignals
 from src.services.character import CharacterService
 from src.services.item import ItemService
+from src.services.map import MapService
 from src.services.recipe import RecipeService
 from src.services.session import ServiceSession
 
@@ -16,21 +21,34 @@ sys.path.append(os.path.join(Path(__file__).parent.parent.parent))
 
 class TestServiceCharacter(unittest.TestCase):
     def setUp(self) -> None:
+        self.service = ServiceSession(Logger("temp"), AppSignals())
+        self.character = CharacterService.get_or_create_character(self.service, "temp")
         return super().setUp()
 
     def test_get_or_create(self):
-        service = ServiceSession(Logger("temp"), AppSignals())
-
-        character = CharacterService.get_or_create_character(service, "temp")
-        items = CharacterService.get_possible_collectable(service, character.id)
-        CharacterService.add_bank_items(
-            service, character.id, [elem.item_id for elem in items]
+        items = CharacterService.get_possible_collectable(
+            self.service, self.character.id
         )
-        recipes = RecipeService.get_default_recipes(service, character.id)
+        CharacterService.add_bank_items(
+            self.service, self.character.id, [elem.item_id for elem in items]
+        )
+        recipes = RecipeService.get_default_recipes(self.service, self.character.id)
         for recipe in recipes:
             print(recipe.result_item.name)
 
         sell_items = ItemService.get_default_sellable_items(
-            service, character.id, [elem.id for elem in recipes]
+            self.service, self.character.id, [elem.id for elem in recipes]
         )
         print(sell_items)
+
+    def test_astar(self):
+        path = MapService.find_path(
+            self.service,
+            True,
+            True,
+            156238343,
+            FromDirection.BOT,
+            [],
+            [BONTA_WORKSHOP_WOODCUTTER_MAP_ID],
+        )
+        print(path)
