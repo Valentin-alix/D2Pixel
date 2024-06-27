@@ -95,7 +95,7 @@ class Crafter:
                 self.controller.click(COUNT_CRAFT_RECEIP_POSITION)
                 self.controller.key(win32con.VK_RETURN)
                 self.controller.click(MERGE_CRAFT_POSITION)
-                wait()
+                wait((0.6, 1))
                 CharacterService.add_bank_items(
                     self.service,
                     self.character_state.character.id,
