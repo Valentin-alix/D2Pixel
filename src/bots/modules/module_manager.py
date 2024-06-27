@@ -38,9 +38,7 @@ from src.bots.modules.hdv.sell import Seller
 from src.common.loggers.bot_logger import BotLogger
 from src.consts import DOFUS_WINDOW_SIZE
 from src.exceptions import (
-    CharacterIsStuckException,
     StoppedException,
-    UnknowStateException,
 )
 from src.gui.signals.dofus_signals import BotSignals
 from src.image_manager.animation import AnimationManager
@@ -365,13 +363,17 @@ class ModuleManager:
             while True:
                 for name, action in modules:
                     self.bot_signals.playing_action.emit(name)
-                    action()
+                    try:
+                        action()
+                    except StoppedException:
+                        raise
+                    except Exception:
+                        self.logger.error(traceback.format_exc())
+                        self.connection_sys.deblock_character()
         except StoppedException:
             self.logger.info("Stopped bot.")
-        except (UnknowStateException, CharacterIsStuckException):
+        except Exception:
             self.logger.error(traceback.format_exc())
-            self.connection_sys.deblock_character()
-            return self.run_bot(name_modules)
         finally:
             self.logger.info("Bot terminated.")
             self.is_playing.clear()

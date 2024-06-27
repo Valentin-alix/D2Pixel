@@ -112,5 +112,9 @@ if __name__ == "__main__":
         recipes = RecipeService.get_default_recipes(
             service, character_state.character.id
         )
-        bank_sys.bank_clear_inventory()
-        bank_sys.bank_get_ingredients_item(recipes[0])
+        for recipe in recipes:
+            if recipe.result_item.name == "Beignet de Greuvette":
+                bank_sys.bank_get_ingredients_item(recipe)
+                break
+        # bank_sys.bank_clear_inventory()
+        # bank_sys.bank_get_ingredients_item(recipes[0])

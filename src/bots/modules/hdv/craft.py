@@ -137,6 +137,12 @@ class Crafter:
                 self.bank_sys.bank_clear_inventory()
                 recipes_inventory.clear()
 
+            CharacterService.remove_bank_items(
+                self.service,
+                self.character_state.character.id,
+                [elem.item_id for elem in recipe.ingredients],
+            )
+
         self.hud_sys.close_modals(
             self.capturer.capture(),
             ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],

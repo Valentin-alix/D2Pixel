@@ -225,25 +225,40 @@ class BankSystem:
         self.controller.send_text(
             recipe.result_item.name, pos=BANK_SEARCH_RECIPE_POSITION
         )
+        sleep(0.6)
         img = self.capturer.capture()
-        if (slot_area := get_slot_area_item(img, recipe.result_item.name)) and (
-            transfer_icon_position := self.__get_transfer_position_if_available(
-                img, slot_area
+        slot_area = get_slot_area_item(img, recipe.result_item.name)
+        if slot_area and (
+            (
+                transfer_icon_position := self.__get_transfer_position_if_available(
+                    img, slot_area
+                )
             )
+            and (
+                self.object_searcher.get_position(
+                    crop_image(img, slot_area),
+                    ObjectConfigs.Check.small,
+                    with_crop=False,
+                )
+            )
+            is None
         ):
             # we can pick atleast ingredients for one of that item
             self.controller.click(transfer_icon_position)
-            sleep(0.3)
-
             receipe_pod_cost = sum(
                 [elem.item.weight * elem.quantity for elem in recipe.ingredients]
             )
             max_craft_round = self.character_state.pods // receipe_pod_cost
-            self.logger.info(f"Max craft possible in one round : {max_craft_round}")
-            self.controller.send_text(str(max_craft_round))
-            wait()
+            self.logger.info(
+                f"Max craft possible in one round : {max_craft_round} for receipe : {recipe.result_item.name} with receipe pod cost : {receipe_pod_cost}"
+            )
+            # sleep(1)
+            self.controller.send_text("0" + str(max_craft_round))
+            wait((0.6, 1))
+            img = self.capturer.capture()
 
             self.character_state.pods -= max_craft_round * receipe_pod_cost
+
             slot_area_img = crop_image(img, slot_area)
             pos_check = self.object_searcher.get_position(
                 slot_area_img, ObjectConfigs.Check.small, with_crop=False
@@ -252,12 +267,6 @@ class BankSystem:
                 item_craft_status = ItemProcessedStatus.PROCESSED
             else:
                 item_craft_status = ItemProcessedStatus.MAX_PROCESSED
-
-            img = self.capturer.capture()
-            if get_percentage_inventory_bar_normal(self.capturer.capture()) > 0.9:
-                # transfer impossible, we are full pods
-                self.character_state.pods = 0
-                item_craft_status = ItemProcessedStatus.PROCESSED
         else:
             item_craft_status = ItemProcessedStatus.NOT_PROCESSED
 
