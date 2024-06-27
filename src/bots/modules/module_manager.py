@@ -4,7 +4,6 @@ from random import shuffle
 from time import sleep
 from typing import Callable
 
-from EzreD2Shared.shared.schemas.map import MapSchema
 
 from src.bots.dofus.antibot.afk_starter import AfkStarter
 from src.bots.dofus.antibot.humanizer import Humanizer
@@ -64,10 +63,10 @@ class ModuleManager:
         service: ServiceSession,
         window_info: WindowInfo,
         fake_sentence: FakeSentence,
-        fighter_maps_time: dict[MapSchema, float],
+        fighter_maps_time: dict[int, float],
         fighter_sub_areas_farming_ids: list[int],
         harvest_sub_areas_farming_ids: list[int],
-        harvest_map_time: dict[MapSchema, float],
+        harvest_map_time: dict[int, float],
     ):
         self.window_info = window_info
         character_id = window_info.name.split(" - Dofus")[0]

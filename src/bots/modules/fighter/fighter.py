@@ -8,7 +8,6 @@ import numpy
 import tesserocr
 from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
 from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.schemas.map import MapSchema
 from EzreD2Shared.shared.schemas.region import RegionSchema
 from EzreD2Shared.shared.schemas.sub_area import SubAreaSchema
 from EzreD2Shared.shared.utils.randomizer import (
@@ -89,7 +88,7 @@ class Fighter:
         capturer: Capturer,
         image_manager: ImageManager,
         logger: Logger,
-        fighter_maps_time: dict[MapSchema, float],
+        fighter_maps_time: dict[int, float],
         fighter_sub_areas_farming_ids: list[int],
     ):
         self.service = service
@@ -241,7 +240,7 @@ class Fighter:
         self.sub_area_farming_sys.go_inside_grouped_sub_area(sub_areas)
 
         initial_time: float = perf_counter()
-        self.fighter_maps_time[self.core_walker_sys.get_curr_map_info().map] = (
+        self.fighter_maps_time[self.core_walker_sys.get_curr_map_info().map.id] = (
             perf_counter()
         )
 
@@ -278,5 +277,5 @@ class Fighter:
                 is_new_map = False
                 continue
 
-            self.fighter_maps_time[map_direction.to_map] = perf_counter()
+            self.fighter_maps_time[map_direction.to_map_id] = perf_counter()
             is_new_map = True

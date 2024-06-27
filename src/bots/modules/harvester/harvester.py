@@ -87,7 +87,7 @@ class Harvester:
         image_manager: ImageManager,
         logger: Logger,
         harvest_sub_areas_farming_ids: list[int],
-        harvest_map_time: dict[MapSchema, float],
+        harvest_map_time: dict[int, float],
     ):
         self.service = service
         self.object_searcher = object_searcher
@@ -111,7 +111,7 @@ class Harvester:
         if self.character_state.character.lvl < 10:
             return None
 
-        limit_time = TIME_HARVEST * multiply_offset(RANGE_DURATION_ACTIVITY)
+        limit_time: float = TIME_HARVEST * multiply_offset(RANGE_DURATION_ACTIVITY)
 
         initial_time = perf_counter()
         possible_collectable_ids = [
@@ -200,7 +200,9 @@ class Harvester:
         img = self.sub_area_farming_sys.go_inside_grouped_sub_area(sub_areas)
 
         initial_time: float = perf_counter()
-        self.harvest_map_time[self.walker_sys.get_curr_map_info().map] = perf_counter()
+        self.harvest_map_time[self.walker_sys.get_curr_map_info().map.id] = (
+            perf_counter()
+        )
 
         is_new_map: bool = True
 
@@ -246,7 +248,7 @@ class Harvester:
                 is_new_map = False
                 continue
 
-            self.harvest_map_time[self.walker_sys.get_curr_map_info().map] = (
+            self.harvest_map_time[self.walker_sys.get_curr_map_info().map.id] = (
                 perf_counter()
             )
             img = new_img

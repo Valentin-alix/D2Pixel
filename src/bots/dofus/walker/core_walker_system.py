@@ -384,7 +384,7 @@ class CoreWalkerSystem:
 
         # Changed map, but unexpected map
         self.logger.warning(
-            f"Map : {self.get_curr_map_info().map} != {map_direction.to_map}"
+            f"Map : {self.get_curr_map_info().map} != {map_direction.to_map_id}"
         )
         if do_trust:
             if not map_direction.was_checked:
@@ -424,7 +424,7 @@ class CoreWalkerSystem:
                 return new_img, was_teleported
 
         self.logger.info(
-            f"No new map : {self.get_curr_map_info().map} != {map_direction.to_map}"
+            f"No new map : {self.get_curr_map_info().map} != {map_direction.to_map_id}"
         )
         if do_trust:
             if not map_direction.was_checked:

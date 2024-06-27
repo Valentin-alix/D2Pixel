@@ -1,7 +1,6 @@
 from collections import defaultdict
 from logging import Logger
 
-from EzreD2Shared.shared.schemas.map import MapSchema
 
 from src.bots.ankama.ankama_launcher import AnkamaLauncher
 from src.bots.dofus.chat.sentence import FakeSentence
@@ -30,10 +29,10 @@ class BotsManager:
         self.app_signals.is_connecting_bots.emit(False)
 
     def _setup_farmers(self, dofus_windows: list[WindowInfo]):
-        fighter_map_time: dict[MapSchema, float] = defaultdict(lambda: 0)
+        fighter_map_time: dict[int, float] = defaultdict(lambda: 0)
         fighter_sub_area_farming_ids: list[int] = []
 
-        harvest_map_time: dict[MapSchema, float] = defaultdict(lambda: 0)
+        harvest_map_time: dict[int, float] = defaultdict(lambda: 0)
         harvest_sub_area_farming_ids: list[int] = []
 
         for window in dofus_windows:

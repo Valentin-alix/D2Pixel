@@ -58,14 +58,15 @@ class SubAreaFarmingSystem:
         self,
         map: MapSchema,
         sub_areas: list[SubAreaSchema],
-        maps_time: dict[MapSchema, float],
+        maps_time: dict[int, float],
     ) -> list[tuple[MapDirectionSchema, float]]:
         neighbors_time: list[tuple[MapDirectionSchema, float]] = [
-            (map_direction, maps_time[map_direction.to_map])
+            (map_direction, maps_time[map_direction.to_map_id])
             for map_direction in MapService.get_map_neighbors(
                 self.service, map.id, self.core_walker_sys.get_curr_direction()
             )
-            if map_direction.to_map.sub_area in sub_areas
+            if MapService.get_map(self.service, map_direction.to_map_id).sub_area_id
+            in [elem.id for elem in sub_areas]
         ]
         self.logger.info(f"found neighbors in sub_area with time: {neighbors_time}")
         return neighbors_time
@@ -73,7 +74,7 @@ class SubAreaFarmingSystem:
     def get_next_direction_sub_area(
         self,
         sub_areas: list[SubAreaSchema],
-        maps_time: dict[MapSchema, float],
+        maps_time: dict[int, float],
         weights_by_map: dict[int, float],
     ) -> MapDirectionSchema | None:
         neighbors_with_times = self.__get_neighbors_time_sub_area(
@@ -86,9 +87,8 @@ class SubAreaFarmingSystem:
             neighbors_with_times,
             weights=[
                 math.pow(perf_counter() - time, 1)
-                * weights_by_map.get(map_direction.to_map.id, 1)
+                * weights_by_map.get(map_direction.to_map_id, 1)
                 for map_direction, time in neighbors_with_times
-                if map_direction.to_map
             ],
         )[0][0]
 

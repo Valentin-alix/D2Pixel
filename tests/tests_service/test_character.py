@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 from EzreD2Shared.shared.consts.maps import (
+    ASTRUB_BANK_MAP_ID,
     BONTA_WORKSHOP_WOODCUTTER_MAP_ID,
 )
 from EzreD2Shared.shared.enums import FromDirection
@@ -46,8 +47,8 @@ class TestServiceCharacter(unittest.TestCase):
             self.service,
             True,
             True,
-            156238343,
-            FromDirection.BOT,
+            ASTRUB_BANK_MAP_ID,
+            FromDirection.UNKNOWN,
             [],
             [BONTA_WORKSHOP_WOODCUTTER_MAP_ID],
         )
