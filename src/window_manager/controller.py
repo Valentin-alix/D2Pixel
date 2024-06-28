@@ -71,7 +71,7 @@ class Controller:
             raise StoppedException()
         with self.action_lock:
             long_param = get_long_param(pos)
-            self.logger.debug(f"{count} click at {pos}")
+            self.logger.debug(f"{count} clique sur {pos}.")
             self.organizer.adjust_window_size()
             for _ in range(count):
                 win32gui.PostMessage(
@@ -99,7 +99,7 @@ class Controller:
             self.set_focus(),
             self.action_lock,
         ):  # because we need the mouse to be on window area
-            self.logger.debug(f"move {pos}")
+            self.logger.debug(f"Bouge la souris jusqu'a {pos}.")
             long_param = get_long_param(pos)
             self.organizer.adjust_window_size()
             win32gui.PostMessage(
@@ -111,7 +111,7 @@ class Controller:
         if self.is_paused.is_set():
             raise StoppedException()
         with self.action_lock:
-            self.logger.debug(f"keydown {char}")
+            self.logger.debug(f"Appuie sur {char}.")
             w_param = get_related_wparam(char)
             win32gui.PostMessage(
                 self.window_info.hwnd, win32con.WM_KEYDOWN, w_param, l_param
@@ -122,7 +122,7 @@ class Controller:
         if self.is_paused.is_set():
             raise StoppedException()
         with self.action_lock:
-            self.logger.debug(f"keyup {char}")
+            self.logger.debug(f"Relache {char}.")
             w_param = get_related_wparam(char)
             win32gui.PostMessage(
                 self.window_info.hwnd, win32con.WM_KEYUP, w_param, l_param

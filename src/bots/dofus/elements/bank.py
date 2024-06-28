@@ -3,6 +3,7 @@ from time import sleep
 
 import numpy
 import win32con
+
 from EzreD2Shared.shared.consts.adaptative.consts import (
     BANK_RECEIPE_SLOT_HEIGHT,
     BANK_RECEIPE_SLOT_INITIAL_Y,
@@ -23,7 +24,6 @@ from EzreD2Shared.shared.schemas.recipe import RecipeSchema
 from EzreD2Shared.shared.schemas.region import RegionSchema
 from EzreD2Shared.shared.utils.randomizer import wait
 from EzreD2Shared.shared.utils.text_similarity import are_similar_text
-
 from src.bots.dofus.hud.small_bar import get_percentage_inventory_bar_normal
 from src.bots.dofus.walker.buildings.bank_buildings import BankBuilding
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
@@ -53,8 +53,8 @@ def get_slot_area_item(img: numpy.ndarray, item_name: str) -> RegionSchema | Non
                 right=BANK_RECEIPE_TITLE_X_RANGE[1],
                 top=BANK_RECEIPE_SLOT_INITIAL_Y + BANK_RECEIPE_SLOT_HEIGHT * index,
                 bot=BANK_RECEIPE_SLOT_INITIAL_Y
-                + BANK_RECEIPE_SLOT_HEIGHT * index
-                + BANK_RECEIPE_TITLE_MAX_HEIGHT,
+                    + BANK_RECEIPE_SLOT_HEIGHT * index
+                    + BANK_RECEIPE_TITLE_MAX_HEIGHT,
             ),
         )
         title_slot = get_text_from_image(slot_img)
@@ -65,7 +65,7 @@ def get_slot_area_item(img: numpy.ndarray, item_name: str) -> RegionSchema | Non
                 right=BANK_RECEIPE_X_RANGE[1],
                 top=BANK_RECEIPE_SLOT_INITIAL_Y + BANK_RECEIPE_SLOT_HEIGHT * index,
                 bot=BANK_RECEIPE_SLOT_INITIAL_Y
-                + BANK_RECEIPE_SLOT_HEIGHT * (index + 1),
+                    + BANK_RECEIPE_SLOT_HEIGHT * (index + 1),
             )
 
     return None
@@ -73,17 +73,17 @@ def get_slot_area_item(img: numpy.ndarray, item_name: str) -> RegionSchema | Non
 
 class BankSystem:
     def __init__(
-        self,
-        bank_building: BankBuilding,
-        object_searcher: ObjectSearcher,
-        capturer: Capturer,
-        image_manager: ImageManager,
-        icon_searcher: IconSearcher,
-        controller: Controller,
-        service: ServiceSession,
-        core_walker_sys: CoreWalkerSystem,
-        character_state: CharacterState,
-        logger: Logger,
+            self,
+            bank_building: BankBuilding,
+            object_searcher: ObjectSearcher,
+            capturer: Capturer,
+            image_manager: ImageManager,
+            icon_searcher: IconSearcher,
+            controller: Controller,
+            service: ServiceSession,
+            core_walker_sys: CoreWalkerSystem,
+            character_state: CharacterState,
+            logger: Logger,
     ) -> None:
         self.bank_building = bank_building
         self.capturer = capturer
@@ -129,7 +129,7 @@ class BankSystem:
         img = self.capturer.capture()
 
         if self.core_walker_sys.get_curr_map_info().map == get_astrub_bank_map(
-            self.service
+                self.service
         ):
             pos = self.object_searcher.get_position(
                 img, ObjectConfigs.Bank.owl_astrub, force=True
@@ -151,8 +151,7 @@ class BankSystem:
         """need to be in bank chest interface
 
         Args:
-            img (numpy.ndarray)
-            item_name (str): the item name targeted
+            item (ItemSchema): the item targeted
 
         Returns:
             ItemProcessedStatus: MAX PROCESSED if character is full pod\n
@@ -178,7 +177,7 @@ class BankSystem:
         return ItemProcessedStatus.NOT_PROCESSED
 
     def __get_transfer_position_if_available(
-        self, img: numpy.ndarray, slot_area: RegionSchema
+            self, img: numpy.ndarray, slot_area: RegionSchema
     ) -> Position | None:
         """get transfer position, return None if check icon is found,
         Need to be on bank receipe list
@@ -194,8 +193,8 @@ class BankSystem:
         slot_img = crop_image(img, slot_area)
 
         if (
-            self.object_searcher.get_position(slot_img, ObjectConfigs.Check.small)
-            is not None
+                self.object_searcher.get_position(slot_img, ObjectConfigs.Check.small)
+                is not None
         ):
             return None
 
@@ -213,10 +212,10 @@ class BankSystem:
         """need to be in bank chest interface
 
         Args:
-            item_craft (ItemCraftInfo): the target item to pick ingredients
+            recipe (RecipeSchema): the recipe to pick ingredients
 
         Returns:
-            ItemCraftStatus: did we get full ingredients or not or not at all
+            ItemCraftStatus: did we get full ingredients or not partially or not at all
         """
 
         self.controller.click(BANK_POSSIBLE_RECEIPE_ICON_POSITION)
@@ -229,19 +228,19 @@ class BankSystem:
         img = self.capturer.capture()
         slot_area = get_slot_area_item(img, recipe.result_item.name)
         if slot_area and (
-            (
-                transfer_icon_position := self.__get_transfer_position_if_available(
-                    img, slot_area
+                (
+                        transfer_icon_position := self.__get_transfer_position_if_available(
+                            img, slot_area
+                        )
                 )
-            )
-            and (
-                self.object_searcher.get_position(
-                    crop_image(img, slot_area),
-                    ObjectConfigs.Check.small,
-                    with_crop=False,
+                and (
+                        self.object_searcher.get_position(
+                            crop_image(img, slot_area),
+                            ObjectConfigs.Check.small,
+                            with_crop=False,
+                        )
                 )
-            )
-            is None
+                is None
         ):
             # we can pick atleast ingredients for one of that item
             self.controller.click(transfer_icon_position)
@@ -250,7 +249,8 @@ class BankSystem:
             )
             max_craft_round = self.character_state.pods // receipe_pod_cost
             self.logger.info(
-                f"Max craft possible in one round : {max_craft_round} for receipe : {recipe.result_item.name} with receipe pod cost : {receipe_pod_cost}"
+                f"Max craft possible in one round : {max_craft_round} for receipe : {recipe.result_item.name} with "
+                f"receipe pod cost : {receipe_pod_cost}"
             )
             # sleep(1)
             self.controller.send_text("0" + str(max_craft_round))

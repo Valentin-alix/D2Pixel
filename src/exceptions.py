@@ -6,9 +6,6 @@ import cv2
 import numpy
 
 
-class AuthenticationError(Exception): ...
-
-
 class StoppedException(Exception): ...
 
 

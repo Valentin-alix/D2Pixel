@@ -61,14 +61,14 @@ class ConnectionSystem:
         """return false if not connected"""
         img = self.hud_system.clean_interface(img)
         if self.object_searcher.get_position(img, ObjectConfigs.in_game) is not None:
-            self.logger.info("Is in game")
+            self.logger.info("Est en jeu.")
             self.is_connected.set()
             return img, True
         pos_launcher_info = self.object_searcher.get_position(
             img, ObjectConfigs.Connection.launcher
         )
         if pos_launcher_info is not None:
-            self.logger.info("Found Launcher Connection Button")
+            self.logger.info("A trouvé le bouton de connection au launcher.")
             self.controller.click(pos_launcher_info[0])
             pos_infos = self.image_manager.wait_multiple_or_template(
                 [ObjectConfigs.Connection.play, ObjectConfigs.in_game]
@@ -83,26 +83,26 @@ class ConnectionSystem:
             img, ObjectConfigs.Connection.play
         )
         if pos_play_info is not None:
-            self.logger.info("Found Play Character Button")
+            self.logger.info("A trouvé le button jouer.")
             self.controller.click(pos_play_info[0])
             in_game_info = self.image_manager.wait_on_screen(ObjectConfigs.in_game)
             if in_game_info is not None:
                 self.is_connected.set()
                 return in_game_info[2], True
 
-        self.logger.info("Still not connected")
+        self.logger.info("Toujours pas connecté.")
         return img, False
 
     def deblock_character(self):
-        self.logger.info("Deblocking character...")
+        self.logger.info("En train de débloquer le bot...")
         while not has_internet_connection():
-            self.logger.info("Waiting for connection to be available...")
+            self.logger.info("En attente d'une connexion internet...")
             sleep(2)
         try:
             img = self.capturer.capture()
             img, connected = self.connect_character(img)
             if not connected:
-                self.logger.info("Still not connected")
+                self.logger.info("Toujours pas connecté au jeu.")
                 return self.deblock_character()
             if self.is_dead.is_set():
                 self.fight_system.on_dead_character(img)
@@ -114,4 +114,4 @@ class ConnectionSystem:
             self.logger.error(traceback.format_exc())
             return self.deblock_character()
         self.hud_system.clean_interface(self.capturer.capture())
-        self.logger.info("Character deblocked")
+        self.logger.info("Bot débloqué.")

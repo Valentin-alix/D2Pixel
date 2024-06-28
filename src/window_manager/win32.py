@@ -108,7 +108,7 @@ def capture(hwnd: int, logger: Logger) -> numpy.ndarray:
 
     window_place = win32gui.GetWindowPlacement(hwnd)[1]
     if window_place == win32con.SW_SHOWMINIMIZED:
-        logger.info("restoring")
+        logger.info("Restore la fenêtre.")
         set_restore(hwnd)
         sleep(1)
 
@@ -175,7 +175,7 @@ def adjust_window_size(
     if client_height == target_height and client_width == target_width:
         return
 
-    logger.info(f"Adjusting window to {target_width, target_height}")
+    logger.info(f"Ajuste la taille de la fenetre pour {target_width, target_height}.")
 
     start_x, start_y, end_x, end_y = win32gui.GetWindowRect(hwnd)
 

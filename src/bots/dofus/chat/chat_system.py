@@ -15,7 +15,7 @@ class ChatSystem:
 
     def type_random_sentence(self):
         random_sentence = self.fake_sentence.get_random_sentence()
-        self.logger.info(f"Typing random word in chat : {random_sentence}")
+        self.logger.info(f"Écris des mots aléatoire dans le chat : {random_sentence}.")
         self.write_chat(random_sentence)
 
     def write_chat(self, text: str):
@@ -23,5 +23,5 @@ class ChatSystem:
         self.controller.void_click()
 
     def clear_chat(self):
-        self.logger.info("Clear chat")
+        self.logger.info("Nettoie le chat.")
         self.write_chat("/clear")

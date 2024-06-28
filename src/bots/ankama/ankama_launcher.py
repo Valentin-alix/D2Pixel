@@ -251,7 +251,7 @@ class AnkamaLauncher:
         while not connecter.connect_character(capturer.capture())[1]:
             sleep(1)
         hud_sys.clean_interface(capturer.capture())
-        self.logger.info(f"{character_state.character} is connected")
+        self.logger.info(f"{character_state.character} est connecté.")
         connecter.is_connected.set()
 
     def connect_windows(
@@ -278,7 +278,7 @@ class AnkamaLauncher:
                 module_manager.fighter.fight_sys.not_in_fight.wait()
                 module_manager.internal_pause.set()
                 with module_manager.action_lock:
-                    module_manager.logger.info("Paused bot")
+                    module_manager.logger.info("Bot mis en pause.")
                     module_manager.is_connected.clear()
                     module_manager.controller.kill_window()
                     while True:
@@ -302,7 +302,7 @@ class AnkamaLauncher:
             dofus_windows_info = self.connect_all()
             for module_manager in modules_managers:
                 if module_manager.is_playing.is_set():
-                    module_manager.logger.info("Resume bot")
+                    module_manager.logger.info("Bot sortit de pause.")
                 related_window = next(
                     window
                     for window in dofus_windows_info
