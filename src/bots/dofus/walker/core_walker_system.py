@@ -57,6 +57,8 @@ from src.window_manager.controller import Controller
 
 EntityMapT = TypeVar("EntityMapT", bound=EntityMap)
 
+BLACKLISTED_WAYPOINT_IDS: list[int] = [33]  # Temp fix
+
 
 class WaitForNewMapWalking(NamedTuple):
     retry_args: RetryTimeArgs = RetryTimeArgs(
@@ -517,9 +519,13 @@ class CoreWalkerSystem:
         use_transport: bool = True,
     ) -> numpy.ndarray:
         if available_waypoints is None:
-            available_waypoints = CharacterService.get_waypoints(
-                self.service, self.character_state.character.id
-            )
+            available_waypoints = [
+                elem
+                for elem in CharacterService.get_waypoints(
+                    self.service, self.character_state.character.id
+                )
+                if elem.id not in BLACKLISTED_WAYPOINT_IDS
+            ]
 
         self.init_first_move(
             self.get_curr_map_info().img,

@@ -4,11 +4,13 @@ logs/*
 scripts/helper/output/captures/*.png
 *.sql
 .idea
+*.spec
 #official python gitignore
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+.pyarmor
 
 # C extensions
 *.so

@@ -1,4 +1,4 @@
-FIGHT FIXME INDEX SPELLS
+FIGHT FIX ASTAR & BRESENHAM pas précis
 
 Launcher ->
 lister les arguments de process dans cmd : WMIC path win32_process get Caption,Processid,Commandline
@@ -15,8 +15,6 @@ Example pour lancer Dofus.exe --port=26116 --gameName=dofus --gameRelease=main -
 '--hash=50b7efac-416e-4160-920c-8f6aXXXXXXXX',
 '--canLogin=true'
 ]
-
-Bresenham -> nécessite de réadapter la grid et de reprendre l'algo de Dofus dans le code client
 
 Quand enemy est une dd -> plouf pas le bon enemy
 

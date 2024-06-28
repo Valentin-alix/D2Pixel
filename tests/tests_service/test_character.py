@@ -26,6 +26,12 @@ class TestServiceCharacter(unittest.TestCase):
         self.character = CharacterService.get_or_create_character(self.service, "temp")
         return super().setUp()
 
+    def test_map(self):
+        map = MapService.get_map_from_hud(
+            self.service, "temp", 14419205, ["-16", "-24"]
+        )
+        print(map.waypoint)
+
     def test_get_or_create(self):
         items = CharacterService.get_possible_collectable(
             self.service, self.character.id

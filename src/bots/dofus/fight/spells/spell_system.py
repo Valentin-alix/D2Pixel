@@ -1,4 +1,5 @@
 from logging import Logger
+from time import sleep
 import numpy
 from EzreD2Shared.shared.consts.adaptative.regions import CONTENT_REGION
 from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
@@ -45,6 +46,7 @@ class SpellSystem:
         self.logger = logger
 
     def on_launched_spell(self, spell_lvl: SpellLevelSchema) -> numpy.ndarray:
+        sleep(0.3)
         self.controller.void_click()
         self.spell_manager._pa -= spell_lvl.ap_cost
         self.spell_manager._spell_used_ids_with_count[spell_lvl.id] += 1

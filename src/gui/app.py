@@ -1,6 +1,5 @@
 import ctypes
 from logging import Logger
-import logging
 import os
 import sys
 from time import sleep
@@ -21,7 +20,6 @@ from PyQt5.QtWidgets import (
     QStackedWidget,
     QWidget,
 )
-from pyqttoast import ToastPreset
 from qt_material import apply_stylesheet
 
 from src.bots.bots_manager import BotsManager
@@ -29,7 +27,6 @@ from src.bots.modules.module_manager import ModuleManager
 from src.consts import ASSET_FOLDER_PATH, RESOURCE_FOLDER_PATH
 from src.gui.components.loaders import Loading
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
-from src.gui.components.toast import show_toast
 from src.gui.fragments.header.sub_header import SubHeader
 from src.gui.fragments.sidebar.sidebar import SideBar
 from src.gui.pages.login import LoginModal
@@ -181,19 +178,6 @@ class MainWindow(QMainWindow):
 
     def on_log_app(self, lvl_with_title_and_msg: tuple[int, str]):
         log_lvl, msg = lvl_with_title_and_msg
-        match log_lvl:
-            case logging.INFO:
-                preset = ToastPreset.INFORMATION_DARK
-            case logging.WARNING:
-                preset = ToastPreset.WARNING_DARK
-            case logging.ERROR:
-                preset = ToastPreset.ERROR_DARK
-            case logging.CRITICAL:
-                preset = ToastPreset.ERROR_DARK
-            case _:
-                return
-
-        show_toast(self, msg, preset)
 
     def on_login_failed(self):
         input_dialog = LoginModal(app_signals=self.app_signals, service=self.service)

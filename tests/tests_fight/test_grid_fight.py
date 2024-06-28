@@ -8,6 +8,7 @@ import cv2
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
 from src.bots.dofus.fight.grid.path_grid import AstarGrid
+from src.gui.signals.app_signals import AppSignals
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.session import ServiceSession
 from tests.utils import PATH_FIXTURES
@@ -18,7 +19,7 @@ PATH_FIXTURES_FIGHT = os.path.join(PATH_FIXTURES, "fight")
 class TestGridFight(unittest.TestCase):
     def setUp(self) -> None:
         logger = Logger("root")
-        service = ServiceSession(Logger("root"))
+        service = ServiceSession(Logger("root"), AppSignals())
         object_searcher = ObjectSearcher(service)
         self.grid = Grid(object_searcher)
         self.astar_grid = AstarGrid(self.grid, logger)
@@ -45,6 +46,12 @@ class TestGridFight(unittest.TestCase):
 
             near_mv = self.ldv_grid.get_near_movable_for_ldv_enemy(5)
             print(near_mv)
+
+            print(self.grid.cells[(7, 31)].get_dist_cell(self.grid.cells[(8, 31)]))
+            print(self.grid.cells[(7, 31)].get_dist_cell(self.grid.cells[(8, 30)]))
+            print(self.grid.cells[(7, 31)].get_dist_cell(self.grid.cells[(9, 31)]))
+            print(self.grid.cells[(7, 30)].get_dist_cell(self.grid.cells[(8, 31)]))
+
             cv2.imshow("i", img)
             cv2.waitKey()
             break
