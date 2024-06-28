@@ -262,7 +262,6 @@ class Harvester:
                 )
                 img = self.sub_area_farming_sys.go_inside_grouped_sub_area(sub_areas)
 
-        self._current_zone = None
         self.logger.info("Zone finished")
 
     @timeit

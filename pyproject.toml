@@ -39,6 +39,7 @@ gprof2dot = "^2022.7.29"
 matplotlib = "^3.9.0"
 mypy = "^1.10.0"
 tqdm = "^4.66.4"
+coloredlogs = "^15.0.1"
 
 [build-system]
 requires = ["poetry-core"]

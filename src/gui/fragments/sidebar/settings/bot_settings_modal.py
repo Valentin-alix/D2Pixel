@@ -1,12 +1,12 @@
+from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtGui import QIntValidator
+from PyQt5.QtWidgets import QCheckBox, QComboBox, QGroupBox, QWidget, QFormLayout, QLineEdit
+
+from EzreD2Shared.shared.consts.jobs import HARVEST_JOBS_ID
 from EzreD2Shared.shared.schemas.character import (
     CharacterJobInfoSchema,
     CharacterSchema,
 )
-from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QCheckBox, QComboBox, QGroupBox, QLabel, QWidget
-
 from src.bots.modules.module_manager import ModuleManager
 from src.gui.components.buttons import PushButton
 from src.gui.components.dialog import Dialog
@@ -20,11 +20,11 @@ from src.services.session import ServiceSession
 
 class BotSettingsModal(Dialog):
     def __init__(
-        self,
-        service: ServiceSession,
-        module_manager: ModuleManager,
-        *args,
-        **kwargs,
+            self,
+            service: ServiceSession,
+            module_manager: ModuleManager,
+            *args,
+            **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.service = service
@@ -39,74 +39,43 @@ class BotSettingsModal(Dialog):
 
         character = self.module_manager.character_state.character
 
-        self.set_is_sub(character)
-        self.set_server_choices(character)
-        self.set_breed_choices(character)
-
-        self.set_bot_lvl(character)
+        self.set_top_form(character)
 
         self.set_bot_job_lvls(character)
 
         self.set_save_btn()
 
-    def set_server_choices(self, character: CharacterSchema):
-        self.server_widget = QWidget()
-        self.main_layout.addWidget(self.server_widget)
-        self.server_widget_layout = HorizontalLayout(8)
-        self.server_widget_layout.setAlignment(QtCore.Qt.AlignCenter)
-        self.server_widget.setLayout(self.server_widget_layout)
+    def set_top_form(self, character: CharacterSchema):
+        self.top_widget = QWidget()
+        self.main_layout.addWidget(self.top_widget)
+        form = QFormLayout()
+        form.setAlignment(Qt.AlignCenter)
+        self.top_widget.setLayout(form)
 
-        title = QLabel("Serveur")
-        self.server_widget_layout.addWidget(title)
+        self.sub_checkbox = QCheckBox()
+        self.sub_checkbox.setChecked(character.is_sub)
+        form.addRow("Est Abonné", self.sub_checkbox)
 
         self.server_combo = QComboBox()
-        self.server_combo.setFixedWidth(100)
-        self.server_widget_layout.addWidget(self.server_combo)
         servers = ServerService.get_servers(self.service)
         for server in servers:
             self.server_combo.addItem(server.name, server.id)
         index = self.server_combo.findData(character.server_id)
         self.server_combo.setCurrentIndex(index)
-
-    def set_breed_choices(self, character: CharacterSchema):
-        self.breed_widget = QWidget()
-        self.main_layout.addWidget(self.breed_widget)
-        self.breed_widget_layout = HorizontalLayout(8)
-        self.breed_widget_layout.setAlignment(QtCore.Qt.AlignCenter)
-        self.breed_widget.setLayout(self.breed_widget_layout)
-
-        title = QLabel("Classe")
-        self.breed_widget_layout.addWidget(title)
+        form.addRow("Serveur", self.server_combo)
 
         self.breed_combo = QComboBox()
-        self.breed_combo.setFixedWidth(100)
-        self.breed_widget_layout.addWidget(self.breed_combo)
-
         breeds = BreedService.get_breeds(self.service)
         for breed in sorted(breeds, key=lambda elem: elem.name):
             self.breed_combo.addItem(breed.name, breed.id)
         index = self.breed_combo.findData(character.breed_id)
         self.breed_combo.setCurrentIndex(index)
+        form.addRow("Classe", self.breed_combo)
 
-    def set_is_sub(self, character: CharacterSchema):
-        self.is_sub_widget = QWidget()
-        self.is_sub_widget_layout = HorizontalLayout(8)
-        self.is_sub_widget_layout.setAlignment(QtCore.Qt.AlignCenter)
-        self.is_sub_widget.setLayout(self.is_sub_widget_layout)
-
-        label = QLabel("Est Abonné")
-        self.is_sub_widget_layout.addWidget(label)
-        self.sub_checkbox = QCheckBox()
-        self.is_sub_widget_layout.addWidget(self.sub_checkbox)
-        self.sub_checkbox.setChecked(character.is_sub)
-
-        self.main_layout.addWidget(self.is_sub_widget)
-
-    def set_bot_lvl(self, character: CharacterSchema):
-        self.bot_lvl_form = Form("Niveau")
-        self.bot_lvl_form.line_edit.setValidator(self.valid_lvl)
-        self.bot_lvl_form.line_edit.setText(str(character.lvl))
-        self.main_layout.addWidget(self.bot_lvl_form)
+        self.bot_lvl_form = QLineEdit()
+        self.bot_lvl_form.setValidator(self.valid_lvl)
+        self.bot_lvl_form.setText(str(character.lvl))
+        form.addRow("Niveau", self.bot_lvl_form)
 
     def set_bot_job_lvls(self, character: CharacterSchema):
         self.box_job_lvl = QGroupBox()
@@ -117,17 +86,17 @@ class BotSettingsModal(Dialog):
         self.form_job_infos: list[tuple[CharacterJobInfoSchema, Form]] = []
         job_infos = sorted(
             CharacterService.get_job_infos(self.service, character.id),
-            key=lambda elem: elem.job.name,
+            key=lambda elem: (elem.job.id not in HARVEST_JOBS_ID, elem.job.name),
         )
 
-        GROUP_COUNT = 4
+        GROUP_COUNT: int = 4
         for index in range(0, len(job_infos), GROUP_COUNT):
             group_job = QWidget()
             box_job_lvl_layout.addWidget(group_job)
             group_job_layout = VerticalLayout()
             group_job.setLayout(group_job_layout)
 
-            for job_info in job_infos[index : index + GROUP_COUNT]:
+            for job_info in job_infos[index: index + GROUP_COUNT]:
                 form = Form(job_info.job.name)
                 self.form_job_infos.append((job_info, form))
                 form.line_edit.setValidator(self.valid_lvl)
@@ -145,7 +114,7 @@ class BotSettingsModal(Dialog):
     def on_save(self):
         server_id = self.server_combo.currentData()
         breed_id = self.breed_combo.currentData()
-        lvl = int(self.bot_lvl_form.line_edit.text())
+        lvl = int(self.bot_lvl_form.text())
         is_sub = self.sub_checkbox.isChecked()
 
         character = self.module_manager.character_state.character

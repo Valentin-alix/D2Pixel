@@ -1,6 +1,9 @@
 import logging
+import sys
 from typing import Any
-from src.common.loggers.utils import stdout_handler
+
+import coloredlogs
+
 from src.gui.signals.app_signals import AppSignals
 
 
@@ -9,7 +12,7 @@ class AppLogger(logging.Logger):
         super().__init__(name="root")
         self.app_signals = app_signals
         self.setLevel(logging.DEBUG)
-        self.addHandler(stdout_handler)
+        coloredlogs.install(level=logging.DEBUG, logger=self, isatty=True, stream=sys.stdout)
 
     def debug(self, msg: Any, *args, **kwargs):
         super().debug(msg, *args, **kwargs)

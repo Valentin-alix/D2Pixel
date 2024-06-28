@@ -3,6 +3,7 @@ poetry.lock
 logs/*
 scripts/helper/output/captures/*.png
 *.sql
+.idea
 #official python gitignore
 # Byte-compiled / optimized / DLL files
 __pycache__/

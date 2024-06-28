@@ -1,27 +1,11 @@
-## Profiling:
+# Usage
 
-### Profile in RealTime:
+## Requirements
 
-`python -m cProfile -o scripts/helper/output/benchmark.pstats main.py`
+Before launching bot you need to ask valentin-alix.850@outlook.fr to create your account.
 
-### Display stat results
-
-Requirements:
-We need dot command :
-
-- Install graphviz & put bin on path variable
-  https://graphviz.org/download/
-
-`gprof2dot -f pstats scripts/helper/output/benchmark.pstats | dot -Tpng -o scripts/helper/output/benchmark_output.png`
-
-### Memory profiler
-
-`mprof run main.py`
-
-`mprof plot`
-
-## Requirements:
-
+### Hud
+- Windows 11
 - Afficher barre des pods
 - Connexion au choix de personnage
 - Anticrénélage: aucun
@@ -35,14 +19,43 @@ We need dot command :
 - Mise à l'echelle 100% paramètre affichage pc
 - Résolution 1920x1080
 
-### Poetry:
+### Game
+- Not being in tutorial
+- Sub
+- Have Bonta zaap
 
-`pip install poetry`
+# Development
 
-### .env:
+## Setup
 
-- BACKEND_URL=145.239.198.180
+### Example of .env:
+```
+BACKEND_URL=145.239.198.180
+USERNAME="temp@example.com"
+PASSWORD="lepassword"
+```
+### Install dependencies:
+- `pip install poetry`
+- `bash scripts/init.sh`
+
+## Production:
 
 ### Generate .exe
-
 `pyinstaller -y main.spec`
+
+## Profiling:
+
+### Profile in RealTime:
+`python -m cProfile -o scripts/helper/output/benchmark.pstats main.py`
+
+### Display stat results
+We need dot command :
+
+- Install graphviz & put bin on path variable
+  https://graphviz.org/download/
+
+`gprof2dot -f pstats scripts/helper/output/benchmark.pstats | dot -Tpng -o scripts/helper/output/benchmark_output.png`
+
+### Memory profiler
+`mprof run main.py`
+`mprof plot`
