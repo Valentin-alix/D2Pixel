@@ -1,5 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 a = Analysis(
     ['main.py'],
@@ -7,7 +8,9 @@ a = Analysis(
     binaries=[],
     datas=[
         ("./resources", "./resources"),
-        (".env", ".")
+        (".env", "."),
+        *collect_data_files('pyqttoast', subdir='css'),
+        *collect_data_files('pyqttoast', subdir='icons')
     ],
     hiddenimports=["pkg_resources.extern"],
     hookspath=[],
