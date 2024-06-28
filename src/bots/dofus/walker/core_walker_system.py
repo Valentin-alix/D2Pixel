@@ -116,7 +116,7 @@ class CoreWalkerSystem:
             )
 
         self.map_state.curr_map_info = CurrentMapInfo(map=map, img=img, zone_text=text)
-        self.logger.info(f"New map : {self.map_state.curr_map_info}")
+        self.logger.info(f"Nouvelle map: {self.map_state.curr_map_info}")
 
         return True, img
 

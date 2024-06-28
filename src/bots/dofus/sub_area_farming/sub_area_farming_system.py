@@ -68,7 +68,7 @@ class SubAreaFarmingSystem:
             if MapService.get_map(self.service, map_direction.to_map_id).sub_area_id
             in [elem.id for elem in sub_areas]
         ]
-        self.logger.info(f"found neighbors in sub_area with time: {neighbors_time}")
+        self.logger.info(f"Map voisines avec leur temps: {neighbors_time}")
         return neighbors_time
 
     def get_next_direction_sub_area(
