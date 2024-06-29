@@ -44,8 +44,8 @@ def is_window_visible(hwnd: int):
     return win32gui.IsWindowVisible(hwnd)
 
 
-def set_no_minimized(hwnd: int):
-    win32gui.ShowWindow(hwnd, win32con.SW_SHOW)
+def set_restored(hwnd: int):
+    win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
 
 
 class Rect:
@@ -106,12 +106,6 @@ def capture(hwnd: int, logger: Logger) -> numpy.ndarray:
 
         return save_dc, save_bit_map, mfc_dc, hwnd_dc
 
-    window_place = win32gui.GetWindowPlacement(hwnd)[1]
-    if window_place == win32con.SW_SHOWMINIMIZED:
-        logger.info("Restore la fenêtre.")
-        set_no_minimized(hwnd)
-        sleep(1)
-
     width, height = get_window_dimensions(hwnd)
 
     with dc_lock:
@@ -170,6 +164,16 @@ def get_cursor_icon() -> numpy.ndarray:
 def adjust_window_size(
     hwnd: int, target_width: int, target_height: int, logger: Logger
 ):
+    window_place = win32gui.GetWindowPlacement(hwnd)[1]
+    if window_place == win32con.SW_SHOWMINIMIZED:
+        set_restored(hwnd)
+        sleep(1)
+        window_place = win32gui.GetWindowPlacement(hwnd)[1]
+
+    if window_place == win32con.SW_SHOWMAXIMIZED:
+        set_restored(hwnd)
+        sleep(1)
+
     _, _, client_width, client_height = win32gui.GetClientRect(hwnd)
 
     if client_height == target_height and client_width == target_width:
@@ -187,10 +191,6 @@ def adjust_window_size(
 
     new_window_height = target_height + title_bar_height
     new_window_width = target_width + border_width
-
-    window_place = win32gui.GetWindowPlacement(hwnd)[1]
-    if window_place == win32con.SW_SHOWMINIMIZED:
-        set_no_minimized(hwnd)
 
     # get offsets from shadows
     rect = RECT()

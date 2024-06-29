@@ -14,6 +14,7 @@
 - Ne pas cocher afficher tous les monstres d'un groupe
 - Mise à l'echelle 100% paramètre affichage pc
 - Résolution 1920x1080
+- Ne pas avoir d'écran dupliquer, ca fout la merde apparemment
 
 ### Game
 - Not being in tutorial
