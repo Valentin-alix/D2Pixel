@@ -36,11 +36,8 @@ PASSWORD="lepassword"
 
 ## Production:
 
-### Generate .exe
+### Generate obfucasted .exe
 `pyi-makespec --noconsole --hidden-import "pkg_resources.extern" --add-data "./resources":"./resources" --add-data ".env":"." main.py && mkdir dist/ && pyarmor gen --pack main.spec -r main.py dist/`
-
-### Generate obfuscated .exe
-`pyarmor gen --pack main.spec --noconfirm -r main.py dist/`
 
 ## Profiling:
 

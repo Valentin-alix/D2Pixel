@@ -44,8 +44,8 @@ def is_window_visible(hwnd: int):
     return win32gui.IsWindowVisible(hwnd)
 
 
-def set_restore(hwnd: int):
-    win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+def set_no_minimized(hwnd: int):
+    win32gui.ShowWindow(hwnd, win32con.SW_SHOW)
 
 
 class Rect:
@@ -109,7 +109,7 @@ def capture(hwnd: int, logger: Logger) -> numpy.ndarray:
     window_place = win32gui.GetWindowPlacement(hwnd)[1]
     if window_place == win32con.SW_SHOWMINIMIZED:
         logger.info("Restore la fenêtre.")
-        set_restore(hwnd)
+        set_no_minimized(hwnd)
         sleep(1)
 
     width, height = get_window_dimensions(hwnd)
@@ -190,7 +190,7 @@ def adjust_window_size(
 
     window_place = win32gui.GetWindowPlacement(hwnd)[1]
     if window_place == win32con.SW_SHOWMINIMIZED:
-        set_restore(hwnd)
+        set_no_minimized(hwnd)
 
     # get offsets from shadows
     rect = RECT()

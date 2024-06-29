@@ -79,7 +79,6 @@ def iter_position_template_in_image(
     height_template, width_template = template.shape[:2]
 
     result = cv2.matchTemplate(img, template, method, mask=mask)
-
     max_val: float = 1
     while max_val > threshold:
         _, max_val, min_loc, max_loc = cv2.minMaxLoc(result)

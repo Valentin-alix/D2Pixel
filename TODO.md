@@ -1,4 +1,6 @@
-FIGHT FIX ASTAR & BRESENHAM pas précis
+Ankama launcher bug au début car Ajuste la taille ?
+
+FIGHT FIX ASTAR & BRESENHAM pas précis -> grille bof
 
 Launcher ->
 lister les arguments de process dans cmd : WMIC path win32_process get Caption,Processid,Commandline
