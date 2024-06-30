@@ -2,7 +2,7 @@
 
 ### Hud
 - Windows 11/10
-- Afficher barre des pods
+- Afficher la barre des pods
 - Connexion au choix de personnage
 - Anticrénélage: aucun
 - Limite de passage en mode créature: aucun
@@ -18,9 +18,9 @@
 - Cacher la barre de tâche si windows 10
 
 ### Game
-- Not being in tutorial
-- Sub
-- Have Bonta zaap
+- Ne pas être dans le tutoriel
+- Etre abonné de préférence
+- Avoir le zaap de bonta
 
 # Development
 
