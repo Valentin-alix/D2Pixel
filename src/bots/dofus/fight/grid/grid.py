@@ -205,7 +205,7 @@ class Grid:
         cell_img = crop_image(img, cell.get_region((5, 5, 25, 5)))
         return (
             self.object_searcher.get_position(
-                cell_img, ObjectConfigs.Fight.enemy, with_crop=False
+                cell_img, ObjectConfigs.Fight.enemy, use_cache=False
             )
             is not None
         )

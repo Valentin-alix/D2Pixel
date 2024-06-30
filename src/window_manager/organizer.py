@@ -76,10 +76,11 @@ def get_dofus_window_infos() -> list[WindowInfo]:
     return get_windows_by_process_and_name(target_process_name="Dofus.exe")
 
 
-def get_ankama_window_info() -> WindowInfo | None:
+def get_ankama_window_info(logger: Logger) -> WindowInfo | None:
     windows_ankama = get_windows_by_process_and_name(
         "Ankama Launcher.exe", "Ankama Launcher", False
     )
+    logger.info(f"Found ankama windows : {windows_ankama}")
     if len(windows_ankama) == 0:
         return None
     return windows_ankama[0]

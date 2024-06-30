@@ -126,17 +126,23 @@ class HudSystem(BaseModel):
         return img, events_info_modal
 
     def close_modal(
-        self, ordered_configs: list[ObjectSearchConfig], img: numpy.ndarray
+        self,
+        ordered_configs: list[ObjectSearchConfig],
+        img: numpy.ndarray,
+        from_cache: bool = True,
     ) -> tuple[bool, numpy.ndarray]:
         """close modal by configs provided, return True if no modal found"""
         for config in ordered_configs:
-            pos_info = self.object_searcher.get_position(img, config)
+            pos_info = self.object_searcher.get_position(
+                img, config, use_cache=from_cache
+            )
             if pos_info is None:
                 continue
             pos, template_found_place = pos_info
             self.controller.click(pos)
             sleep(0.3)
             img = self.capturer.capture()
+            print(template_found_place)
             if (
                 next(
                     self.object_searcher.iter_position_from_template_info(
@@ -157,15 +163,18 @@ class HudSystem(BaseModel):
             ObjectConfigs.Cross.bank_inventory_right,
             ObjectConfigs.Cross.info_win_fight,
         ],
+        from_cache: bool = True,
     ) -> numpy.ndarray:
         MAX_ITERATION = 15
         for _ in range(MAX_ITERATION):
-            no_cross, img = self.close_modal(ordered_configs_to_check, img)
+            no_cross, img = self.close_modal(ordered_configs_to_check, img, from_cache)
             if no_cross:
                 return img
         raise UnknowStateException(img, "too_much_iteration_close_modal")
 
-    def clean_interface(self, img: numpy.ndarray) -> numpy.ndarray:
+    def clean_interface(
+        self, img: numpy.ndarray, from_cache: bool = False
+    ) -> numpy.ndarray:
         return self.close_modals(
             img,
             ordered_configs_to_check=[
@@ -180,4 +189,5 @@ class HudSystem(BaseModel):
                 ObjectConfigs.Button.ok,
                 ObjectConfigs.Button.yes,
             ],
+            from_cache=from_cache,
         )

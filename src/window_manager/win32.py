@@ -6,8 +6,10 @@ from ctypes.wintypes import DWORD, HWND, RECT
 from time import sleep
 
 import numpy
+import psutil
 import win32con
 import win32gui
+from win32process import GetWindowThreadProcessId
 import win32ui
 from pynput.keyboard import Controller as KeyBoardController
 from pynput.keyboard import Key as PyKey
@@ -23,6 +25,13 @@ def kill_window(hwnd: int):
 
 def get_foreground_window() -> int:
     return win32gui.GetForegroundWindow()
+
+
+def get_process_name_by_window(hwnd: int) -> str:
+    _, process_id = GetWindowThreadProcessId(hwnd)
+    process = psutil.Process(process_id)
+    process_name = process.name()
+    return process_name
 
 
 def set_foreground_window(hwnd: int):
@@ -161,6 +170,9 @@ def get_cursor_icon() -> numpy.ndarray:
     return img
 
 
+OFFSET_BY_PROCESS_NAME: dict[str, tuple[int, int]] = {}
+
+
 def adjust_window_size(
     hwnd: int, target_width: int, target_height: int, logger: Logger
 ):
@@ -176,12 +188,21 @@ def adjust_window_size(
 
     _, _, client_width, client_height = win32gui.GetClientRect(hwnd)
 
-    if client_height == target_height and client_width == target_width:
+    start_x, start_y, end_x, end_y = win32gui.GetWindowRect(hwnd)
+
+    process_name = get_process_name_by_window(hwnd)
+    offset = OFFSET_BY_PROCESS_NAME.get(process_name)
+
+    if (
+        client_height == target_height
+        and client_width == target_width
+        and offset is not None
+        and offset[0] == start_x
+        and offset[1] == start_y
+    ):
         return
 
     logger.info(f"Ajuste la taille de la fenetre pour {target_width, target_height}.")
-
-    start_x, start_y, end_x, end_y = win32gui.GetWindowRect(hwnd)
 
     window_width = end_x - start_x
     window_height = end_y - start_y
@@ -202,14 +223,16 @@ def adjust_window_size(
         ctypes.sizeof(rect),
     )
 
-    shadows = (
+    shadows: tuple[int, int, int, int] = (
         rect.left - start_x,
         rect.top - start_y,
         rect.right - end_x,
         rect.bottom - end_y,
     )
-    offset_x = (shadows[2] - shadows[0]) // 2
-    offset_y = (shadows[3] - shadows[1]) // 2
+    offset_x: int = (shadows[2] - shadows[0]) // 2
+    offset_y: int = (shadows[3] - shadows[1]) // 2
+
+    OFFSET_BY_PROCESS_NAME[process_name] = (offset_x, offset_y)
 
     win32gui.MoveWindow(
         hwnd,

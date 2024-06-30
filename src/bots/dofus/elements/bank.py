@@ -53,8 +53,8 @@ def get_slot_area_item(img: numpy.ndarray, item_name: str) -> RegionSchema | Non
                 right=BANK_RECEIPE_TITLE_X_RANGE[1],
                 top=BANK_RECEIPE_SLOT_INITIAL_Y + BANK_RECEIPE_SLOT_HEIGHT * index,
                 bot=BANK_RECEIPE_SLOT_INITIAL_Y
-                    + BANK_RECEIPE_SLOT_HEIGHT * index
-                    + BANK_RECEIPE_TITLE_MAX_HEIGHT,
+                + BANK_RECEIPE_SLOT_HEIGHT * index
+                + BANK_RECEIPE_TITLE_MAX_HEIGHT,
             ),
         )
         title_slot = get_text_from_image(slot_img)
@@ -65,7 +65,7 @@ def get_slot_area_item(img: numpy.ndarray, item_name: str) -> RegionSchema | Non
                 right=BANK_RECEIPE_X_RANGE[1],
                 top=BANK_RECEIPE_SLOT_INITIAL_Y + BANK_RECEIPE_SLOT_HEIGHT * index,
                 bot=BANK_RECEIPE_SLOT_INITIAL_Y
-                    + BANK_RECEIPE_SLOT_HEIGHT * (index + 1),
+                + BANK_RECEIPE_SLOT_HEIGHT * (index + 1),
             )
 
     return None
@@ -73,17 +73,17 @@ def get_slot_area_item(img: numpy.ndarray, item_name: str) -> RegionSchema | Non
 
 class BankSystem:
     def __init__(
-            self,
-            bank_building: BankBuilding,
-            object_searcher: ObjectSearcher,
-            capturer: Capturer,
-            image_manager: ImageManager,
-            icon_searcher: IconSearcher,
-            controller: Controller,
-            service: ServiceSession,
-            core_walker_sys: CoreWalkerSystem,
-            character_state: CharacterState,
-            logger: Logger,
+        self,
+        bank_building: BankBuilding,
+        object_searcher: ObjectSearcher,
+        capturer: Capturer,
+        image_manager: ImageManager,
+        icon_searcher: IconSearcher,
+        controller: Controller,
+        service: ServiceSession,
+        core_walker_sys: CoreWalkerSystem,
+        character_state: CharacterState,
+        logger: Logger,
     ) -> None:
         self.bank_building = bank_building
         self.capturer = capturer
@@ -129,7 +129,7 @@ class BankSystem:
         img = self.capturer.capture()
 
         if self.core_walker_sys.get_curr_map_info().map == get_astrub_bank_map(
-                self.service
+            self.service
         ):
             pos = self.object_searcher.get_position(
                 img, ObjectConfigs.Bank.owl_astrub, force=True
@@ -177,7 +177,7 @@ class BankSystem:
         return ItemProcessedStatus.NOT_PROCESSED
 
     def __get_transfer_position_if_available(
-            self, img: numpy.ndarray, slot_area: RegionSchema
+        self, img: numpy.ndarray, slot_area: RegionSchema
     ) -> Position | None:
         """get transfer position, return None if check icon is found,
         Need to be on bank receipe list
@@ -193,8 +193,8 @@ class BankSystem:
         slot_img = crop_image(img, slot_area)
 
         if (
-                self.object_searcher.get_position(slot_img, ObjectConfigs.Check.small)
-                is not None
+            self.object_searcher.get_position(slot_img, ObjectConfigs.Check.small)
+            is not None
         ):
             return None
 
@@ -228,19 +228,19 @@ class BankSystem:
         img = self.capturer.capture()
         slot_area = get_slot_area_item(img, recipe.result_item.name)
         if slot_area and (
-                (
-                        transfer_icon_position := self.__get_transfer_position_if_available(
-                            img, slot_area
-                        )
+            (
+                transfer_icon_position := self.__get_transfer_position_if_available(
+                    img, slot_area
                 )
-                and (
-                        self.object_searcher.get_position(
-                            crop_image(img, slot_area),
-                            ObjectConfigs.Check.small,
-                            with_crop=False,
-                        )
+            )
+            and (
+                self.object_searcher.get_position(
+                    crop_image(img, slot_area),
+                    ObjectConfigs.Check.small,
+                    use_cache=False,
                 )
-                is None
+            )
+            is None
         ):
             # we can pick atleast ingredients for one of that item
             self.controller.click(transfer_icon_position)
@@ -261,7 +261,7 @@ class BankSystem:
 
             slot_area_img = crop_image(img, slot_area)
             pos_check = self.object_searcher.get_position(
-                slot_area_img, ObjectConfigs.Check.small, with_crop=False
+                slot_area_img, ObjectConfigs.Check.small, use_cache=False
             )
             if pos_check is None:
                 item_craft_status = ItemProcessedStatus.PROCESSED

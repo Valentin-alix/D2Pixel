@@ -101,7 +101,7 @@ class ObjectSearcher:
         img: numpy.ndarray,
         config: ObjectSearchConfig,
         map_id: int | None = None,
-        with_crop: bool = True,
+        use_cache: bool = True,
     ) -> Iterator[tuple[Position, InfoTemplateFoundPlacementSchema]]:
         if (
             config.cache_info is not None
@@ -111,7 +111,7 @@ class ObjectSearcher:
                 )
             )
             is not None
-            and with_crop
+            and use_cache
         ):
             for (
                 position,
@@ -119,13 +119,13 @@ class ObjectSearcher:
             ) in self.iter_position_from_template_info(img, config, templates_place):
                 yield position, template_found_place
         else:
-            img = get_prepared_img(img, config, with_crop)
+            img = get_prepared_img(img, config, use_cache)
             for filename, template in get_templates(config).items():
                 for position in iter_position_template_in_image(
                     img,
                     template,
                     threshold=config.threshold,
-                    offset_area=config.lookup_region,
+                    offset_area=config.lookup_region if use_cache else None,
                 ):
                     region_schema = get_region_from_template(template, position)
                     yield (
@@ -142,7 +142,7 @@ class ObjectSearcher:
         config: ObjectSearchConfig,
         map_id: int | None = None,
         force: Literal[False] = ...,
-        with_crop: bool = True,
+        use_cache: bool = True,
     ) -> tuple[Position, TemplateFoundPlacementSchema] | None: ...
 
     @overload
@@ -152,7 +152,7 @@ class ObjectSearcher:
         config: ObjectSearchConfig,
         map_id: int | None = None,
         force: Literal[True] = ...,
-        with_crop: bool = True,
+        use_cache: bool = True,
     ) -> tuple[Position, TemplateFoundPlacementSchema]: ...
 
     def get_position(
@@ -161,9 +161,9 @@ class ObjectSearcher:
         config: ObjectSearchConfig,
         map_id: int | None = None,
         force: bool = False,
-        with_crop: bool = True,
+        use_cache: bool = True,
     ) -> tuple[Position, InfoTemplateFoundPlacementSchema] | None:
-        pos_info = next((self.iter_position(img, config, map_id, with_crop)), None)
+        pos_info = next((self.iter_position(img, config, map_id, use_cache)), None)
         if force and not pos_info:
             raise UnknowStateException(img, config.ref.replace(".", "_"))
 
@@ -172,6 +172,7 @@ class ObjectSearcher:
             if (
                 config.cache_info is not None
                 and config.cache_info.min_parsed_count_on_map is not None
+                and use_cache
             ):
                 template_found_place = TemplateService.get_place_or_create(
                     self.service,
@@ -192,9 +193,9 @@ class ObjectSearcher:
         img: numpy.ndarray,
         config: ObjectSearchConfig,
         map_id: int | None = None,
-        with_crop: bool = True,
+        use_cache: bool = True,
     ) -> list[tuple[Position, InfoTemplateFoundPlacementSchema]]:
-        pos_infos = list(self.iter_position(img, config, map_id, with_crop))
+        pos_infos = list(self.iter_position(img, config, map_id, use_cache))
         if config.cache_info and config.cache_info.min_parsed_count_on_map is not None:
             incremented_template_found_map_ids: set[int] = set()
             for _, template_found_info in pos_infos:

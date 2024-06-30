@@ -72,11 +72,11 @@ def launch_launcher():
 
 class AnkamaLauncher:
     def __init__(self, logger: Logger, service: ServiceSession) -> None:
-        if not (window_info := get_ankama_window_info()):
+        if not (window_info := get_ankama_window_info(logger)):
             # launcher not found, launch...
             launch_launcher()
             sleep(2)
-            window_info = get_ankama_window_info()
+            window_info = get_ankama_window_info(logger)
             assert window_info is not None
 
         self.pause_threads: list[Thread] | None = None
