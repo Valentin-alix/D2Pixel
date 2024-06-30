@@ -11,7 +11,6 @@ from EzreD2Shared.shared.entities.position import Position
 from EzreD2Shared.shared.schemas.region import RegionSchema
 from EzreD2Shared.shared.schemas.sub_area import SubAreaSchema
 from EzreD2Shared.shared.utils.randomizer import (
-    RANGE_DURATION_ACTIVITY,
     multiply_offset,
 )
 from EzreD2Shared.shared.utils.text_similarity import are_similar_text
@@ -27,6 +26,7 @@ from src.bots.dofus.sub_area_farming.sub_area_farming_system import (
     SubAreaFarmingSystem,
 )
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
+from src.consts import RANGE_DURATION_ACTIVITY
 from src.exceptions import (
     CharacterIsStuckException,
     StoppedException,

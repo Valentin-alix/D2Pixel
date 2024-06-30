@@ -22,7 +22,7 @@ from EzreD2Shared.shared.entities.position import Position
 from EzreD2Shared.shared.schemas.item import ItemSchema
 from EzreD2Shared.shared.schemas.recipe import RecipeSchema
 from EzreD2Shared.shared.schemas.region import RegionSchema
-from EzreD2Shared.shared.utils.randomizer import wait
+from src.common.randomizer import wait
 from EzreD2Shared.shared.utils.text_similarity import are_similar_text
 from src.bots.dofus.hud.small_bar import get_percentage_inventory_bar_normal
 from src.bots.dofus.walker.buildings.bank_buildings import BankBuilding

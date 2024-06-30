@@ -5,12 +5,11 @@ from time import perf_counter, sleep
 from EzreD2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
 
 from src.bots.dofus.connection.connection_system import ConnectionSystem
+from src.consts import START_MIN_AFK_TIME
 from src.services.character import CharacterService
 from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 from src.window_manager.controller import Controller
-
-START_MIN_AFK_TIME = 60 * 60 * 3
 
 INACTIVITY_TIME_LIMIT = 60 * 10
 

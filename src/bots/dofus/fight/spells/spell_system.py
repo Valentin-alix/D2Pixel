@@ -5,7 +5,7 @@ from EzreD2Shared.shared.consts.adaptative.regions import CONTENT_REGION
 from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
 from EzreD2Shared.shared.enums import CharacteristicEnum
 from EzreD2Shared.shared.schemas.spell_lvl import CurrentBoostSchema, SpellLevelSchema
-from EzreD2Shared.shared.utils.randomizer import wait
+from src.common.randomizer import wait
 
 from EzreD2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid

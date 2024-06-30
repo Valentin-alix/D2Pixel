@@ -3,8 +3,7 @@ import threading
 from typing import Callable
 
 from src.bots.dofus.chat.chat_system import ChatSystem
-
-TIME_SENTENCE = 60 * 30
+from src.consts import TIME_BETWEEN_SENTENCE
 
 
 class Humanizer:
@@ -37,4 +36,6 @@ class Humanizer:
         timer.start()
 
     def run_humanizer(self):
-        self.run_random_action(self.chat_system.type_random_sentence, TIME_SENTENCE)
+        self.run_random_action(
+            self.chat_system.type_random_sentence, TIME_BETWEEN_SENTENCE
+        )

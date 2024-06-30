@@ -7,7 +7,7 @@ from EzreD2Shared.shared.consts.adaptative.positions import END_TURN_POSITION
 from EzreD2Shared.shared.consts.adaptative.regions import CONTENT_REGION
 from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
 from EzreD2Shared.shared.schemas.region import RegionSchema
-from EzreD2Shared.shared.utils.randomizer import wait
+from src.common.randomizer import wait
 
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.path_grid import AstarGrid

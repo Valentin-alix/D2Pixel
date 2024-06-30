@@ -12,7 +12,7 @@ from EzreD2Shared.shared.consts.adaptative.positions import (
 from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
 from EzreD2Shared.shared.schemas.job import JobSchema
 from EzreD2Shared.shared.schemas.recipe import RecipeSchema
-from EzreD2Shared.shared.utils.randomizer import wait
+from src.common.randomizer import wait
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.hud.hud_system import HudSystem
 from src.bots.dofus.walker.buildings.workshop_building import WorkshopBuilding
@@ -28,17 +28,17 @@ from src.window_manager.controller import Controller
 
 class Crafter:
     def __init__(
-            self,
-            hud_sys: HudSystem,
-            bank_sys: BankSystem,
-            logger: Logger,
-            image_manager: ImageManager,
-            object_searcher: ObjectSearcher,
-            capturer: Capturer,
-            controller: Controller,
-            workshop_building: WorkshopBuilding,
-            service: ServiceSession,
-            character_state: CharacterState,
+        self,
+        hud_sys: HudSystem,
+        bank_sys: BankSystem,
+        logger: Logger,
+        image_manager: ImageManager,
+        object_searcher: ObjectSearcher,
+        capturer: Capturer,
+        controller: Controller,
+        workshop_building: WorkshopBuilding,
+        service: ServiceSession,
+        character_state: CharacterState,
     ) -> None:
         self.hud_sys = hud_sys
         self.bank_sys = bank_sys
@@ -85,10 +85,10 @@ class Crafter:
             self.controller.send_text(recipe.result_item.name)
 
             if (
-                    self.object_searcher.get_position(
-                        self.capturer.capture(), ObjectConfigs.Text.no_receipe
-                    )
-                    is None
+                self.object_searcher.get_position(
+                    self.capturer.capture(), ObjectConfigs.Text.no_receipe
+                )
+                is None
             ):
                 # item is craftable
                 self.controller.click(FIRST_SLOT_RECEIPE_POSITION)

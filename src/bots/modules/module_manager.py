@@ -56,14 +56,14 @@ DEFAULT_MODULES: list[str] = ["Hdv", "Fighter", "Harvester"]
 
 class ModuleManager:
     def __init__(
-            self,
-            service: ServiceSession,
-            window_info: WindowInfo,
-            fake_sentence: FakeSentence,
-            fighter_maps_time: dict[int, float],
-            fighter_sub_areas_farming_ids: list[int],
-            harvest_sub_areas_farming_ids: list[int],
-            harvest_map_time: dict[int, float],
+        self,
+        service: ServiceSession,
+        window_info: WindowInfo,
+        fake_sentence: FakeSentence,
+        fighter_maps_time: dict[int, float],
+        fighter_sub_areas_farming_ids: list[int],
+        harvest_sub_areas_farming_ids: list[int],
+        harvest_map_time: dict[int, float],
     ):
         self.window_info = window_info
         character_id = window_info.name.split(" - Dofus")[0]
@@ -329,20 +329,23 @@ class ModuleManager:
             "Harvester": self.harvester.run_harvest,
         }
 
-    def stop_bot(self):
-        self.bot_signals.is_stopping_bot.emit(True)
+    def _stop_bot(self):
         if self.is_playing.is_set():
             self.is_paused.set()
             while self.is_playing.is_set():
                 self.logger.info("Waiting for stopped bot")
                 sleep(0.5)
+
+    def stop_bot(self):
+        self.bot_signals.is_stopping_bot.emit(True)
+        self._stop_bot()
         self.bot_signals.is_stopping_bot.emit(False)
 
     def run_bot(self, name_modules: list[str] | None = None):
         if name_modules is None:
             name_modules = DEFAULT_MODULES
 
-        self.stop_bot()
+        self._stop_bot()
 
         self.is_paused.clear()
         self.is_playing.set()

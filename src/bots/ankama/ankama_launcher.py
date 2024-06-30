@@ -27,6 +27,7 @@ from src.common.retry import RetryTimeArgs
 from src.common.scheduler import run_continuously
 from src.common.searcher import search_for_file
 from src.consts import ANKAMA_WINDOW_SIZE, DOFUS_WINDOW_SIZE, ENV_PATH
+from src.consts import RANGES_HOURS_PLAYTIME
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
@@ -43,12 +44,6 @@ from src.window_manager.organizer import (
     get_windows_by_process_and_name,
 )
 from src.window_manager.win32 import is_window_visible
-
-RANGES_HOURS_PLAYTIME: list[tuple[str, str]] = [
-    ("08:00", "12:30"),
-    ("13:00", "20:30"),
-    ("21:00", "23:45"),
-]
 
 
 def get_path_ankama_launcher() -> str:

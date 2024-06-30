@@ -23,7 +23,7 @@ from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
 from EzreD2Shared.shared.enums import CategoryEnum
 from EzreD2Shared.shared.schemas.item import ItemSchema
 from EzreD2Shared.shared.schemas.region import RegionSchema
-from EzreD2Shared.shared.utils.randomizer import wait
+from src.common.randomizer import wait
 
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.entities_map.sale_hotel import (

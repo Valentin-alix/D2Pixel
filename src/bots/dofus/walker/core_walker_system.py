@@ -22,7 +22,7 @@ from EzreD2Shared.shared.schemas.map import BaseMapSchema
 from EzreD2Shared.shared.schemas.map_direction import MapDirectionSchema
 from EzreD2Shared.shared.schemas.waypoint import WaypointSchema
 from EzreD2Shared.shared.schemas.zaapi import ZaapiSchema
-from EzreD2Shared.shared.utils.randomizer import RANGE_NEW_MAP, wait
+from src.common.randomizer import wait
 
 from src.bots.dofus.hud.hud_system import HudSystem
 from src.bots.dofus.hud.map import get_map
@@ -38,6 +38,7 @@ from src.common.retry import (
     retry_count,
     retry_force_count,
 )
+from src.consts import RANGE_NEW_MAP
 from src.entities.building_info import BuildingInfo
 from src.exceptions import (
     CharacterIsStuckException,

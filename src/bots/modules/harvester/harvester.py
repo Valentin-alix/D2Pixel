@@ -14,7 +14,6 @@ from EzreD2Shared.shared.schemas.sub_area import SubAreaSchema
 from EzreD2Shared.shared.schemas.template_found import InfoTemplateFoundPlacementSchema
 from EzreD2Shared.shared.utils.debugger import timeit
 from EzreD2Shared.shared.utils.randomizer import (
-    RANGE_DURATION_ACTIVITY,
     multiply_offset,
 )
 
@@ -41,6 +40,7 @@ from src.bots.modules.harvester.path_positions import (
     find_dumby_optimal_path_positions,
     find_optimal_path_positions,
 )
+from src.consts import RANGE_DURATION_ACTIVITY
 from src.exceptions import (
     CharacterIsStuckException,
     StoppedException,

@@ -8,7 +8,7 @@ import win32con
 import win32gui
 from EzreD2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
 from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.utils.randomizer import PAUSE
+from src.consts import PAUSE
 from win32api import VkKeyScan
 
 from src.exceptions import StoppedException
