@@ -345,7 +345,7 @@ class ModuleManager:
         if name_modules is None:
             name_modules = DEFAULT_MODULES
 
-        self._stop_bot()
+        self.stop_bot()
 
         self.is_paused.clear()
         self.is_playing.set()
