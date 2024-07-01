@@ -126,6 +126,7 @@ class ModuleManager:
             self.service,
             self.character_state,
             self.logger,
+            spell_manager,
         )
         ia_brute_sys = IaBruteFightSystem(
             ia_base_sys,
@@ -345,10 +346,11 @@ class ModuleManager:
         if name_modules is None:
             name_modules = DEFAULT_MODULES
 
-        self.stop_bot()
-
+        self.bot_signals.is_stopping_bot.emit(True)
+        self._stop_bot()
         self.is_paused.clear()
         self.is_playing.set()
+        self.bot_signals.is_stopping_bot.emit(False)
 
         self.map_state.reset_map_state()
 

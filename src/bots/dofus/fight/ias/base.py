@@ -8,6 +8,7 @@ from EzreD2Shared.shared.enums import CharacteristicEnum
 from EzreD2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
+from src.bots.dofus.fight.spells.spell_manager import SpellManager
 from src.bots.dofus.fight.spells.spell_system import SpellSystem
 from src.common.retry import RetryTimeArgs
 from src.image_manager.animation import AnimationManager
@@ -28,6 +29,7 @@ class IaBaseFightSystem:
         service: ServiceSession,
         character_state: CharacterState,
         logger: Logger,
+        spell_manager: SpellManager,
     ) -> None:
         self.spell_sys = spell_sys
         self.grid = grid
@@ -37,6 +39,7 @@ class IaBaseFightSystem:
         self.animation_manager = animation_manager
         self.character_state = character_state
         self.logger = logger
+        self.spell_manager = spell_manager
 
     def reach_attackable_enemy(
         self, img: numpy.ndarray
@@ -66,7 +69,7 @@ class IaBaseFightSystem:
                 self.character_state.character.breed_id,
                 CharacteristicEnum.PM,
             )
-            if not pm_buff_spell:
+            if not pm_buff_spell or self.spell_manager._pa < pm_buff_spell.ap_cost:
                 self.logger.info("Did not found PM Spell")
                 return img, None
             self.logger.info("Launch PM Spell")

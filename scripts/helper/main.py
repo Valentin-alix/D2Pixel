@@ -3,10 +3,9 @@ import logging
 import os
 import sys
 
+
 sys.path.append(os.path.dirname(os.path.dirname((os.path.dirname(__file__)))))
-from src.bots.ankama.ankama_launcher import AnkamaLauncher
-from src.services.session import ServiceSession
-from src.gui.signals.app_signals import AppSignals
+from src.window_manager.organizer import get_windows_by_process_and_name
 
 if __name__ == "__main__":
     logger = Logger("root")
@@ -14,6 +13,9 @@ if __name__ == "__main__":
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG)
     logger.addHandler(console_handler)
-    service = ServiceSession(logger, AppSignals())
-    launcher = AnkamaLauncher(logger, service)
-    dofus_windows = launcher.connect_all()
+    # service = ServiceSession(logger, AppSignals())
+    # launcher = AnkamaLauncher(logger, service)
+    # dofus_windows = launcher.connect_all()
+
+    windows_ankama = get_windows_by_process_and_name("Ankama Launcher.exe")
+    logger.info(f"Found ankama windows : {windows_ankama}")

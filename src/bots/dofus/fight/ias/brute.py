@@ -33,12 +33,12 @@ class IaBruteFightSystem:
         self.service = service
         self.character_state = character_state
 
-    def play_turn_brute(self, img: numpy.ndarray) -> bool:
+    def play_turn(self, img: numpy.ndarray) -> bool:
         while True:
             img, enemy_cell = self.ia_base_fight_sys.reach_attackable_enemy(img)
             if enemy_cell is None:
                 break
-            img, in_focus, in_fight = self.hit_enemy_brute(img, enemy_cell)
+            img, in_focus, in_fight = self.hit_enemy(img, enemy_cell)
             if not in_fight:
                 return False
             if in_focus:
@@ -53,7 +53,7 @@ class IaBruteFightSystem:
 
         return True
 
-    def hit_enemy_brute(
+    def hit_enemy(
         self, img: numpy.ndarray, enemy_cell: CellSchema
     ) -> tuple[numpy.ndarray, bool, bool]:
         """Hit single enemy

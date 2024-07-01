@@ -1,3 +1,5 @@
+Fight -> parfois ca reste bloquer a lancer le spell -> ca check pas correctement si en fin de fight
+
 Ankama launcher bug au début car Ajuste la taille ?
 
 FIGHT FIX ASTAR & BRESENHAM pas précis -> grille bof

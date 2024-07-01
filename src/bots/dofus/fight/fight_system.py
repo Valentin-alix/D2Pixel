@@ -249,7 +249,7 @@ class FightSystem:
         self.spell_manager._pa = get_pa(img)
         self.logger.info(f"Character has {self.spell_manager._pa} pa")
 
-        if self.ia_brute_sys.play_turn_brute(img) is False:
+        if self.ia_brute_sys.play_turn(img) is False:
             return False
 
         if is_ur_turn(img):

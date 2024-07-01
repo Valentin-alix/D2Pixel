@@ -113,8 +113,6 @@ class ModulesPage(QWidget):
             self.button_play.show()
 
     def on_play(self):
-        self.is_loading = True
-
         if self.thread_run is not None:
             self.thread_run.quit()
             self.thread_run.wait()
@@ -130,9 +128,6 @@ class ModulesPage(QWidget):
         self.thread_run.start()
 
     def on_stop(self):
-        self.is_loading = True
-        self.info_action.hide()
-
         if self.thread_stop is not None:
             self.thread_stop.quit()
             self.thread_stop.wait()
@@ -151,7 +146,9 @@ class ModulesPage(QWidget):
         if value:
             self.loading.start()
             self.action_content.hide()
+            self.info_action.hide()
         else:
             self.refresh_state_play_stop_btn()
             self.action_content.show()
+            self.info_action.show()
             self.loading.stop()
