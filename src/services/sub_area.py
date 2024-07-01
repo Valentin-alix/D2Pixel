@@ -46,7 +46,7 @@ class SubAreaService(ServiceSession):
             return {int(key): value for key, value in resp.json().items()}
 
     @staticmethod
-    @cached(cache={}, key=lambda _, sub_area_ids: hashkey(sub_area_ids))
+    @cached(cache={}, key=lambda _, sub_area_ids: hashkey(tuple(sub_area_ids)))
     def get_max_time_fighter(
         service: ServiceSession,
         sub_area_ids: list[int],
