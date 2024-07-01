@@ -3,6 +3,7 @@ from time import sleep
 
 import numpy
 from EzreD2Shared.shared.consts.adaptative.regions import CONTENT_REGION
+from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
 from EzreD2Shared.shared.enums import CharacteristicEnum
 
 from EzreD2Shared.shared.schemas.cell import CellSchema
@@ -12,6 +13,7 @@ from src.bots.dofus.fight.spells.spell_manager import SpellManager
 from src.bots.dofus.fight.spells.spell_system import SpellSystem
 from src.common.retry import RetryTimeArgs
 from src.image_manager.animation import AnimationManager
+from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.session import ServiceSession
 from src.services.spell import SpellService
 from src.states.character_state import CharacterState
@@ -30,6 +32,7 @@ class IaBaseFightSystem:
         character_state: CharacterState,
         logger: Logger,
         spell_manager: SpellManager,
+        object_searcher: ObjectSearcher,
     ) -> None:
         self.spell_sys = spell_sys
         self.grid = grid
@@ -40,6 +43,7 @@ class IaBaseFightSystem:
         self.character_state = character_state
         self.logger = logger
         self.spell_manager = spell_manager
+        self.object_searcher = object_searcher
 
     def reach_attackable_enemy(
         self, img: numpy.ndarray
@@ -69,7 +73,14 @@ class IaBaseFightSystem:
                 self.character_state.character.breed_id,
                 CharacteristicEnum.PM,
             )
-            if not pm_buff_spell or self.spell_manager._pa < pm_buff_spell.ap_cost:
+            if (
+                not pm_buff_spell
+                or self.spell_manager._pa < pm_buff_spell.ap_cost
+                or (
+                    self.object_searcher.get_position(img, ObjectConfigs.Fight.in_fight)
+                    is None
+                )
+            ):
                 self.logger.info("Did not found PM Spell")
                 return img, None
             self.logger.info("Launch PM Spell")
