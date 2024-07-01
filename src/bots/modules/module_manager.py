@@ -127,6 +127,7 @@ class ModuleManager:
             self.character_state,
             self.logger,
             spell_manager,
+            self.object_searcher,
         )
         ia_brute_sys = IaBruteFightSystem(
             ia_base_sys,

@@ -173,6 +173,7 @@ class AnkamaLauncher:
             character_state,
             self.logger,
             spell_manager,
+            object_searcher,
         )
         ia_brute_sys = IaBruteFightSystem(
             ia_base_sys,
