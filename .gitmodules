@@ -1,6 +1,6 @@
 [submodule "EzreD2Datas"]
 	path = D2Datas
-	url = https://github.com/Valentin-alix/EzreD2Datas
+	url = https://github.com/Valentin-alix/D2Datas
 [submodule "EzreD2Shared"]
 	path = D2Shared
-	url = https://github.com/Valentin-alix/EzreD2Shared
+	url = https://github.com/Valentin-alix/D2Shared
