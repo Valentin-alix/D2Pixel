@@ -1,11 +1,11 @@
 from logging import Logger
-from EzreD2Shared.shared.consts.adaptative.positions import (
+from D2Shared.shared.consts.adaptative.positions import (
     BANK_ASTRUB_IN,
     BANK_ASTRUB_OUT,
     BANK_BONTA_IN,
     BANK_BONTA_OUT,
 )
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.consts.object_configs import ObjectConfigs
 
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.maps import get_astrub_bank_map, get_bonta_bank_map

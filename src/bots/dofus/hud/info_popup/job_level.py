@@ -2,15 +2,15 @@ from logging import Logger
 import numpy
 from pydantic import BaseModel, ConfigDict
 import unidecode
-from EzreD2Shared.shared.consts.adaptative.consts import (
+from D2Shared.shared.consts.adaptative.consts import (
     INFO_JOB_IMPOSSIBLE_OFFSET_BOT,
     INFO_JOB_IMPOSSIBLE_OFFSET_RIGHT,
     INFO_JOB_LVLUP_OFFSET_BOT,
     INFO_JOB_LVLUP_OFFSET_RIGHT,
 )
-from EzreD2Shared.shared.schemas.job import JobSchema
-from EzreD2Shared.shared.schemas.region import RegionSchema
-from EzreD2Shared.shared.utils.text_similarity import get_similarity
+from D2Shared.shared.schemas.job import JobSchema
+from D2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.utils.text_similarity import get_similarity
 
 from src.bots.dofus.hud.info_popup.info_popup import clean_info_popup_img
 from src.exceptions import UnknowStateException

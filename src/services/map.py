@@ -1,16 +1,16 @@
 from cachetools import cached
 from cachetools.keys import hashkey
 from src.services.session import ServiceSession
-from EzreD2Shared.shared.enums import FromDirection
-from EzreD2Shared.shared.schemas.map import MapSchema
-from EzreD2Shared.shared.schemas.map_direction import MapDirectionSchema
-from EzreD2Shared.shared.schemas.map_with_action import MapWithActionSchema
+from D2Shared.shared.enums import FromDirection
+from D2Shared.shared.schemas.map import MapSchema
+from D2Shared.shared.schemas.map_direction import MapDirectionSchema
+from D2Shared.shared.schemas.map_with_action import MapWithActionSchema
 from src.consts import BACKEND_URL
 
 MAP_URL = BACKEND_URL + "/map/"
 
 
-class MapService(ServiceSession):
+class MapService:
     @staticmethod
     def find_path(
         service: ServiceSession,

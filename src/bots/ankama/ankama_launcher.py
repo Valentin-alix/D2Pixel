@@ -5,8 +5,8 @@ from time import sleep
 
 import schedule
 from dotenv import get_key, set_key
-from EzreD2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
+from D2Shared.shared.consts.object_configs import ObjectConfigs
 
 from src.bots.dofus.connection.connection_system import (
     ConnectionSystem,

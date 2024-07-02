@@ -5,7 +5,7 @@ from threading import Event
 from time import sleep
 
 import numpy
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.consts.object_configs import ObjectConfigs
 
 from src.bots.dofus.fight.fight_system import FightSystem
 from src.bots.dofus.hud.hud_system import HudSystem

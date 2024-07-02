@@ -1,7 +1,7 @@
 from cachetools import cached
 from cachetools.keys import hashkey
 
-from EzreD2Shared.shared.schemas.waypoint import WaypointSchema
+from D2Shared.shared.schemas.waypoint import WaypointSchema
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
 

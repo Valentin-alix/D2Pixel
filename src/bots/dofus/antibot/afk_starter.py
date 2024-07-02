@@ -2,7 +2,7 @@ import atexit
 from threading import Event
 from time import perf_counter, sleep
 
-from EzreD2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
+from D2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
 
 from src.bots.dofus.connection.connection_system import ConnectionSystem
 from src.consts import START_MIN_AFK_TIME

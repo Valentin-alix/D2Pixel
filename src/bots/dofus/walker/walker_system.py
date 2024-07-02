@@ -3,8 +3,8 @@ from time import perf_counter, sleep
 from typing import override
 
 import numpy
-from EzreD2Shared.shared.consts.adaptative.regions import INFO_MAP_REGION
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.consts.adaptative.regions import INFO_MAP_REGION
+from D2Shared.shared.consts.object_configs import ObjectConfigs
 
 from src.bots.dofus.fight.fight_system import FightSystem
 from src.bots.dofus.hud.hud_system import HudSystem

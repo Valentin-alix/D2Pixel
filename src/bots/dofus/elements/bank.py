@@ -4,26 +4,26 @@ from time import sleep
 import numpy
 import win32con
 
-from EzreD2Shared.shared.consts.adaptative.consts import (
+from D2Shared.shared.consts.adaptative.consts import (
     BANK_RECEIPE_SLOT_HEIGHT,
     BANK_RECEIPE_SLOT_INITIAL_Y,
     BANK_RECEIPE_TITLE_MAX_HEIGHT,
     BANK_RECEIPE_TITLE_X_RANGE,
     BANK_RECEIPE_X_RANGE,
 )
-from EzreD2Shared.shared.consts.adaptative.positions import (
+from D2Shared.shared.consts.adaptative.positions import (
     BANK_CLEAR_SEARCH_IN_POSITION,
     BANK_POSSIBLE_RECEIPE_ICON_POSITION,
     BANK_SEARCH_IN_POSITION,
     BANK_SEARCH_RECIPE_POSITION,
 )
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.schemas.item import ItemSchema
-from EzreD2Shared.shared.schemas.recipe import RecipeSchema
-from EzreD2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.schemas.recipe import RecipeSchema
+from D2Shared.shared.schemas.region import RegionSchema
 from src.common.randomizer import wait
-from EzreD2Shared.shared.utils.text_similarity import are_similar_text
+from D2Shared.shared.utils.text_similarity import are_similar_text
 from src.bots.dofus.hud.small_bar import get_percentage_inventory_bar_normal
 from src.bots.dofus.walker.buildings.bank_buildings import BankBuilding
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem

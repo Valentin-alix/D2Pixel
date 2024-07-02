@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget
 
+from D2Shared.shared.schemas.user import ReadUserSchema
 from src.gui.components.organization import HorizontalLayout
 from src.gui.fragments.sidebar.sidebar_menu import SideBarMenu
 from src.gui.fragments.sidebar.sidebar_signals import SideBarSignals
@@ -12,6 +13,7 @@ class SideBar(QWidget):
         self,
         service: ServiceSession,
         app_signals: AppSignals,
+        user: ReadUserSchema,
         *args,
         **kwargs,
     ) -> None:
@@ -19,6 +21,7 @@ class SideBar(QWidget):
         self.side_bar_signals = SideBarSignals()
         self.app_signals = app_signals
         self.service = service
+        self.user = user
 
         self.main_layout = HorizontalLayout()
         self.setLayout(self.main_layout)
@@ -26,5 +29,6 @@ class SideBar(QWidget):
             service,
             side_bar_signals=self.side_bar_signals,
             app_signals=self.app_signals,
+            user=self.user,
         )
         self.main_layout.addWidget(self.side_bar_menu)

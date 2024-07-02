@@ -3,7 +3,7 @@ from typing import Literal, overload
 
 import numpy
 from pydantic import BaseModel, ConfigDict
-from EzreD2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.schemas.region import RegionSchema
 
 from src.common.retry import RetryTimeArgs, retry_time
 from src.exceptions import UnknowStateException

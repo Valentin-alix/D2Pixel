@@ -1,7 +1,7 @@
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.utils.algos.tsp import greedy_algorithm, solve_tsp_dynamic
-from EzreD2Shared.shared.utils.debugger import timeit
-from EzreD2Shared.shared.utils.randomizer import multiply_offset
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.utils.algos.tsp import greedy_algorithm, solve_tsp_dynamic
+from D2Shared.shared.utils.debugger import timeit
+from D2Shared.shared.utils.randomizer import multiply_offset
 
 
 @timeit

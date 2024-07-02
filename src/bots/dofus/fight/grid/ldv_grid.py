@@ -1,10 +1,10 @@
 import random
 
-from EzreD2Shared.shared.enums import TypeCellEnum
-from EzreD2Shared.shared.utils.algos.bresenhman import bresenham_dofus
-from EzreD2Shared.shared.utils.debugger import timeit
+from D2Shared.shared.enums import TypeCellEnum
+from D2Shared.shared.utils.algos.bresenhman import bresenham_dofus
+from D2Shared.shared.utils.debugger import timeit
 
-from EzreD2Shared.shared.schemas.cell import CellSchema
+from D2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 
 

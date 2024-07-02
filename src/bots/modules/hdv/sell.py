@@ -1,7 +1,7 @@
 from logging import Logger
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.enums import CategoryEnum
-from EzreD2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.enums import CategoryEnum
+from D2Shared.shared.schemas.item import ItemSchema
 
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.elements.sale_hotel import SaleHotelSystem

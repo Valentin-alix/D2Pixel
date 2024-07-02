@@ -5,13 +5,13 @@ from time import sleep
 import numpy
 import tesserocr
 import win32con
-from EzreD2Shared.shared.consts.adaptative.positions import (
+from D2Shared.shared.consts.adaptative.positions import (
     HOTEL_OPEN_QUANTITY_PANEL_POSITION,
     HOTEL_PRICE_INPUT_POSITION,
     SALE_HOTEL_ALL_CATEGORY_POSITION,
     SALE_HOTEL_FILTER_OBJECTS_POSITION,
 )
-from EzreD2Shared.shared.consts.adaptative.regions import (
+from D2Shared.shared.consts.adaptative.regions import (
     RIGHT_INVENTORY_SALE_HOTEL,
     SALE_HOTEL_AVAILABLE_SLOT_REGION,
     SALE_HOTEL_HUNDRED_PRICE_REGION,
@@ -19,10 +19,10 @@ from EzreD2Shared.shared.consts.adaptative.regions import (
     SALE_HOTEL_QUANTITY_REGION,
     SALE_HOTEL_TEN_PRICE_REGION,
 )
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.enums import CategoryEnum
-from EzreD2Shared.shared.schemas.item import ItemSchema
-from EzreD2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.enums import CategoryEnum
+from D2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.schemas.region import RegionSchema
 from src.common.randomizer import wait
 
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem

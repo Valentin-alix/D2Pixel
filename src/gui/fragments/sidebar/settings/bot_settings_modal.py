@@ -1,9 +1,16 @@
 from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QCheckBox, QComboBox, QGroupBox, QWidget, QFormLayout, QLineEdit
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QGroupBox,
+    QWidget,
+    QFormLayout,
+    QLineEdit,
+)
 
-from EzreD2Shared.shared.consts.jobs import HARVEST_JOBS_ID
-from EzreD2Shared.shared.schemas.character import (
+from D2Shared.shared.consts.jobs import HARVEST_JOBS_ID
+from D2Shared.shared.schemas.character import (
     CharacterJobInfoSchema,
     CharacterSchema,
 )
@@ -20,11 +27,11 @@ from src.services.session import ServiceSession
 
 class BotSettingsModal(Dialog):
     def __init__(
-            self,
-            service: ServiceSession,
-            module_manager: ModuleManager,
-            *args,
-            **kwargs,
+        self,
+        service: ServiceSession,
+        module_manager: ModuleManager,
+        *args,
+        **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.service = service
@@ -96,7 +103,7 @@ class BotSettingsModal(Dialog):
             group_job_layout = VerticalLayout()
             group_job.setLayout(group_job_layout)
 
-            for job_info in job_infos[index: index + GROUP_COUNT]:
+            for job_info in job_infos[index : index + GROUP_COUNT]:
                 form = Form(job_info.job.name)
                 self.form_job_infos.append((job_info, form))
                 form.line_edit.setValidator(self.valid_lvl)

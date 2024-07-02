@@ -5,8 +5,8 @@ from dotenv import set_key
 from src.consts import ENV_PATH
 from src.gui.components.dialog import Dialog
 from src.gui.signals.app_signals import AppSignals
+from src.services.login import LoginService
 from src.services.session import ServiceSession
-from src.services.user import UserService
 
 
 class LoginModal(Dialog):
@@ -42,9 +42,7 @@ class LoginModal(Dialog):
             return
         set_key(ENV_PATH, "USERNAME", username)
         set_key(ENV_PATH, "PASSWORD", password)
-        try:
-            UserService.get_current_user(self.service)
-        except Exception:
+        if not LoginService.is_login(self.service):
             return
         self.accept()
         self.app_signals.login_success.emit()

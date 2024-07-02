@@ -1,4 +1,4 @@
-from EzreD2Shared.shared.enums import CategoryEnum
+from D2Shared.shared.enums import CategoryEnum
 from PyQt5.QtWidgets import QLabel, QTableWidgetItem, QWidget
 
 from src.gui.components.organization import VerticalLayout

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import cv2
 import numpy
-from EzreD2Shared.shared.entities.object_search_config import ObjectSearchConfig
+from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from tqdm import tqdm
 
 from src.image_manager.debug import (

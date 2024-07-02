@@ -1,7 +1,7 @@
 from cachetools import cached
 from cachetools.keys import hashkey
 
-from EzreD2Shared.shared.schemas.map import MapSchema
+from D2Shared.shared.schemas.map import MapSchema
 from pydantic import BaseModel
 
 from src.services.map import MapService

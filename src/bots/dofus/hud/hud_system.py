@@ -4,11 +4,11 @@ from time import sleep
 import numpy
 from pydantic import BaseModel, ConfigDict
 import tesserocr
-from EzreD2Shared.shared.consts.adaptative.consts import MODAL_LVLUP_OFFSET_RIGHT
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.entities.object_search_config import ObjectSearchConfig
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.consts.adaptative.consts import MODAL_LVLUP_OFFSET_RIGHT
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.schemas.region import RegionSchema
 
 
 from src.bots.dofus.hud.info_popup.info_popup import EventInfoPopup

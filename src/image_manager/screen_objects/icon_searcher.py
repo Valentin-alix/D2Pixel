@@ -1,16 +1,16 @@
 import os
 import cv2
 import numpy
-from EzreD2Shared.shared.consts.adaptative.consts import (
+from D2Shared.shared.consts.adaptative.consts import (
     INVENTORY_CELL_HEIGHT,
     INVENTORY_CELL_OFFSET,
     INVENTORY_CELL_OFFSET_TOP,
     INVENTORY_CELL_WIDTH,
 )
-from EzreD2Shared.shared.consts.adaptative.regions import LEFT_INVENTORY_REGION
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.schemas.item import ItemSchema
-from EzreD2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.consts.adaptative.regions import LEFT_INVENTORY_REGION
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.schemas.region import RegionSchema
 
 from src.consts import ASSET_FOLDER_PATH
 from src.image_manager.analysis import get_position_template_in_image

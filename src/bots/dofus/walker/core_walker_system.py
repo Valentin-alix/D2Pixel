@@ -4,7 +4,7 @@ from typing import Any, Callable, Literal, NamedTuple, Sequence, TypeVar, overlo
 
 import numpy
 import win32con
-from EzreD2Shared.shared.consts.adaptative.positions import (
+from D2Shared.shared.consts.adaptative.positions import (
     PORTAL_INCARNAM_ENTER_POSITION,
     PORTAL_INCARNAM_TAKE_POSITION,
     PORTAL_TWELVE_ACCEPT_POSITION,
@@ -14,14 +14,14 @@ from EzreD2Shared.shared.consts.adaptative.positions import (
     ZAAP_HAVRE_SAC_POSITION,
     ZAAPI_SEARCH_POSITION,
 )
-from EzreD2Shared.shared.consts.adaptative.regions import INFO_MAP_REGION
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.directions import get_inverted_direction
-from EzreD2Shared.shared.enums import FromDirection
-from EzreD2Shared.shared.schemas.map import BaseMapSchema
-from EzreD2Shared.shared.schemas.map_direction import MapDirectionSchema
-from EzreD2Shared.shared.schemas.waypoint import WaypointSchema
-from EzreD2Shared.shared.schemas.zaapi import ZaapiSchema
+from D2Shared.shared.consts.adaptative.regions import INFO_MAP_REGION
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.directions import get_inverted_direction
+from D2Shared.shared.enums import FromDirection
+from D2Shared.shared.schemas.map import BaseMapSchema
+from D2Shared.shared.schemas.map_direction import MapDirectionSchema
+from D2Shared.shared.schemas.waypoint import WaypointSchema
+from D2Shared.shared.schemas.zaapi import ZaapiSchema
 from src.common.randomizer import wait
 
 from src.bots.dofus.hud.hud_system import HudSystem

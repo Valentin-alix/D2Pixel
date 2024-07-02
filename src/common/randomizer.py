@@ -1,4 +1,4 @@
-from EzreD2Shared.shared.utils.randomizer import pick_random_weighted_time
+from D2Shared.shared.utils.randomizer import pick_random_weighted_time
 
 
 from time import sleep

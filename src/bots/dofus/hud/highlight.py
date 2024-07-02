@@ -1,6 +1,6 @@
 import cv2
 import numpy
-from EzreD2Shared.shared.entities.position import Position
+from D2Shared.shared.entities.position import Position
 
 from src.image_manager.analysis import get_contour_distance_pos
 from src.image_manager.transformation import img_to_gray

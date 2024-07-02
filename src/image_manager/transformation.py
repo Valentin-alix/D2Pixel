@@ -1,6 +1,6 @@
 import cv2
 import numpy
-from EzreD2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.schemas.region import RegionSchema
 
 
 def img_to_gray(img: numpy.ndarray) -> numpy.ndarray:

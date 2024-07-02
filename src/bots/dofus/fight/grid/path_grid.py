@@ -1,10 +1,10 @@
 from logging import Logger
 
-from EzreD2Shared.shared.utils.algos.astar import find_path
-from EzreD2Shared.shared.utils.debugger import timeit
-from EzreD2Shared.shared.utils.randomizer import multiply_offset
+from D2Shared.shared.utils.algos.astar import find_path
+from D2Shared.shared.utils.debugger import timeit
+from D2Shared.shared.utils.randomizer import multiply_offset
 
-from EzreD2Shared.shared.schemas.cell import CellSchema
+from D2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 
 

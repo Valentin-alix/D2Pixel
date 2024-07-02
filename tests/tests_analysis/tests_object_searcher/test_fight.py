@@ -3,7 +3,7 @@ import unittest
 
 import cv2
 from backend.src.database import SessionLocal
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.consts.object_configs import ObjectConfigs
 
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from tests.utils import PATH_FIXTURES

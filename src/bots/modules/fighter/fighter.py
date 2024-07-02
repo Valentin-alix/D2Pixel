@@ -6,14 +6,14 @@ from typing import Iterator
 
 import numpy
 import tesserocr
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.schemas.region import RegionSchema
-from EzreD2Shared.shared.schemas.sub_area import SubAreaSchema
-from EzreD2Shared.shared.utils.randomizer import (
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.schemas.sub_area import SubAreaSchema
+from D2Shared.shared.utils.randomizer import (
     multiply_offset,
 )
-from EzreD2Shared.shared.utils.text_similarity import are_similar_text
+from D2Shared.shared.utils.text_similarity import are_similar_text
 
 from src.bots.dofus.connection.connection_system import ConnectionSystem
 from src.bots.dofus.elements.bank import BankSystem

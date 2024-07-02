@@ -3,10 +3,10 @@ from threading import Event
 from time import sleep
 
 import numpy
-from EzreD2Shared.shared.consts.adaptative.positions import END_TURN_POSITION
-from EzreD2Shared.shared.consts.adaptative.regions import CONTENT_REGION
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.consts.adaptative.positions import END_TURN_POSITION
+from D2Shared.shared.consts.adaptative.regions import CONTENT_REGION
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.schemas.region import RegionSchema
 from src.common.randomizer import wait
 
 from src.bots.dofus.fight.grid.grid import Grid

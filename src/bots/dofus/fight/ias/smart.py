@@ -1,8 +1,8 @@
 from logging import Logger
 import numpy
-from EzreD2Shared.shared.enums import CharacteristicEnum
+from D2Shared.shared.enums import CharacteristicEnum
 
-from EzreD2Shared.shared.schemas.cell import CellSchema
+from D2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.path_grid import AstarGrid
 from src.bots.dofus.fight.ias.base import IaBaseFightSystem

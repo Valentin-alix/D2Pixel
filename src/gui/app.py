@@ -33,8 +33,9 @@ from src.gui.pages.login import LoginModal
 from src.gui.pages.modules.module_page import ModulesPage
 from src.gui.signals.app_signals import AppSignals
 from src.services.session import ServiceSession
+from src.services.user import UserService
 
-TITLE = "EvokerBot"
+TITLE = "D2SafeBot"
 
 
 class WorkerSetupBots(QObject):
@@ -136,8 +137,15 @@ class MainWindow(QMainWindow):
         self.main_content_layout.setAlignment(Qt.AlignLeft)
         self.main_content.setLayout(self.main_content_layout)
 
+        self.app_signals.bots_initialized.connect(self.on_bot_initialized)
+        self.app_signals.is_connecting_bots.connect(self.on_connecting_bots)
+        self.app_signals.login_failed.connect(self.on_login_failed)
+        self.app_signals.lvl_with_title_and_msg.connect(self.on_log_app)
+
+        self.user = UserService.get_current_user(self.service)
+
         # sidebar
-        self.sidebar = SideBar(self.service, self.app_signals)
+        self.sidebar = SideBar(self.service, self.app_signals, self.user)
         self.sidebar.side_bar_menu.button_refresh.clicked.connect(self.setup_bots)
         self.main_content_layout.addWidget(self.sidebar)
 
@@ -149,12 +157,7 @@ class MainWindow(QMainWindow):
         self.loading = Loading(parent=self.main_content)
         self.main_content_layout.addWidget(self.loading)
 
-        self.app_signals.bots_initialized.connect(self.on_bot_initialized)
-        self.app_signals.is_connecting_bots.connect(self.on_connecting_bots)
-        self.app_signals.login_failed.connect(self.on_login_failed)
-        self.app_signals.lvl_with_title_and_msg.connect(self.on_log_app)
-
-        self.setup_bots()
+        # self.setup_bots()
 
     def setup_bots(self):
         self.app_signals.is_connecting_bots.emit(True)

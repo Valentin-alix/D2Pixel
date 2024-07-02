@@ -1,5 +1,5 @@
-from EzreD2Shared.shared.enums import CategoryEnum
-from EzreD2Shared.shared.schemas.recipe import RecipeSchema
+from D2Shared.shared.enums import CategoryEnum
+from D2Shared.shared.schemas.recipe import RecipeSchema
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
 
@@ -7,7 +7,7 @@ from src.services.session import ServiceSession
 RECIPE_URL = BACKEND_URL + "/recipe/"
 
 
-class RecipeService(ServiceSession):
+class RecipeService:
     @staticmethod
     def get_default_recipes(
         service: ServiceSession,

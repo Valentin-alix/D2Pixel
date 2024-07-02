@@ -1,11 +1,11 @@
-from EzreD2Shared.shared.schemas.price import PriceSchema
+from D2Shared.shared.schemas.price import PriceSchema
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
 
 PRICE_URL = BACKEND_URL + "/price/"
 
 
-class PriceService(ServiceSession):
+class PriceService:
     @staticmethod
     def update_or_create_price(
         service: ServiceSession, item_id: int, server_id: int, average: float

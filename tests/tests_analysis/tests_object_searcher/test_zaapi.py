@@ -4,8 +4,8 @@ import unittest
 
 import cv2
 
-from EzreD2Shared.shared.consts.maps import BONTA_SALE_HOTEL_CONSUMABLE_MAP_ID
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.consts.maps import BONTA_SALE_HOTEL_CONSUMABLE_MAP_ID
+from D2Shared.shared.consts.object_configs import ObjectConfigs
 from src.gui.signals.app_signals import AppSignals
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.session import ServiceSession

@@ -1,5 +1,5 @@
 from logging import Logger
-from EzreD2Shared.shared.consts.adaptative.positions import CHAT_TEXT_POSITION
+from D2Shared.shared.consts.adaptative.positions import CHAT_TEXT_POSITION
 
 from src.bots.dofus.chat.sentence import FakeSentence
 from src.window_manager.controller import Controller

@@ -26,7 +26,7 @@ class ServiceSession:
             self.logger.error(f"Erreur : {rep.json()}")
         elif rep.status_code == 401:
             self.logger.error("Erreur d'authentification.")
-            if "users/me" not in rep.url:
+            if "/login/" not in rep.url:
                 self.app_signals.login_failed.emit()
                 event_loop = QEventLoop()
                 self.app_signals.login_success.connect(event_loop.quit)

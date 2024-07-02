@@ -3,8 +3,8 @@ import unittest
 
 import cv2
 
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.enums import JobEnum
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.enums import JobEnum
 from src.bots.dofus.hud.info_popup.job_level import get_job_level_from_level_up
 
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher

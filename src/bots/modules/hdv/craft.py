@@ -2,16 +2,16 @@ from logging import Logger
 
 import win32con
 
-from EzreD2Shared.shared.consts.adaptative.positions import (
+from D2Shared.shared.consts.adaptative.positions import (
     COUNT_CRAFT_RECEIP_POSITION,
     DISPLAY_POSSIBLE_RECEIPE_POSITION,
     FIRST_SLOT_RECEIPE_POSITION,
     MERGE_CRAFT_POSITION,
     SEARCH_RECEIPE_POSITION,
 )
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.schemas.job import JobSchema
-from EzreD2Shared.shared.schemas.recipe import RecipeSchema
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.schemas.job import JobSchema
+from D2Shared.shared.schemas.recipe import RecipeSchema
 from src.common.randomizer import wait
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.hud.hud_system import HudSystem

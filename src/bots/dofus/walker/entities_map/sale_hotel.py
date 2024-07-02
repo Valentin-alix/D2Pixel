@@ -1,14 +1,14 @@
 from cachetools import cached
 from cachetools.keys import hashkey
 
-from EzreD2Shared.shared.consts.adaptative.positions import (
+from D2Shared.shared.consts.adaptative.positions import (
     ASTRUB_SALE_HOTEL_CONSUMABLE_POSITION,
     ASTRUB_SALE_HOTEL_RESOURCE_POSITION,
     BONTA_SALE_HOTEL_CONSUMABLE_POSITION,
     BONTA_SALE_HOTEL_RESOURCE_POSITION,
 )
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.enums import CategoryEnum
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.enums import CategoryEnum
 from pydantic import ConfigDict
 
 from src.bots.dofus.walker.core_walker_system import EntityMap

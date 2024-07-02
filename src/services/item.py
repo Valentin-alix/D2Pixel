@@ -2,15 +2,14 @@ from cachetools import cached
 from cachetools.keys import hashkey
 import cv2
 import numpy
-from EzreD2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.schemas.item import ItemSchema
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
 
 ITEM_URL = BACKEND_URL + "/item/"
 
 
-class ItemService(ServiceSession):
-
+class ItemService:
     @staticmethod
     def get_default_sellable_items(
         service: ServiceSession, character_id: str, recipe_ids: list[int]

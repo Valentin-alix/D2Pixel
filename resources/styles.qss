@@ -8,6 +8,12 @@ QLineEdit {{
   color: {QTMATERIAL_PRIMARYCOLOR};
 }}
 
+QTimeEdit {{
+  font-weight: bold;
+  color: {QTMATERIAL_PRIMARYCOLOR};
+}}
+
+
 .border-right-slim {{
   border-right: 1px solid {QTMATERIAL_SECONDARYLIGHTCOLOR};
 }}

@@ -6,8 +6,8 @@ from time import sleep
 import win32api
 import win32con
 import win32gui
-from EzreD2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
-from EzreD2Shared.shared.entities.position import Position
+from D2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
+from D2Shared.shared.entities.position import Position
 from src.consts import PAUSE
 from win32api import VkKeyScan
 

@@ -1,8 +1,8 @@
 from cachetools import cached
 from cachetools.keys import hashkey
-from EzreD2Shared.shared.enums import CharacteristicEnum, ElemEnum
-from EzreD2Shared.shared.schemas.character import CharacterSchema
-from EzreD2Shared.shared.schemas.spell_lvl import CurrentBoostSchema, SpellLevelSchema
+from D2Shared.shared.enums import CharacteristicEnum, ElemEnum
+from D2Shared.shared.schemas.character import CharacterSchema
+from D2Shared.shared.schemas.spell_lvl import CurrentBoostSchema, SpellLevelSchema
 
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
@@ -10,7 +10,7 @@ from src.services.session import ServiceSession
 SPELL_URL = BACKEND_URL + "/spell/"
 
 
-class SpellService(ServiceSession):
+class SpellService:
     @staticmethod
     @cached(
         cache={},

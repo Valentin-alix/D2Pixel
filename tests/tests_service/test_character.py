@@ -5,11 +5,11 @@ import unittest
 from pathlib import Path
 
 
-from EzreD2Shared.shared.consts.maps import (
+from D2Shared.shared.consts.maps import (
     ASTRUB_BANK_MAP_ID,
     BONTA_WORKSHOP_WOODCUTTER_MAP_ID,
 )
-from EzreD2Shared.shared.enums import FromDirection
+from D2Shared.shared.enums import FromDirection
 from src.gui.signals.app_signals import AppSignals
 from src.services.character import CharacterService
 from src.services.map import MapService

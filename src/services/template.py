@@ -1,7 +1,7 @@
 from cachetools import TTLCache, cached
-from EzreD2Shared.shared.entities.object_search_config import ObjectSearchConfig
-from EzreD2Shared.shared.schemas.region import RegionSchema
-from EzreD2Shared.shared.schemas.template_found import (
+from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
+from D2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.schemas.template_found import (
     TemplateFoundPlacementSchema,
 )
 from src.services.session import ServiceSession
@@ -10,7 +10,7 @@ from src.consts import BACKEND_URL
 TEMPLATE_URL = BACKEND_URL + "/template/"
 
 
-class TemplateService(ServiceSession):
+class TemplateService:
     @staticmethod
     @cached(cache=TTLCache(maxsize=256, ttl=300))
     def get_template_from_config(

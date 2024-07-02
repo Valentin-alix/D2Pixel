@@ -1,6 +1,6 @@
 import numpy
-from EzreD2Shared.shared.enums import FromDirection
-from EzreD2Shared.shared.schemas.map import MapSchema
+from D2Shared.shared.enums import FromDirection
+from D2Shared.shared.schemas.map import MapSchema
 from pydantic import BaseModel, ConfigDict
 
 from src.entities.building_info import BuildingInfo

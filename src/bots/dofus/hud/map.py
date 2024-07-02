@@ -4,11 +4,11 @@ import cv2
 import numpy
 import tesserocr
 import unidecode
-from EzreD2Shared.shared.consts.adaptative.regions import (
+from D2Shared.shared.consts.adaptative.regions import (
     MAP_POSITION_REGION,
     ZONE_TEXT_REGION,
 )
-from EzreD2Shared.shared.schemas.map import MapSchema
+from D2Shared.shared.schemas.map import MapSchema
 
 from src.exceptions import UnknowStateException
 from src.image_manager.ocr import (
@@ -22,7 +22,7 @@ from src.services.session import ServiceSession
 
 
 def get_map(
-    service:ServiceSession, img: numpy.ndarray, from_map: MapSchema | None = None
+    service: ServiceSession, img: numpy.ndarray, from_map: MapSchema | None = None
 ) -> tuple[MapSchema, str]:
     img = get_inverted_image(img)
 

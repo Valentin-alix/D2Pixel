@@ -1,6 +1,6 @@
 from cachetools import cached
 from cachetools.keys import hashkey
-from EzreD2Shared.shared.schemas.server import ServerSchema
+from D2Shared.shared.schemas.server import ServerSchema
 
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
@@ -8,7 +8,7 @@ from src.services.session import ServiceSession
 SERVER_URL = BACKEND_URL + "/server/"
 
 
-class ServerService(ServiceSession):
+class ServerService:
     @staticmethod
     @cached(cache={}, key=lambda _: hashkey())
     def get_servers(service: ServiceSession) -> list[ServerSchema]:

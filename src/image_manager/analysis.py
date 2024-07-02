@@ -3,8 +3,8 @@ from typing import Iterator
 import cv2
 import numpy
 from cv2.typing import MatLike
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.schemas.region import RegionSchema
 
 
 def are_same_image(image1: numpy.ndarray, image2: numpy.ndarray) -> bool:

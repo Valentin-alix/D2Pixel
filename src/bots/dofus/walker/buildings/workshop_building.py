@@ -1,6 +1,6 @@
 from logging import Logger
 import numpy
-from EzreD2Shared.shared.consts.adaptative.positions import (
+from D2Shared.shared.consts.adaptative.positions import (
     WORKSHOP_ALCHEMIST_IN,
     WORKSHOP_ALCHEMIST_OUT,
     WORKSHOP_FISHER_IN,
@@ -10,9 +10,9 @@ from EzreD2Shared.shared.consts.adaptative.positions import (
     WORKSHOP_WOODCUTTER_IN,
     WORKSHOP_WOODCUTTER_OUT,
 )
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.enums import JobEnum
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.enums import JobEnum
 
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.maps import (

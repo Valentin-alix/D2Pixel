@@ -5,15 +5,15 @@ from time import perf_counter, sleep
 
 import numpy
 import win32con
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.entities.object_search_config import ObjectSearchConfig
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.enums import ToDirection
-from EzreD2Shared.shared.schemas.map import MapSchema
-from EzreD2Shared.shared.schemas.sub_area import SubAreaSchema
-from EzreD2Shared.shared.schemas.template_found import InfoTemplateFoundPlacementSchema
-from EzreD2Shared.shared.utils.debugger import timeit
-from EzreD2Shared.shared.utils.randomizer import (
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.enums import ToDirection
+from D2Shared.shared.schemas.map import MapSchema
+from D2Shared.shared.schemas.sub_area import SubAreaSchema
+from D2Shared.shared.schemas.template_found import InfoTemplateFoundPlacementSchema
+from D2Shared.shared.utils.debugger import timeit
+from D2Shared.shared.utils.randomizer import (
     multiply_offset,
 )
 

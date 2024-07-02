@@ -3,6 +3,7 @@ from functools import partial
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtWidgets import QSizePolicy, QWidget
 
+from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.modules.module_manager import ModuleManager
 from src.gui.components.buttons import PushButtonIcon, ToolButtonIcon
 from src.gui.components.loaders import Loading
@@ -13,8 +14,8 @@ from src.gui.components.organization import (
 from src.gui.fragments.sidebar.settings.bot_settings_modal import (
     BotSettingsModal,
 )
-from src.gui.fragments.sidebar.settings.pc_settings_modal import (
-    PcSettingsModal,
+from src.gui.fragments.sidebar.settings.user_settings_modal import (
+    UserSettingsModal,
 )
 from src.gui.fragments.sidebar.sidebar_signals import SideBarSignals
 from src.gui.signals.app_signals import AppSignals
@@ -58,6 +59,7 @@ class SideBarMenu(QWidget):
         service: ServiceSession,
         side_bar_signals: SideBarSignals,
         app_signals: AppSignals,
+        user: ReadUserSchema,
         *args,
         **kwargs,
     ) -> None:
@@ -66,6 +68,7 @@ class SideBarMenu(QWidget):
         self.service = service
         self.app_signals = app_signals
         self.side_bar_signals = side_bar_signals
+        self.user = user
         self.current_index = 0
         self.bot_items: list[SideBarMenuItem] = []
 
@@ -158,5 +161,5 @@ class SideBarMenu(QWidget):
 
     @pyqtSlot()
     def on_clicked_settings(self):
-        modal = PcSettingsModal(self.app_signals)
+        modal = UserSettingsModal(self.app_signals, self.user, self.service)
         modal.open()

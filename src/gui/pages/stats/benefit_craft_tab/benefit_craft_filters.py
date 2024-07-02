@@ -1,4 +1,4 @@
-from EzreD2Shared.shared.enums import CategoryEnum
+from D2Shared.shared.enums import CategoryEnum
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QComboBox, QWidget
 

@@ -3,8 +3,8 @@ from enum import Enum
 import cv2
 import numpy
 from cv2.typing import MatLike
-from EzreD2Shared.shared.consts.adaptative.regions import INVENTORY_BAR
-from EzreD2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.consts.adaptative.regions import INVENTORY_BAR
+from D2Shared.shared.schemas.region import RegionSchema
 
 from src.image_manager.transformation import (
     crop_image,

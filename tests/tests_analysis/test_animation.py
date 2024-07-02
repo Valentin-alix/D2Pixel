@@ -9,7 +9,7 @@ import numpy
 sys.path.append(os.path.join(Path(__file__).parent.parent.parent))
 
 
-from EzreD2Shared.shared.consts.adaptative.regions import CONTENT_REGION
+from D2Shared.shared.consts.adaptative.regions import CONTENT_REGION
 
 from src.image_manager.analysis import are_image_similar
 from src.image_manager.animation import prepare_img_animation

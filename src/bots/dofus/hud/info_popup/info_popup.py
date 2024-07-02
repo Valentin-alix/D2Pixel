@@ -2,7 +2,7 @@ from enum import Enum
 
 import cv2
 import numpy
-from EzreD2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.schemas.region import RegionSchema
 
 from src.image_manager.transformation import crop_image
 

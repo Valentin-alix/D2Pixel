@@ -2,7 +2,7 @@ import os
 import unittest
 
 import cv2
-from EzreD2Shared.shared.entities.position import Position
+from D2Shared.shared.entities.position import Position
 
 from src.bots.modules.harvester.harvester import clean_image_after_collect
 from tests.utils import PATH_FIXTURES

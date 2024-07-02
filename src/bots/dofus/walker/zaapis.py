@@ -1,10 +1,10 @@
-from EzreD2Shared.shared.consts.adaptative.positions import (
+from D2Shared.shared.consts.adaptative.positions import (
     ZAAPI_SALE_HOTEL_CATEGORY_POSITION,
     ZAAPI_VARIOUS_CATEGORY_POSITION,
     ZAAPI_WORKSHOP_CATEGORY_POSITION,
 )
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.enums import CategoryZaapiEnum
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.enums import CategoryZaapiEnum
 
 
 def get_position_by_zaapi_category(category_zaapi: CategoryZaapiEnum) -> Position:

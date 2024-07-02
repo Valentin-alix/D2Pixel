@@ -3,9 +3,9 @@ import unittest
 
 import cv2
 from backend.src.database import SessionLocal
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.schemas.template_found import TemplateFoundPlacementSchema
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.schemas.template_found import TemplateFoundPlacementSchema
 
 from src.image_manager.screen_objects.object_searcher import (
     ObjectSearcher,

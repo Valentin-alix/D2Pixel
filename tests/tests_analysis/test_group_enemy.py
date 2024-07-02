@@ -4,7 +4,7 @@ import unittest
 import cv2
 
 # sys.path.append(os.path.dirname(os.path.dirname((os.path.dirname(__file__)))))
-from EzreD2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.schemas.region import RegionSchema
 
 from src.bots.dofus.hud.infobulle import iter_infobulles_contours
 from src.bots.modules.fighter.fighter import get_group_lvl

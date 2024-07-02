@@ -1,6 +1,6 @@
 from logging import Logger
-from EzreD2Shared.shared.schemas.item import ItemSchema
-from EzreD2Shared.shared.schemas.recipe import RecipeSchema
+from D2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.schemas.recipe import RecipeSchema
 
 from src.bots.modules.hdv.craft import Crafter
 from src.bots.modules.hdv.sell import Seller

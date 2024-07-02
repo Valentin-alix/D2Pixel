@@ -3,7 +3,7 @@ from typing import Iterator
 import cv2
 import numpy
 from cv2.typing import MatLike
-from EzreD2Shared.shared.entities.position import Position
+from D2Shared.shared.entities.position import Position
 
 from src.image_manager.analysis import (
     contour_has_four_side,

@@ -1,4 +1,4 @@
-from EzreD2Shared.shared.consts.adaptative.positions import (
+from D2Shared.shared.consts.adaptative.positions import (
     BOTTOM_LEFT_MAP_CHANGE_POSITION,
     BOTTOM_MAP_CHANGE_POSITION,
     BOTTOM_RIGHT_MAP_CHANGE_POSITION,
@@ -12,8 +12,8 @@ from EzreD2Shared.shared.consts.adaptative.positions import (
     TOP_MAP_LEFT_CHANGE_POSITION,
     TOP_MAP_RIGHT_CHANGE_POSITION,
 )
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.enums import FromDirection, ToDirection
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.enums import FromDirection, ToDirection
 
 
 def get_pos_to_direction(direction: ToDirection) -> Position:

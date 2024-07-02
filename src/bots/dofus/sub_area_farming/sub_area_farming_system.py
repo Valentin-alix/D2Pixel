@@ -4,10 +4,10 @@ import random
 from time import perf_counter
 
 import numpy
-from EzreD2Shared.shared.schemas.map import MapSchema
-from EzreD2Shared.shared.schemas.map_direction import MapDirectionSchema
-from EzreD2Shared.shared.schemas.sub_area import SubAreaSchema
-from EzreD2Shared.shared.utils.debugger import log_caller, timeit
+from D2Shared.shared.schemas.map import MapSchema
+from D2Shared.shared.schemas.map_direction import MapDirectionSchema
+from D2Shared.shared.schemas.sub_area import SubAreaSchema
+from D2Shared.shared.utils.debugger import log_caller, timeit
 
 
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem

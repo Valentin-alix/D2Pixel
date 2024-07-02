@@ -3,7 +3,7 @@ from enum import Enum
 import cv2
 import numpy
 from cv2.typing import MatLike
-from EzreD2Shared.shared.consts.adaptative.regions import (
+from D2Shared.shared.consts.adaptative.regions import (
     INFO_BAR_FIGHT_REGION,
     INFO_BAR_REGION,
 )

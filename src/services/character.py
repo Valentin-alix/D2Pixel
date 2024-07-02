@@ -1,10 +1,10 @@
-from EzreD2Shared.shared.schemas.character import (
+from D2Shared.shared.schemas.character import (
     CharacterJobInfoSchema,
     CharacterSchema,
 )
-from EzreD2Shared.shared.schemas.collectable import CollectableSchema
-from EzreD2Shared.shared.schemas.item import ItemSchema
-from EzreD2Shared.shared.schemas.waypoint import WaypointSchema
+from D2Shared.shared.schemas.collectable import CollectableSchema
+from D2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.schemas.waypoint import WaypointSchema
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
 

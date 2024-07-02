@@ -1,9 +1,9 @@
 from typing import Literal, overload
 
 import numpy
-from EzreD2Shared.shared.entities.object_search_config import ObjectSearchConfig
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.schemas.template_found import TemplateFoundPlacementSchema
+from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.schemas.template_found import TemplateFoundPlacementSchema
 
 from src.common.retry import RetryTimeArgs, retry_time
 from src.exceptions import UnknowStateException

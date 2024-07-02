@@ -1,7 +1,7 @@
 from cachetools import cached
 from cachetools.keys import hashkey
-from EzreD2Shared.shared.schemas.item import ItemSchema
-from EzreD2Shared.shared.schemas.sub_area import SubAreaSchema
+from D2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
 
@@ -9,7 +9,7 @@ from src.services.session import ServiceSession
 SUBAREA_URL = BACKEND_URL + "/sub_area/"
 
 
-class SubAreaService(ServiceSession):
+class SubAreaService:
     @staticmethod
     def get_random_grouped_sub_area(
         service: ServiceSession,

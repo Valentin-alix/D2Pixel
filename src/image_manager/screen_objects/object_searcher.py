@@ -6,10 +6,10 @@ from cachetools import cached
 from cachetools.keys import hashkey
 import cv2
 import numpy
-from EzreD2Shared.shared.entities.object_search_config import ObjectSearchConfig
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.schemas.region import RegionSchema
-from EzreD2Shared.shared.schemas.template_found import (
+from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.schemas.template_found import (
     InfoTemplateFoundPlacementSchema,
     TemplateFoundPlacementSchema,
 )

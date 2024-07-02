@@ -4,9 +4,9 @@ import cv2
 
 import numpy
 from cv2.typing import MatLike
-from EzreD2Shared.shared.entities.position import Position
-from EzreD2Shared.shared.schemas.map import MapSchema
-from EzreD2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.schemas.map import MapSchema
+from D2Shared.shared.schemas.region import RegionSchema
 
 
 class ColorBGR:

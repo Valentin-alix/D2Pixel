@@ -1,8 +1,8 @@
 import cv2
 import numpy
 import tesserocr
-from EzreD2Shared.shared.consts.adaptative.regions import PA_REGION
-from EzreD2Shared.shared.utils.debugger import timeit
+from D2Shared.shared.consts.adaptative.regions import PA_REGION
+from D2Shared.shared.utils.debugger import timeit
 
 from src.image_manager.masks import get_white_masked
 from src.image_manager.ocr import (

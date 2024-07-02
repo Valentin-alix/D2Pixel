@@ -1,13 +1,13 @@
 from cachetools import cached
 from cachetools.keys import hashkey
-from EzreD2Shared.shared.entities.object_search_config import ObjectSearchConfig
+from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from src.services.session import ServiceSession
 from src.consts import BACKEND_URL
 
 COLLECTABLE_URL = BACKEND_URL + "/collectable/"
 
 
-class CollectableService(ServiceSession):
+class CollectableService:
     @staticmethod
     @cached(
         cache={},

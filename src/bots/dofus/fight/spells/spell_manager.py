@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 
-from EzreD2Shared.shared.schemas.spell_lvl import CurrentBoostSchema
+from D2Shared.shared.schemas.spell_lvl import CurrentBoostSchema
 from src.bots.dofus.fight.grid.grid import Grid
 from src.services.session import ServiceSession
 from src.services.spell import SpellService

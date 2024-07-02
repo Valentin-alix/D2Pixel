@@ -1,13 +1,13 @@
 from logging import Logger
 from time import sleep
 import numpy
-from EzreD2Shared.shared.consts.adaptative.regions import CONTENT_REGION
-from EzreD2Shared.shared.consts.object_configs import ObjectConfigs
-from EzreD2Shared.shared.enums import CharacteristicEnum
-from EzreD2Shared.shared.schemas.spell_lvl import CurrentBoostSchema, SpellLevelSchema
+from D2Shared.shared.consts.adaptative.regions import CONTENT_REGION
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from D2Shared.shared.enums import CharacteristicEnum
+from D2Shared.shared.schemas.spell_lvl import CurrentBoostSchema, SpellLevelSchema
 from src.common.randomizer import wait
 
-from EzreD2Shared.shared.schemas.cell import CellSchema
+from D2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.spells.spell_manager import SpellManager
 from src.bots.dofus.hud.pa import get_pa

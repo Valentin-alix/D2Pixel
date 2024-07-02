@@ -1,7 +1,7 @@
 from cachetools import cached
 from cachetools.keys import hashkey
 
-from EzreD2Shared.shared.consts.maps import (
+from D2Shared.shared.consts.maps import (
     ASTRUB_BANK_MAP_ID,
     ASTRUB_SALE_HOTEL_CONSUMABLE_MAP_ID,
     ASTRUB_SALE_HOTEL_RESOURCE_MAP_ID,
@@ -16,7 +16,7 @@ from EzreD2Shared.shared.consts.maps import (
     PORTAL_MAP_INCARNAM_ID,
     PORTAL_MAP_TWELVE_ID,
 )
-from EzreD2Shared.shared.schemas.map import MapSchema
+from D2Shared.shared.schemas.map import MapSchema
 
 from src.services.map import MapService
 from src.services.session import ServiceSession

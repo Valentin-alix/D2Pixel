@@ -1,7 +1,7 @@
 from cachetools import cached
 from cachetools.keys import hashkey
 
-from EzreD2Shared.shared.schemas.breed import BreedSchema
+from D2Shared.shared.schemas.breed import BreedSchema
 
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
