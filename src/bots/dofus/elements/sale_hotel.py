@@ -352,4 +352,4 @@ class SaleHotelSystem:
             ObjectConfigs.SaleHotel.sale_category, force=True
         )[0]
         self.controller.click(pos)
-        wait((1, 1.5))
+        wait((3.5, 4))
