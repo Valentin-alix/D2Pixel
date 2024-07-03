@@ -4,6 +4,7 @@ from threading import Event, RLock
 from time import sleep
 from typing import Callable
 
+from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.antibot.afk_starter import AfkStarter
 from src.bots.dofus.antibot.humanizer import Humanizer
 from src.bots.dofus.chat.chat_system import ChatSystem
@@ -64,8 +65,10 @@ class ModuleManager:
         fighter_sub_areas_farming_ids: list[int],
         harvest_sub_areas_farming_ids: list[int],
         harvest_map_time: dict[int, float],
+        user: ReadUserSchema,
     ):
         self.window_info = window_info
+        self.user = user
         character_id = window_info.name.split(" - Dofus")[0]
         self.bot_signals = BotSignals()
         self.fake_sentence = fake_sentence
@@ -164,6 +167,7 @@ class ModuleManager:
             self.animation_manager,
             self.capturer,
             self.service,
+            self.user,
         )
         fight_sys = FightSystem(
             ia_brute_sys,
@@ -194,6 +198,7 @@ class ModuleManager:
             self.animation_manager,
             self.capturer,
             self.service,
+            self.user,
         )
 
         self.connection_sys = ConnectionSystem(
@@ -255,8 +260,11 @@ class ModuleManager:
             self.is_paused,
             self.is_playing,
             self.is_connected,
+            self.user,
         )
-        self.humanizer = Humanizer(self.chat_sys, self.is_connected, self.is_playing)
+        self.humanizer = Humanizer(
+            self.chat_sys, self.is_connected, self.is_playing, self.user
+        )
 
         crafter = Crafter(
             self.hud_sys,
@@ -305,6 +313,7 @@ class ModuleManager:
             self.logger,
             fighter_maps_time,
             fighter_sub_areas_farming_ids,
+            self.user,
         )
 
         self.harvester = Harvester(
@@ -323,6 +332,7 @@ class ModuleManager:
             self.logger,
             harvest_sub_areas_farming_ids,
             harvest_map_time,
+            self.user,
         )
 
         self.modules: dict[str, Callable[..., None]] = {

@@ -6,6 +6,7 @@ import numpy
 from D2Shared.shared.consts.adaptative.regions import INFO_MAP_REGION
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 
+from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.fight.fight_system import FightSystem
 from src.bots.dofus.hud.hud_system import HudSystem
 from src.bots.dofus.walker.core_walker_system import (
@@ -36,6 +37,7 @@ class WalkerSystem(CoreWalkerSystem):
         animation_manager: AnimationManager,
         capturer: Capturer,
         service: ServiceSession,
+        user: ReadUserSchema,
     ) -> None:
         self.fight_sys = fight_sys
         super().__init__(
@@ -49,6 +51,7 @@ class WalkerSystem(CoreWalkerSystem):
             animation_manager=animation_manager,
             capturer=capturer,
             service=service,
+            user=user,
         )
 
     @override

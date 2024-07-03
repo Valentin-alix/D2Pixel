@@ -10,6 +10,7 @@ from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.schemas.region import RegionSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
+from D2Shared.shared.schemas.user import ReadUserSchema
 from D2Shared.shared.utils.randomizer import (
     multiply_offset,
 )
@@ -26,7 +27,7 @@ from src.bots.dofus.sub_area_farming.sub_area_farming_system import (
     SubAreaFarmingSystem,
 )
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
-from src.consts import RANGE_DURATION_ACTIVITY
+from src.common.time import convert_time_to_seconds
 from src.exceptions import (
     CharacterIsStuckException,
     StoppedException,
@@ -66,8 +67,6 @@ def get_group_lvl(img: numpy.ndarray, region: RegionSchema) -> int | None:
 MULTIPLIER_LVL = 1.5
 OFFSET_LVL = 5
 
-TIME_FIGHTER = 60 * 60 * 1
-
 fighter_choose_sub_area_lock = Lock()
 
 
@@ -90,8 +89,10 @@ class Fighter:
         logger: Logger,
         fighter_maps_time: dict[int, float],
         fighter_sub_areas_farming_ids: list[int],
+        user: ReadUserSchema,
     ):
         self.service = service
+        self.user = user
         self.capturer = capturer
         self.controller = controller
         self.object_searcher = object_searcher
@@ -109,7 +110,14 @@ class Fighter:
         self.fighter_sub_areas_farming_ids = fighter_sub_areas_farming_ids
 
     def run_fighter(self) -> None:
-        limit_time = TIME_FIGHTER * multiply_offset(RANGE_DURATION_ACTIVITY)
+        limit_time = convert_time_to_seconds(
+            self.user.config_user.time_fighter
+        ) * multiply_offset(
+            (
+                1 - self.user.config_user.randomizer_duration_activity,
+                1 + self.user.config_user.randomizer_duration_activity,
+            )
+        )
 
         initial_time = perf_counter()
         sub_areas_farmed_history: set[SubAreaSchema] = set()

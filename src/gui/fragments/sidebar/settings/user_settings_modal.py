@@ -1,4 +1,5 @@
 from datetime import time
+from functools import partial
 from PyQt5.QtCore import QTime, Qt, pyqtSlot
 from PyQt5.QtGui import QDoubleValidator
 from PyQt5.QtWidgets import QFormLayout, QLineEdit, QTimeEdit, QWidget
@@ -7,9 +8,12 @@ from D2Shared.shared.schemas.config_user import (
     ReadConfigUserSchema,
     UpdateConfigUserSchema,
 )
-from D2Shared.shared.schemas.range_time import UpdateRangeWaitSchema
+from D2Shared.shared.schemas.range_time import (
+    UpdateRangeHourPlayTimeSchema,
+    UpdateRangeWaitSchema,
+)
 from D2Shared.shared.schemas.user import ReadUserSchema
-from src.gui.components.buttons import PushButton
+from src.gui.components.buttons import PushButton, PushButtonIcon
 from src.gui.components.dialog import Dialog
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.gui.signals.app_signals import AppSignals
@@ -117,23 +121,65 @@ class UserSettingsModal(Dialog):
         self.range_new_map_end_edit.setText(str(config_user.range_new_map.end))
         range_new_map_widget_h_layout.addWidget(self.range_new_map_end_edit)
 
-        form.addRow("Attente en début de map (seconds)", range_new_map_widget)
+        form.addRow("Attente en début de map (secondes)", range_new_map_widget)
 
-        range_wait_widget = QWidget()
-        range_wait_widget_h_layout = HorizontalLayout()
-        range_wait_widget.setLayout(range_wait_widget_h_layout)
+        self.play_time_widget = QWidget()
+        self.play_time_widget_layout = VerticalLayout()
+        self.play_time_widget.setLayout(self.play_time_widget_layout)
+        self.range_playtime_edits: list[tuple[QTimeEdit, QTimeEdit]] = []
 
-        self.range_wait_start_edit = QLineEdit()
-        self.range_wait_start_edit.setValidator(QDoubleValidator())
-        self.range_wait_start_edit.setText(str(config_user.range_wait.start))
-        range_wait_widget_h_layout.addWidget(self.range_wait_start_edit)
+        button_add = PushButtonIcon("add.svg", parent=self)
+        button_add.setCheckable(False)
+        self.play_time_widget_layout.addWidget(button_add)
+        button_add.clicked.connect(lambda: self.add_range_playtime(time(), time()))
 
-        self.range_wait_end_edit = QLineEdit()
-        self.range_wait_end_edit.setValidator(QDoubleValidator())
-        self.range_wait_end_edit.setText(str(config_user.range_wait.end))
-        range_wait_widget_h_layout.addWidget(self.range_wait_end_edit)
+        for range_playtime in config_user.ranges_hour_playtime:
+            self.add_range_playtime(range_playtime.start_time, range_playtime.end_time)
 
-        form.addRow("Attente générale (seconds)", range_wait_widget)
+        form.addRow("Planning d'activité (HH-mm)", self.play_time_widget)
+
+    def add_range_playtime(self, start_time: time, end_time: time):
+        range_playtime_widget = QWidget()
+        range_playtime_widget_layout = HorizontalLayout()
+        range_playtime_widget.setLayout(range_playtime_widget_layout)
+
+        time_start_edit = QTimeEdit()
+        time_start_edit.setTime(
+            QTime(
+                start_time.hour,
+                start_time.minute,
+                start_time.second,
+            )
+        )
+        range_playtime_widget_layout.addWidget(time_start_edit)
+
+        time_end_edit = QTimeEdit()
+        time_end_edit.setTime(
+            QTime(
+                end_time.hour,
+                end_time.minute,
+                end_time.second,
+            )
+        )
+        range_playtime_widget_layout.addWidget(time_end_edit)
+
+        self.range_playtime_edits.append((time_start_edit, time_end_edit))
+
+        button_delete = PushButtonIcon("close.svg", parent=self)
+        button_delete.setCheckable(False)
+        range_playtime_widget_layout.addWidget(button_delete)
+        button_delete.clicked.connect(
+            partial(self.on_delete_playtime, range_playtime_widget)
+        )
+
+        self.play_time_widget_layout.addWidget(range_playtime_widget)
+
+    def on_delete_playtime(self, widget: QWidget):
+        self.play_time_widget_layout.removeWidget(widget)
+        widget.deleteLater()
+        self.play_time_widget_layout.update()
+        self.play_time_widget.adjustSize()
+        self.adjustSize()
 
     def set_save_btn(self):
         self.save_btn = PushButton(text="Enregistrer")
@@ -179,9 +225,21 @@ class UserSettingsModal(Dialog):
             start=range_new_map_start, end=range_new_map_end
         )
 
-        range_wait_start = float(self.range_wait_start_edit.text())
-        range_wait_end = float(self.range_wait_end_edit.text())
-        range_wait = UpdateRangeWaitSchema(start=range_wait_start, end=range_wait_end)
+        ranges_hour_playtime: list[UpdateRangeHourPlayTimeSchema] = []
+        for range_playtime_edit in self.range_playtime_edits:
+            start_time = time(
+                range_playtime_edit[0].time().hour(),
+                range_playtime_edit[0].time().minute(),
+                range_playtime_edit[0].time().second(),
+            )
+            end_time = time(
+                range_playtime_edit[1].time().hour(),
+                range_playtime_edit[1].time().minute(),
+                range_playtime_edit[1].time().second(),
+            )
+            ranges_hour_playtime.append(
+                UpdateRangeHourPlayTimeSchema(start_time=start_time, end_time=end_time)
+            )
 
         update_config = UpdateConfigUserSchema(
             afk_time_at_start=afk_time_at_start,
@@ -190,11 +248,13 @@ class UserSettingsModal(Dialog):
             time_harvester=time_harvester,
             randomizer_duration_activity=randomizer_duration_activity,
             range_new_map=range_new_map,
-            range_wait=range_wait,
-            ranges_hour_playtime=[],
+            ranges_hour_playtime=ranges_hour_playtime,
         )
-        ConfigService.update_config_user(
-            self.service, self.user.config_user.id, update_config
-        )
+        try:
+            self.user.config_user = ConfigService.update_config_user(
+                self.service, self.user.config_user.id, update_config
+            )
+        except Exception:
+            return
 
         self.close()

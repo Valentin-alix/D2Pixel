@@ -22,6 +22,7 @@ from PyQt5.QtWidgets import (
 )
 from qt_material import apply_stylesheet
 
+from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.bots_manager import BotsManager
 from src.bots.modules.module_manager import ModuleManager
 from src.consts import ASSET_FOLDER_PATH, RESOURCE_FOLDER_PATH
@@ -45,6 +46,7 @@ class WorkerSetupBots(QObject):
         service: ServiceSession,
         app_signals: AppSignals,
         stacked_frames: QStackedWidget,
+        user: ReadUserSchema,
         *args,
         **kwargs,
     ) -> None:
@@ -52,6 +54,7 @@ class WorkerSetupBots(QObject):
         self.service = service
         self.app_signals = app_signals
         self.stacked_frames = stacked_frames
+        self.user = user
         super().__init__(*args, **kwargs)
 
     @pyqtSlot()
@@ -73,7 +76,9 @@ class WorkerSetupBots(QObject):
                 elem.thread_run.quit()
                 elem.thread_run.wait()
 
-        bots_manager = BotsManager(self.logger, self.service, self.app_signals)
+        bots_manager = BotsManager(
+            self.logger, self.service, self.app_signals, self.user
+        )
         self.app_signals.bots_initialized.emit(bots_manager.module_managers)
 
 
@@ -171,6 +176,7 @@ class MainWindow(QMainWindow):
             self.service,
             self.app_signals,
             stacked_frames=self.stacked_frames,
+            user=self.user,
         )
         self.thread_setup_bots = QThread()
 

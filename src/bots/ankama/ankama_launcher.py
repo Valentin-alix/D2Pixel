@@ -8,6 +8,7 @@ from dotenv import get_key, set_key
 from D2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 
+from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.connection.connection_system import (
     ConnectionSystem,
 )
@@ -27,7 +28,6 @@ from src.common.retry import RetryTimeArgs
 from src.common.scheduler import run_continuously
 from src.common.searcher import search_for_file
 from src.consts import ANKAMA_WINDOW_SIZE, DOFUS_WINDOW_SIZE, ENV_PATH
-from src.consts import RANGES_HOURS_PLAYTIME
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
@@ -66,7 +66,9 @@ def launch_launcher():
 
 
 class AnkamaLauncher:
-    def __init__(self, logger: Logger, service: ServiceSession) -> None:
+    def __init__(
+        self, logger: Logger, service: ServiceSession, user: ReadUserSchema
+    ) -> None:
         if not (window_info := get_ankama_window_info(logger)):
             # launcher not found, launch...
             launch_launcher()
@@ -101,6 +103,7 @@ class AnkamaLauncher:
             window_info=window_info,
             logger=self.logger,
         )
+        self.user = user
         object_searcher = ObjectSearcher(self.service)
         self.image_manager = ImageManager(capturer, object_searcher)
 
@@ -210,6 +213,7 @@ class AnkamaLauncher:
             animation_manager,
             capturer,
             self.service,
+            self.user,
         )
         fight_sys = FightSystem(
             ia_brute_sys,
@@ -308,10 +312,12 @@ class AnkamaLauncher:
                 module_manager.window_info.hwnd = related_window.hwnd
                 module_manager.internal_pause.clear()
 
-        for start_hour, end_hour in RANGES_HOURS_PLAYTIME:
-            schedule.every().day.at(end_hour).do(lambda: pause_bots(modules_managers))
-            schedule.every().day.at(start_hour).do(
-                lambda: resume_bots(modules_managers)
-            )
+        for range_hour_playtime in self.user.config_user.ranges_hour_playtime:
+            schedule.every().day.at(
+                range_hour_playtime.end_time.strftime("HH:MM:SS")
+            ).do(lambda: pause_bots(modules_managers))
+            schedule.every().day.at(
+                range_hour_playtime.start_time.strftime("HH:MM:SS")
+            ).do(lambda: resume_bots(modules_managers))
 
         run_continuously()

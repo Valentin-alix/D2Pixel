@@ -2,6 +2,7 @@ from collections import defaultdict
 from logging import Logger
 
 
+from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.ankama.ankama_launcher import AnkamaLauncher
 from src.bots.dofus.chat.sentence import FakeSentence
 from src.bots.modules.module_manager import ModuleManager
@@ -14,7 +15,11 @@ from src.window_manager.organizer import (
 
 class BotsManager:
     def __init__(
-        self, logger: Logger, service: ServiceSession, app_signals: AppSignals
+        self,
+        logger: Logger,
+        service: ServiceSession,
+        app_signals: AppSignals,
+        user: ReadUserSchema,
     ) -> None:
         self.module_managers: list[ModuleManager] = []
         self.app_signals = app_signals
@@ -22,7 +27,8 @@ class BotsManager:
         self.fake_sentence = FakeSentence()
         self.logger = logger
         self.app_signals.is_connecting_bots.emit(True)
-        self.ankama_launcher = AnkamaLauncher(self.logger, self.service)
+        self.user = user
+        self.ankama_launcher = AnkamaLauncher(self.logger, self.service, self.user)
         dofus_windows = self.ankama_launcher.connect_all()
         self._setup_farmers(dofus_windows)
 
@@ -44,6 +50,7 @@ class BotsManager:
                 fighter_sub_area_farming_ids,
                 harvest_sub_area_farming_ids,
                 harvest_map_time,
+                self.user,
             )
             module_manager.is_connected.set()
             self.module_managers.append(module_manager)

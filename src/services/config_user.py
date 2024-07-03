@@ -2,6 +2,7 @@ from D2Shared.shared.schemas.config_user import (
     ReadConfigUserSchema,
     UpdateConfigUserSchema,
 )
+from fastapi.encoders import jsonable_encoder
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
 
@@ -18,7 +19,6 @@ class ConfigService:
         with service.logged_session() as session:
             resp = session.put(
                 f"{CONFIG_URL}{config_user_id}/",
-                json={"config_user_schema": update_config_user.model_dump_json()},
+                json=update_config_user.model_dump_json(),
             )
-            print(resp.json())
             return ReadConfigUserSchema(**resp.json())

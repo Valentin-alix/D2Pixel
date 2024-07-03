@@ -20,6 +20,7 @@ from D2Shared.shared.directions import get_inverted_direction
 from D2Shared.shared.enums import FromDirection
 from D2Shared.shared.schemas.map import BaseMapSchema
 from D2Shared.shared.schemas.map_direction import MapDirectionSchema
+from D2Shared.shared.schemas.user import ReadUserSchema
 from D2Shared.shared.schemas.waypoint import WaypointSchema
 from D2Shared.shared.schemas.zaapi import ZaapiSchema
 from src.common.randomizer import wait
@@ -38,7 +39,6 @@ from src.common.retry import (
     retry_count,
     retry_force_count,
 )
-from src.consts import RANGE_NEW_MAP
 from src.entities.building_info import BuildingInfo
 from src.exceptions import (
     CharacterIsStuckException,
@@ -82,8 +82,10 @@ class CoreWalkerSystem:
         animation_manager: AnimationManager,
         capturer: Capturer,
         service: ServiceSession,
+        user: ReadUserSchema,
     ) -> None:
         self.hud_sys = hud_sys
+        self.user = user
         self.object_searcher = object_searcher
         self.animation_manager = animation_manager
         self.capturer = capturer
@@ -96,7 +98,12 @@ class CoreWalkerSystem:
 
     def on_new_map(self, pause: bool = True) -> tuple[bool, numpy.ndarray]:
         if pause:
-            wait(RANGE_NEW_MAP)
+            wait(
+                (
+                    self.user.config_user.range_new_map.start,
+                    self.user.config_user.range_new_map.end,
+                )
+            )
 
         img = self.capturer.capture()
         if self.map_state.curr_map_info:

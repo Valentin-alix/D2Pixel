@@ -4,8 +4,9 @@ from time import perf_counter, sleep
 
 from D2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
 
+from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.connection.connection_system import ConnectionSystem
-from src.consts import START_MIN_AFK_TIME
+from src.common.time import convert_time_to_seconds
 from src.services.character import CharacterService
 from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
@@ -24,6 +25,7 @@ class AfkStarter:
         is_paused: Event,
         is_playing: Event,
         is_connected: Event,
+        user: ReadUserSchema,
     ) -> None:
         self.connection_sys = connection_sys
         self.controller = controller
@@ -32,6 +34,7 @@ class AfkStarter:
         self.is_paused = is_paused
         self.is_playing = is_playing
         self.is_connected = is_connected
+        self.user = user
 
     def run_afk_in_game(self) -> None:
         """Handle afk time to avoid antibot, afk the first 5 hour of the bot"""
@@ -42,9 +45,12 @@ class AfkStarter:
                 self.service, self.character_state.character
             )
 
-        if (
+        afk_time_at_start = self.user.config_user.afk_time_at_start
+
+        if afk_time_at_start is None or (
             self.character_state.character.lvl > 1
-            or self.character_state.character.time_spent > START_MIN_AFK_TIME
+            or self.character_state.character.time_spent
+            > convert_time_to_seconds(afk_time_at_start)
         ):
             return
 
@@ -53,7 +59,10 @@ class AfkStarter:
         atexit.register(lambda: update_character_time_spent(init_time))
 
         while (
-            ((curr_time := perf_counter()) - init_time < START_MIN_AFK_TIME)
+            (
+                (curr_time := perf_counter()) - init_time
+                < convert_time_to_seconds(afk_time_at_start)
+            )
             and not self.is_paused.is_set()
             and self.is_playing.is_set()
             and self.is_connected.is_set()

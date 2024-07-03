@@ -12,6 +12,7 @@ from D2Shared.shared.enums import ToDirection
 from D2Shared.shared.schemas.map import MapSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from D2Shared.shared.schemas.template_found import InfoTemplateFoundPlacementSchema
+from D2Shared.shared.schemas.user import ReadUserSchema
 from D2Shared.shared.utils.debugger import timeit
 from D2Shared.shared.utils.randomizer import (
     multiply_offset,
@@ -40,7 +41,7 @@ from src.bots.modules.harvester.path_positions import (
     find_dumby_optimal_path_positions,
     find_optimal_path_positions,
 )
-from src.consts import RANGE_DURATION_ACTIVITY
+from src.common.time import convert_time_to_seconds
 from src.exceptions import (
     CharacterIsStuckException,
     StoppedException,
@@ -65,8 +66,6 @@ def clean_image_after_collect(
     return remove_highlighted_zone(prev_img, img, pos)
 
 
-TIME_HARVEST = 60 * 60 * 4
-
 harvester_choose_sub_area_lock = Lock()
 
 
@@ -88,8 +87,10 @@ class Harvester:
         logger: Logger,
         harvest_sub_areas_farming_ids: list[int],
         harvest_map_time: dict[int, float],
+        user: ReadUserSchema,
     ):
         self.service = service
+        self.user = user
         self.object_searcher = object_searcher
         self.capturer = capturer
         self.character_state = character_state
@@ -111,7 +112,14 @@ class Harvester:
         if self.character_state.character.lvl < 10:
             return None
 
-        limit_time: float = TIME_HARVEST * multiply_offset(RANGE_DURATION_ACTIVITY)
+        limit_time: float = convert_time_to_seconds(
+            self.user.config_user.time_harvester
+        ) * multiply_offset(
+            (
+                1 - self.user.config_user.randomizer_duration_activity,
+                1 + self.user.config_user.randomizer_duration_activity,
+            )
+        )
 
         initial_time = perf_counter()
         possible_collectable_ids = [
