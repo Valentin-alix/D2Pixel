@@ -162,7 +162,7 @@ class MainWindow(QMainWindow):
         self.loading = Loading(parent=self.main_content)
         self.main_content_layout.addWidget(self.loading)
 
-        # self.setup_bots()
+        self.setup_bots()
 
     def setup_bots(self):
         self.app_signals.is_connecting_bots.emit(True)
