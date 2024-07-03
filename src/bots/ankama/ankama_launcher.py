@@ -313,11 +313,11 @@ class AnkamaLauncher:
                 module_manager.internal_pause.clear()
 
         for range_hour_playtime in self.user.config_user.ranges_hour_playtime:
-            schedule.every().day.at(range_hour_playtime.end_time.strftime("HH:MM")).do(
+            schedule.every().day.at(range_hour_playtime.end_time.strftime("%H:%M")).do(
                 lambda: pause_bots(modules_managers)
             )
             schedule.every().day.at(
-                range_hour_playtime.start_time.strftime("HH:MM")
+                range_hour_playtime.start_time.strftime("%H:%M")
             ).do(lambda: resume_bots(modules_managers))
 
         run_continuously()
