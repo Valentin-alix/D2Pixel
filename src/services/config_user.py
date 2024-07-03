@@ -2,7 +2,6 @@ from D2Shared.shared.schemas.config_user import (
     ReadConfigUserSchema,
     UpdateConfigUserSchema,
 )
-from fastapi.encoders import jsonable_encoder
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
 
