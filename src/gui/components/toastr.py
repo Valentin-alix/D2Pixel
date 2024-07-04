@@ -7,6 +7,8 @@ from src.gui.components.buttons import PushButton, PushButtonIcon
 
 
 class QToaster(QtWidgets.QFrame):
+    current_toastr: "QToaster | None" = None
+
     label: QLabel
     closeButton: PushButton
 
@@ -114,9 +116,13 @@ def show_message(
     margin: int = 5,
     timeout: int = 5000,
 ):
+    if QToaster.current_toastr is not None:
+        QToaster.current_toastr.close()
+
     parent = parent.window()
 
     toastr = QToaster(parent)
+    QToaster.current_toastr = toastr
     toastr.setMinimumWidth(120)
 
     label_icon = QtWidgets.QLabel()

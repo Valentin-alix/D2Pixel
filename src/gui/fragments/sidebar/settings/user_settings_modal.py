@@ -1,7 +1,6 @@
 from datetime import time
 from functools import partial
 from PyQt5.QtCore import QTime, Qt, pyqtSlot
-from PyQt5.QtGui import QDoubleValidator
 from PyQt5.QtWidgets import QFormLayout, QLineEdit, QTimeEdit, QWidget
 
 from D2Shared.shared.schemas.config_user import (
@@ -44,6 +43,7 @@ class UserSettingsModal(Dialog):
 
     def set_form(self, config_user: ReadConfigUserSchema):
         self.form_widget = QWidget()
+
         self.main_layout.addWidget(self.form_widget)
         form = QFormLayout()
         form.setAlignment(Qt.AlignCenter)
@@ -94,11 +94,6 @@ class UserSettingsModal(Dialog):
         form.addRow("Temps module Harvester (HH-mm)", self.time_harvester_edit)
 
         self.randomizer_duration_activity_edit = QLineEdit()
-        randomizer_duration_activity_edit_validator = QDoubleValidator()
-        randomizer_duration_activity_edit_validator.setRange(0, 1)
-        self.randomizer_duration_activity_edit.setValidator(
-            randomizer_duration_activity_edit_validator
-        )
         self.randomizer_duration_activity_edit.setText(
             str(config_user.randomizer_duration_activity)
         )
@@ -112,12 +107,11 @@ class UserSettingsModal(Dialog):
         range_new_map_widget.setLayout(range_new_map_widget_h_layout)
 
         self.range_new_map_start_edit = QLineEdit()
-        self.range_new_map_start_edit.setValidator(QDoubleValidator())
+
         self.range_new_map_start_edit.setText(str(config_user.range_new_map.start))
         range_new_map_widget_h_layout.addWidget(self.range_new_map_start_edit)
 
         self.range_new_map_end_edit = QLineEdit()
-        self.range_new_map_end_edit.setValidator(QDoubleValidator())
         self.range_new_map_end_edit.setText(str(config_user.range_new_map.end))
         range_new_map_widget_h_layout.addWidget(self.range_new_map_end_edit)
 
