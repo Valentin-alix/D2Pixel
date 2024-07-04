@@ -101,6 +101,7 @@ class QToaster(QtWidgets.QFrame):
 
     def closeEvent(self, event):
         self.deleteLater()
+        QToaster.current_toastr = None
 
     def resizeEvent(self, event):
         super(QToaster, self).resizeEvent(event)
