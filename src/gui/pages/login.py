@@ -44,8 +44,8 @@ class LoginModal(Dialog):
         set_key(ENV_PATH, "PASSWORD", password)
         if not LoginService.is_login(self.service):
             return
-        self.accept()
         self.app_signals.login_success.emit()
+        self.accept()
 
     def get_inputs(self) -> tuple[str, str]:
         return self.username.text(), self.password.text()

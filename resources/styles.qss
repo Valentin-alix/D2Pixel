@@ -41,4 +41,6 @@ QGroupBox {{
   qproperty-alignment: AlignCenter;
 }}
 
-
+QPushButton.no-border {{
+  border: 0px;
+}}

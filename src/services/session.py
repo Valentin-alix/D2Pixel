@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from logging import Logger
-from PyQt5.QtCore import QEventLoop
+from PyQt5.QtCore import QEventLoop, QTimer
 from requests import Response, Session
 from requests.auth import HTTPBasicAuth
 from dotenv import get_key
@@ -30,7 +30,7 @@ class ServiceSession:
                 self.app_signals.login_failed.emit()
                 event_loop = QEventLoop()
                 self.app_signals.login_success.connect(event_loop.quit)
-                event_loop.exec_()
+                QTimer.singleShot(0, event_loop.exec_)  # don't block main thread
                 return retry_request()
         return rep
 

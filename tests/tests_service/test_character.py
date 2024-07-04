@@ -13,6 +13,7 @@ from D2Shared.shared.enums import FromDirection
 from src.gui.signals.app_signals import AppSignals
 from src.services.character import CharacterService
 from src.services.map import MapService
+from src.services.recipe import RecipeService
 from src.services.session import ServiceSession
 
 sys.path.append(os.path.join(Path(__file__).parent.parent.parent))
@@ -20,9 +21,9 @@ sys.path.append(os.path.join(Path(__file__).parent.parent.parent))
 
 class TestServiceCharacter(unittest.TestCase):
     def setUp(self) -> None:
-        self.service = ServiceSession(Logger("Tema-la-ratte"), AppSignals())
+        self.service = ServiceSession(Logger("Xeloreeuu"), AppSignals())
         self.character = CharacterService.get_or_create_character(
-            self.service, "Tema-la-ratte"
+            self.service, "Xeloreeuu"
         )
         # for job_id in HARVEST_JOBS_ID:
         #     CharacterService.update_job_info(
@@ -37,9 +38,13 @@ class TestServiceCharacter(unittest.TestCase):
         print(map.waypoint)
 
     def test_get_or_create(self):
-        items = CharacterService.get_possible_collectable(
-            self.service, self.character.id
-        )
+        # colls = CharacterService.get_possible_collectable(
+        #     self.service, self.character.id
+        # )
+        # CharacterService.add_bank_items(
+        #     self.service, self.character.id, [elem.item_id for elem in colls]
+        # )
+        items = RecipeService.get_default_recipes(self.service, self.character.id)
         print(items)
         # CharacterService.add_bank_items(
         #     self.service, self.character.id, [elem.item_id for elem in items]

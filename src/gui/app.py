@@ -5,7 +5,7 @@ import sys
 from time import sleep
 from typing import cast
 
-from PyQt5 import QtGui
+from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import (
     QObject,
     Qt,
@@ -28,6 +28,7 @@ from src.bots.modules.module_manager import ModuleManager
 from src.consts import ASSET_FOLDER_PATH, RESOURCE_FOLDER_PATH
 from src.gui.components.loaders import Loading
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
+from src.gui.components.toastr import show_message
 from src.gui.fragments.header.sub_header import SubHeader
 from src.gui.fragments.sidebar.sidebar import SideBar
 from src.gui.pages.login import LoginModal
@@ -187,6 +188,12 @@ class MainWindow(QMainWindow):
 
     def on_log_app(self, lvl_with_title_and_msg: tuple[int, str]):
         log_lvl, msg = lvl_with_title_and_msg
+        show_message(
+            self,
+            msg,
+            log_lvl,
+            corner=QtCore.Qt.Corner.BottomRightCorner,
+        )
 
     def on_login_failed(self):
         input_dialog = LoginModal(app_signals=self.app_signals, service=self.service)
