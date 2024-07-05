@@ -2,11 +2,14 @@ import re
 import numpy
 import tesserocr
 from pydantic import BaseModel
-import unidecode
-
+from PIL import Image as Img
 from D2Shared.shared.consts.adaptative.regions import LINE_AREAS
 from D2Shared.shared.schemas.stat import LineSchema, StatSchema
+from D2Shared.shared.utils.clean import clean_line_text
 from D2Shared.shared.utils.text_similarity import get_similarity
+from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
+from src.exceptions import UnknowStateException
+from src.image_manager.ocr import BASE_CONFIG
 from src.services.session import ServiceSession
 from src.services.stat import StatService
 
@@ -17,19 +20,21 @@ class LinePriority(BaseModel):
     target_line: LineSchema
 
 
-class FmLineAnalyser:
-    def __init__(self, service: ServiceSession) -> None:
+class FmAnalyser:
+    def __init__(
+        self, service: ServiceSession, smithmagic_workshop: SmithMagicWorkshop
+    ) -> None:
         self.service = service
+        self.smithmagic_workshop = smithmagic_workshop
 
-    def clean_line_text(self, text: str) -> str:
-        normalized_text = (
-            unidecode.unidecode(text, "utf-8")
-            .replace(" ", "")
-            .replace("\n", "")
-            .replace(".", "")
-            .lower()
-        )
-        return normalized_text
+    def get_stats_item_selected(self, img: numpy.ndarray) -> list[LineSchema] | None:
+        if self.smithmagic_workshop.is_on_smithmagic_workshop(img):
+            try:
+                parsed_item = self.get_lines_from_img(img)
+                return parsed_item
+            except ValueError:
+                raise UnknowStateException(img, "magic_stat_item_parse_err")
+        return None
 
     def get_line_from_text(self, line_text: str) -> LineSchema | None:
         def extract_value_from_text(text: str) -> int:
@@ -43,9 +48,11 @@ class FmLineAnalyser:
             return value
 
         def extract_name_from_text(text: str) -> str:
-            return "".join((char for char in text if char.isdigit() and char != "-"))
+            return "".join(
+                (char for char in text if not char.isdigit() and char != "-")
+            )
 
-        cleaned_text = self.clean_line_text(line_text)
+        cleaned_text = clean_line_text(line_text)
         if len(cleaned_text) > 0:
             value = extract_value_from_text(cleaned_text)
             name = extract_name_from_text(cleaned_text)
@@ -55,7 +62,8 @@ class FmLineAnalyser:
                 [
                     (stat, sim_words)
                     for stat in stats
-                    if (sim_words := get_similarity(stat.name, name)) > 0.8
+                    if (sim_words := get_similarity(clean_line_text(stat.name), name))
+                    > 0.8
                 ],
                 key=lambda elem: elem[1],
                 default=None,
@@ -67,22 +75,23 @@ class FmLineAnalyser:
             return line
         return None
 
-    def get_lines_from_img(
-        self, image: numpy.ndarray, tes_api: tesserocr.PyTessBaseAPI
-    ) -> list[LineSchema]:
+    def get_lines_from_img(self, image: numpy.ndarray) -> list[LineSchema]:
         lines: list[LineSchema] = []
-        tes_api.SetImage(image)
-        for line_area in LINE_AREAS:
-            tes_api.SetRectangle(
-                line_area.left,
-                line_area.top,
-                line_area.right - line_area.left,
-                line_area.bot - line_area.top,
-            )
-            text = tes_api.GetUTF8Text()
-            line_text = self.get_line_from_text(text)
-            if line_text is not None:
-                lines.append(line_text)
+        pil_img = Img.fromarray(image)
+        with tesserocr.PyTessBaseAPI(**BASE_CONFIG) as tes_api:
+            tes_api.SetImage(pil_img)
+            for line_area in LINE_AREAS:
+                print(line_area)
+                tes_api.SetRectangle(
+                    line_area.left,
+                    line_area.top,
+                    line_area.right - line_area.left,
+                    line_area.bot - line_area.top,
+                )
+                text = tes_api.GetUTF8Text()
+                line_text = self.get_line_from_text(text)
+                if line_text is not None:
+                    lines.append(line_text)
         return lines
 
     def get_optimal_index_rune_for_target_line(
