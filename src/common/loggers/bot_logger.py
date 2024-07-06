@@ -6,7 +6,7 @@ from typing import Any
 
 import coloredlogs
 
-from src.gui.signals.dofus_signals import BotSignals
+from src.gui.signals.bot_signals import BotSignals
 
 LOGS_FOLDER = os.path.join(Path(__file__).parent.parent.parent.parent, "logs")
 
@@ -28,8 +28,13 @@ class BotLogger(logging.Logger):
         self.title = title
         self.bot_signals = bot_signals
         self.setLevel(logging.DEBUG)
-        coloredlogs.install(level=logging.DEBUG, logger=self, isatty=True, stream=sys.stdout,
-                            fmt="%(asctime)s %(levelname)-8s %(message)s")
+        coloredlogs.install(
+            level=logging.DEBUG,
+            logger=self,
+            isatty=True,
+            stream=sys.stdout,
+            fmt="%(asctime)s %(levelname)-8s %(message)s",
+        )
         self.addHandler(get_file_handler(self.title))
 
     def _get_log_msg(self, msg: Any) -> str:

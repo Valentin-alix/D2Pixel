@@ -11,7 +11,7 @@ from src.bots.modules.harvester.harvest_sub_area_farming import (
     HarvestSubAreaFarming,
     get_weights_harvest_map,
 )
-from src.gui.signals.dofus_signals import BotSignals
+from src.gui.signals.bot_signals import BotSignals
 from src.window_manager.organizer import WindowInfo
 
 

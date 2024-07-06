@@ -7,7 +7,7 @@ from src.bots.dofus.fight.spells.spell_manager import SpellManager
 
 # sys.path.append(os.path.dirname(os.path.dirname((os.path.dirname(__file__)))))
 from src.data_layer.models.characteristic import CharacteristicEnum
-from src.gui.signals.dofus_signals import BotSignals
+from src.gui.signals.bot_signals import BotSignals
 from src.window_manager.organizer import WindowInfo
 from tests.utils import PATH_FIXTURES
 

@@ -44,7 +44,7 @@ from src.consts import DOFUS_WINDOW_SIZE
 from src.exceptions import (
     StoppedException,
 )
-from src.gui.signals.dofus_signals import BotSignals
+from src.gui.signals.bot_signals import BotSignals
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.icon_searcher import IconSearcher
 from src.image_manager.screen_objects.image_manager import ImageManager
@@ -362,6 +362,7 @@ class ModuleManager:
             while self.is_playing.is_set():
                 self.logger.info("Waiting for stopped bot")
                 sleep(0.5)
+            self.is_paused.clear()
 
     def stop_bot(self):
         self.bot_signals.is_stopping_bot.emit(True)

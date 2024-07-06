@@ -3,7 +3,7 @@ from PyQt5.QtCore import QObject, pyqtSlot
 from src.bots.modules.module_manager import ModuleManager
 
 
-class WorkerRunActions(QObject):
+class WorkerRunFarming(QObject):
     def __init__(
         self, module_manager: ModuleManager, name_modules: list[str], *args, **kwargs
     ) -> None:

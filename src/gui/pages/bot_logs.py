@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QListWidget, QListWidgetItem
 
 from src.gui.components.organization import VerticalLayout
-from src.gui.signals.dofus_signals import BotSignals
+from src.gui.signals.bot_signals import BotSignals
 
 
 class LogBox(QGroupBox):

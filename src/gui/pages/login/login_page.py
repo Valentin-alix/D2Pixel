@@ -1,12 +1,13 @@
-from PyQt5.QtCore import QSize
-from PyQt5.QtWidgets import QDialogButtonBox, QFormLayout, QLineEdit
-from dotenv import set_key
-
 from src.consts import ENV_PATH
 from src.gui.components.dialog import Dialog
 from src.gui.signals.app_signals import AppSignals
 from src.services.login import LoginService
 from src.services.session import ServiceSession
+
+
+from PyQt5.QtCore import QSize
+from PyQt5.QtWidgets import QDialogButtonBox, QFormLayout, QLineEdit
+from dotenv import set_key
 
 
 class LoginModal(Dialog):

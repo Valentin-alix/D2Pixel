@@ -5,7 +5,7 @@ import cv2
 
 from src.bots.dofus.elements.sale_hotel import SaleHotel
 from src.bots.dofus.hud.hud_system import Hud
-from src.gui.signals.dofus_signals import BotSignals
+from src.gui.signals.bot_signals import BotSignals
 from src.window_manager.organizer import WindowInfo
 from tests.utils import PATH_FIXTURES
 

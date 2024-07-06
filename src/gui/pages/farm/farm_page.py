@@ -12,11 +12,11 @@ from src.gui.components.organization import (
     HorizontalLayout,
     VerticalLayout,
 )
-from src.gui.pages.modules.logs import LogBox
-from src.gui.pages.modules.workers_action import (
-    WorkerRunActions,
+from src.gui.pages.bot_logs import LogBox
+from src.gui.pages.farm.farm_workers import (
+    WorkerRunFarming,
 )
-from src.gui.pages.worker_stop import WorkerStopActions
+from src.gui.pages.stop_worker import WorkerStop
 
 
 class ModulesPage(QWidget):
@@ -116,7 +116,7 @@ class ModulesPage(QWidget):
             self.thread_run.quit()
             self.thread_run.wait()
 
-        self.worker_run = WorkerRunActions(
+        self.worker_run = WorkerRunFarming(
             self.module_manager, name_modules=self.combo_modules.currentData()
         )
         self.thread_run = QThread()
@@ -131,7 +131,7 @@ class ModulesPage(QWidget):
             self.thread_stop.quit()
             self.thread_stop.wait()
 
-        self.worker_stop = WorkerStopActions(self.module_manager)
+        self.worker_stop = WorkerStop(self.module_manager)
         self.thread_stop = QThread()
 
         self.worker_stop.moveToThread(self.thread_stop)

@@ -7,7 +7,7 @@ from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
 from src.common.algos.bresenhman import bresenham
 
 # sys.path.append(os.path.dirname(os.path.dirname((os.path.dirname(__file__)))))
-from src.gui.signals.dofus_signals import BotSignals
+from src.gui.signals.bot_signals import BotSignals
 from src.image_manager.debug import ColorBGR, draw_line
 from src.window_manager.organizer import WindowInfo
 from tests.utils import PATH_FIXTURES

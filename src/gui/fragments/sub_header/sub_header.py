@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QTabWidget, QWidget
 from src.bots.modules.module_manager import ModuleManager
 from src.gui.components.organization import HorizontalLayout
 from src.gui.pages.fm.fm_page import FmPage
-from src.gui.pages.modules.module_page import ModulesPage
+from src.gui.pages.farm.farm_page import ModulesPage
 from src.gui.pages.stats.stats_page import StatsPage
 from src.services.session import ServiceSession
 
@@ -30,7 +30,7 @@ class SubHeader(QWidget):
         self.tabs = QTabWidget()
 
         self.module_tab = ModulesPage(module_manager=module_manager)
-        self.tabs.addTab(self.module_tab, "Modules")
+        self.tabs.addTab(self.module_tab, "Farm")
 
         self.fm_frame = FmPage(
             self.service, module_manager=module_manager, app_logger=self.logger

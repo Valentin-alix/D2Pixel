@@ -1,3 +1,7 @@
+Fiabiliser l'interface de FM au max (avant de fiabiliser la logique derrière)
+
+quand play puis stop fm & play modules -> la gui freeze
+
 FIGHT FIX ASTAR & BRESENHAM pas précis -> grille bof
 
 Launcher ->

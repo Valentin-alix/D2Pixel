@@ -3,6 +3,7 @@ import numpy
 
 
 from D2Shared.shared.consts.adaptative.positions import (
+    CLEAR_SEARCH_INVENTORY_POSITION,
     FIRST_OBJECT_INVENTORY_POSITION,
     LINES_COLUMNS_POSITION,
     MERGE_POSITION,
@@ -38,7 +39,7 @@ class Fm:
     def run(self, target_lines: list[LineSchema], exo: StatSchema | None = None):
         old_img: numpy.ndarray | None = None
         while True:
-            wait((1, 1.5))
+            wait((0.3, 1))
             img = self.capturer.capture()
             if not self.smithmagic_workshop.has_history_changed(old_img, img):
                 continue
@@ -53,8 +54,9 @@ class Fm:
 
     def place_rune_by_name(self, name: str):
         self.controller.click(RESOURCES_INVENTORY_POSITION)
+        self.controller.click(CLEAR_SEARCH_INVENTORY_POSITION)
         self.controller.send_text(name, pos=SEARCH_INVENTORY_POSITION)
-        wait((0.6, 0.9))
+        wait()
         self.controller.click(FIRST_OBJECT_INVENTORY_POSITION, count=2)
 
     def put_exo(
@@ -77,7 +79,7 @@ class Fm:
         ):
             return True
         self.place_rune_by_name(exo_stat.runes[0].name)
-        wait((1, 1.5))
+        wait((0.6, 1))
         self.controller.click(MERGE_POSITION)
         return False
 
