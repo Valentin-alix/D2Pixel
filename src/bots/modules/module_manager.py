@@ -4,6 +4,7 @@ from threading import Event, RLock
 from time import sleep
 from typing import Callable
 
+from D2Shared.shared.schemas.stat import LineSchema, StatSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.antibot.afk_starter import AfkStarter
 from src.bots.dofus.antibot.humanizer import Humanizer
@@ -12,6 +13,7 @@ from src.bots.dofus.chat.sentence import FakeSentence
 from src.bots.dofus.connection.connection_system import ConnectionSystem
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.elements.sale_hotel import SaleHotel, SaleHotelSystem
+from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
 from src.bots.dofus.fight.fight_system import FightSystem
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
@@ -31,6 +33,8 @@ from src.bots.dofus.walker.buildings.workshop_building import WorkshopBuilding
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.walker_system import WalkerSystem
 from src.bots.modules.fighter.fighter import Fighter
+from src.bots.modules.fm.fm import Fm
+from src.bots.modules.fm.fm_analyser import FmAnalyser
 from src.bots.modules.harvester.harvester import Harvester
 from src.bots.modules.hdv.craft import Crafter
 from src.bots.modules.hdv.hdv import Hdv
@@ -335,6 +339,17 @@ class ModuleManager:
             self.user,
         )
 
+        self.smithmagic_workshop = SmithMagicWorkshop()
+        self.fm_analyser = FmAnalyser(self.service, self.smithmagic_workshop)
+        self.fm = Fm(
+            self.controller,
+            self.service,
+            self.fm_analyser,
+            self.logger,
+            self.smithmagic_workshop,
+            self.capturer,
+        )
+
         self.modules: dict[str, Callable[..., None]] = {
             "Hdv": self.hdv.run_hdv,
             "Fighter": self.fighter.run_fighter,
@@ -352,6 +367,25 @@ class ModuleManager:
         self.bot_signals.is_stopping_bot.emit(True)
         self._stop_bot()
         self.bot_signals.is_stopping_bot.emit(False)
+
+    def run_fm(self, lines: list[LineSchema], exo: StatSchema | None):
+        self.bot_signals.is_stopping_bot.emit(True)
+        self._stop_bot()
+        self.is_paused.clear()
+        self.is_playing.set()
+        self.bot_signals.is_stopping_bot.emit(False)
+
+        self.map_state.reset_map_state()
+
+        try:
+            self.fm.run(lines, exo)
+        except StoppedException:
+            self.logger.info("Stopped bot.")
+        except Exception:
+            self.logger.error(traceback.format_exc())
+        finally:
+            self.logger.info("Bot terminated.")
+            self.is_playing.clear()
 
     def run_bot(self, name_modules: list[str] | None = None):
         if name_modules is None:

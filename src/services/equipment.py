@@ -18,7 +18,7 @@ class EquipmentService:
         equipment_datas: UpdateEquipmentSchema,
     ) -> ReadEquipmentSchema:
         with service.logged_session() as session:
-            resp = session.post(f"{EQUIPMENT_URL}", json=equipment_datas)
+            resp = session.post(f"{EQUIPMENT_URL}", json=equipment_datas.model_dump())
             return ReadEquipmentSchema(**resp.json())
 
     @staticmethod
@@ -28,7 +28,9 @@ class EquipmentService:
         equipment_datas: UpdateEquipmentSchema,
     ) -> ReadEquipmentSchema:
         with service.logged_session() as session:
-            resp = session.put(f"{EQUIPMENT_URL}{equipment_id}", json=equipment_datas)
+            resp = session.put(
+                f"{EQUIPMENT_URL}{equipment_id}", json=equipment_datas.model_dump()
+            )
             return ReadEquipmentSchema(**resp.json())
 
     @staticmethod

@@ -221,7 +221,7 @@ class MainWindow(QMainWindow):
             self.stacked_frames.removeWidget(widget)
 
         for module_manager in module_managers:
-            sub_header = SubHeader(self.service, module_manager)
+            sub_header = SubHeader(self.service, module_manager, self.logger)
             self.stacked_frames.addWidget(sub_header)
 
     def closeEvent(self, _: QCloseEvent):

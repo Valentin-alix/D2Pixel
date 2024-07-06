@@ -15,16 +15,15 @@ from src.gui.components.organization import (
 from src.gui.pages.modules.logs import LogBox
 from src.gui.pages.modules.workers_action import (
     WorkerRunActions,
-    WorkerStopActions,
 )
+from src.gui.pages.worker_stop import WorkerStopActions
 
 
 class ModulesPage(QWidget):
-    thread_run: QThread | None = None
-    thread_stop: QThread | None = None
-
     def __init__(self, module_manager: ModuleManager):
         super().__init__()
+        self.thread_run: QThread | None = None
+        self.thread_stop: QThread | None = None
         self.module_manager = module_manager
         self.is_loading = False
 

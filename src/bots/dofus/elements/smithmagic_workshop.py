@@ -14,7 +14,7 @@ class SmithMagicWorkshop:
         self, old_runes_count_img: numpy.ndarray | None, new_image: numpy.ndarray | None
     ) -> bool:
         if old_runes_count_img is None or new_image is None:
-            return old_runes_count_img != new_image
+            return old_runes_count_img is not new_image
 
         cropped_img = crop_image(new_image, HISTORY_AREA)
         old_cropped_img = crop_image(old_runes_count_img, HISTORY_AREA)

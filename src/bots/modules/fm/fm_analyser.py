@@ -81,7 +81,6 @@ class FmAnalyser:
         with tesserocr.PyTessBaseAPI(**BASE_CONFIG) as tes_api:
             tes_api.SetImage(pil_img)
             for line_area in LINE_AREAS:
-                print(line_area)
                 tes_api.SetRectangle(
                     line_area.left,
                     line_area.top,

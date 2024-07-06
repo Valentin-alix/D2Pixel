@@ -142,7 +142,6 @@ class HudSystem(BaseModel):
             self.controller.click(pos)
             sleep(0.3)
             img = self.capturer.capture()
-            print(template_found_place)
             if (
                 next(
                     self.object_searcher.iter_position_from_template_info(

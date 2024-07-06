@@ -9,7 +9,7 @@ from D2Shared.shared.consts.adaptative.positions import (
     RESOURCES_INVENTORY_POSITION,
     SEARCH_INVENTORY_POSITION,
 )
-from D2Shared.shared.schemas.stat import LineSchema
+from D2Shared.shared.schemas.stat import LineSchema, StatSchema
 from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
 from src.bots.modules.fm.fm_analyser import FmAnalyser
 from src.common.randomizer import wait
@@ -35,7 +35,7 @@ class Fm:
         self.smithmagic_workshop = smithmagic_workshop
         self.capturer = capturer
 
-    def run(self, target_lines: list[LineSchema], exo: LineSchema | None = None):
+    def run(self, target_lines: list[LineSchema], exo: StatSchema | None = None):
         old_img: numpy.ndarray | None = None
         while True:
             wait((1, 1.5))
@@ -54,28 +54,29 @@ class Fm:
     def place_rune_by_name(self, name: str):
         self.controller.click(RESOURCES_INVENTORY_POSITION)
         self.controller.send_text(name, pos=SEARCH_INVENTORY_POSITION)
+        wait((0.6, 0.9))
         self.controller.click(FIRST_OBJECT_INVENTORY_POSITION, count=2)
 
     def put_exo(
         self,
         current_item_lines: list[LineSchema],
-        exo_line: LineSchema | None = None,
+        exo_stat: StatSchema | None = None,
     ) -> bool:
-        if exo_line is None:
+        if exo_stat is None:
             return True
         if (
             next(
                 (
                     line
                     for line in current_item_lines
-                    if line.stat.name == exo_line.stat.name
+                    if line.stat.name == exo_stat.name
                 ),
                 None,
             )
             is not None
         ):
             return True
-        self.place_rune_by_name(exo_line.stat.runes[0].name)
+        self.place_rune_by_name(exo_stat.runes[0].name)
         wait((1, 1.5))
         self.controller.click(MERGE_POSITION)
         return False
@@ -84,13 +85,13 @@ class Fm:
         self,
         current_item_lines: list[LineSchema],
         target_item_lines: list[LineSchema],
-        exo_line: LineSchema | None = None,
+        exo_stat: StatSchema | None = None,
     ) -> bool:
         line = self.fm_analyser.get_highest_priority_line(
             current_item_lines, target_item_lines
         )
         if line is None:
-            return self.put_exo(current_item_lines, exo_line)
+            return self.put_exo(current_item_lines, exo_stat)
 
         column = self.fm_analyser.get_optimal_index_rune_for_target_line(
             line.current_line, line.target_line
