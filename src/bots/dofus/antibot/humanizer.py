@@ -19,6 +19,7 @@ class Humanizer:
         self.is_connected = is_connected
         self.is_playing = is_playing
         self.user = user
+        self.timers: list[threading.Timer] = []
 
     def run_random_action(self, func: Callable, time: float):
         """run funct in interval based on time randomized"""
@@ -30,12 +31,14 @@ class Humanizer:
                 random.uniform(time * 0.2, time * 1.8),
                 run_func_regularly,
             )
+            self.timers.append(timer)
             timer.start()
 
         timer = threading.Timer(
             random.uniform(time * 0.2, time * 1.8),
             run_func_regularly,
         )
+        self.timers.append(timer)
         timer.start()
 
     def run_humanizer(self):
@@ -43,3 +46,7 @@ class Humanizer:
             self.chat_system.type_random_sentence,
             convert_time_to_seconds(self.user.config_user.time_between_sentence),
         )
+
+    def stop_timers(self):
+        for timer in self.timers:
+            timer.cancel()

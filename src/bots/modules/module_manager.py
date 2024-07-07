@@ -430,3 +430,4 @@ class ModuleManager:
         finally:
             self.logger.info("Bot terminated.")
             self.is_playing.clear()
+            self.humanizer.stop_timers()

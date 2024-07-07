@@ -1,13 +1,13 @@
-from logging import Logger
 import subprocess
+from logging import Logger
 from threading import Event, RLock, Thread
 from time import sleep
 
 import schedule
 from dotenv import get_key, set_key
+
 from D2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
 from D2Shared.shared.consts.object_configs import ObjectConfigs
-
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.connection.connection_system import (
     ConnectionSystem,
@@ -63,6 +63,9 @@ def launch_launcher():
         start_new_session=True,
     )
     sleep(3)
+
+
+sceduler_playtimes: tuple[schedule.Job, schedule.Job] | None = None
 
 
 class AnkamaLauncher:
@@ -122,7 +125,9 @@ class AnkamaLauncher:
         )
         if config == ObjectConfigs.Ankama.play:
             self.controller.click(pos)
-            sleep(12)
+            sleep(15)
+        else:
+            self.logger.info("Did not found play button")
 
     def connect_all(self) -> list[WindowInfo]:
         self.launch_games()
@@ -307,19 +312,34 @@ class AnkamaLauncher:
                 if module_manager.is_playing.is_set():
                     module_manager.logger.info("Bot sortit de pause.")
                 related_window = next(
-                    window
-                    for window in dofus_windows_info
-                    if window.name == module_manager.window_info.name
+                    (
+                        window
+                        for window in dofus_windows_info
+                        if window.name == module_manager.window_info.name
+                    ),
+                    None,
                 )
+                if related_window is None:
+                    return resume_bots(modules_managers)
                 module_manager.window_info.hwnd = related_window.hwnd
                 module_manager.internal_pause.clear()
 
         for range_hour_playtime in self.user.config_user.ranges_hour_playtime:
-            schedule.every().day.at(range_hour_playtime.end_time.strftime("%H:%M")).do(
-                lambda: pause_bots(modules_managers)
+            if sceduler_playtimes is not None:
+                schedule.cancel_job(sceduler_playtimes[0])
+                schedule.cancel_job(sceduler_playtimes[1])
+
+            job_pause = (
+                schedule.every()
+                .day.at(range_hour_playtime.end_time.strftime("%H:%M"))
+                .do(lambda: pause_bots(modules_managers))
             )
-            schedule.every().day.at(
-                range_hour_playtime.start_time.strftime("%H:%M")
-            ).do(lambda: resume_bots(modules_managers))
+            job_play = (
+                schedule.every()
+                .day.at(range_hour_playtime.start_time.strftime("%H:%M"))
+                .do(lambda: resume_bots(modules_managers))
+            )
+            global sceduler_playtimes
+            sceduler_playtimes = (job_pause, job_play)
 
         run_continuously()
