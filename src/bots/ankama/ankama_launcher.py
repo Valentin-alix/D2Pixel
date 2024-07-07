@@ -325,6 +325,7 @@ class AnkamaLauncher:
                 module_manager.internal_pause.clear()
 
         for range_hour_playtime in self.user.config_user.ranges_hour_playtime:
+            global sceduler_playtimes
             if sceduler_playtimes is not None:
                 schedule.cancel_job(sceduler_playtimes[0])
                 schedule.cancel_job(sceduler_playtimes[1])
@@ -339,7 +340,6 @@ class AnkamaLauncher:
                 .day.at(range_hour_playtime.start_time.strftime("%H:%M"))
                 .do(lambda: resume_bots(modules_managers))
             )
-            global sceduler_playtimes
             sceduler_playtimes = (job_pause, job_play)
 
         run_continuously()
