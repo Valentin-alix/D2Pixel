@@ -1,6 +1,7 @@
 from datetime import time
 from functools import partial
-from PyQt5.QtCore import QTime, Qt, pyqtSlot
+
+from PyQt5.QtCore import Qt, QTime, pyqtSlot
 from PyQt5.QtWidgets import QFormLayout, QLineEdit, QTimeEdit, QWidget
 
 from D2Shared.shared.schemas.config_user import (
@@ -127,7 +128,9 @@ class UserSettingsModal(Dialog):
         self.play_time_widget_layout.addWidget(button_add)
         button_add.clicked.connect(lambda: self.add_range_playtime(time(), time()))
 
-        for range_playtime in config_user.ranges_hour_playtime:
+        for range_playtime in sorted(
+            config_user.ranges_hour_playtime, key=lambda elem: elem.start_time
+        ):
             self.add_range_playtime(range_playtime.start_time, range_playtime.end_time)
 
         form.addRow("Planning d'activité (HH-mm)", self.play_time_widget)
@@ -163,13 +166,21 @@ class UserSettingsModal(Dialog):
         button_delete.setCheckable(False)
         range_playtime_widget_layout.addWidget(button_delete)
         button_delete.clicked.connect(
-            partial(self.on_delete_playtime, range_playtime_widget)
+            partial(
+                self.on_delete_playtime,
+                range_playtime_widget,
+                time_start_edit,
+                time_end_edit,
+            )
         )
 
         self.play_time_widget_layout.addWidget(range_playtime_widget)
 
-    def on_delete_playtime(self, widget: QWidget):
+    def on_delete_playtime(
+        self, widget: QWidget, time_start_edit: QTimeEdit, time_end_edit: QTimeEdit
+    ):
         self.play_time_widget_layout.removeWidget(widget)
+        self.range_playtime_edits.remove((time_start_edit, time_end_edit))
         widget.deleteLater()
         self.play_time_widget_layout.update()
         self.play_time_widget.adjustSize()

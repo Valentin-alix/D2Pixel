@@ -1,7 +1,7 @@
 import ctypes
-from logging import Logger
 import os
 import sys
+from logging import Logger
 from time import sleep
 from typing import cast
 
@@ -29,8 +29,8 @@ from src.consts import ASSET_FOLDER_PATH, RESOURCE_FOLDER_PATH
 from src.gui.components.loaders import Loading
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.gui.components.toastr import show_message
-from src.gui.fragments.sub_header.sub_header import SubHeader
 from src.gui.fragments.sidebar.sidebar import SideBar
+from src.gui.fragments.sub_header.sub_header import SubHeader
 from src.gui.pages.farm.farm_page import ModulesPage
 from src.gui.pages.login.login_page import LoginModal
 from src.gui.signals.app_signals import AppSignals
