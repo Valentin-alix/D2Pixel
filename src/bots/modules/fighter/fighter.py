@@ -1,11 +1,12 @@
-from logging import Logger
 import traceback
+from logging import Logger
 from threading import Lock
 from time import perf_counter, sleep
 from typing import Iterator
 
 import numpy
 import tesserocr
+
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.schemas.region import RegionSchema
@@ -15,7 +16,6 @@ from D2Shared.shared.utils.randomizer import (
     multiply_offset,
 )
 from D2Shared.shared.utils.text_similarity import are_similar_text
-
 from src.bots.dofus.connection.connection_system import ConnectionSystem
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.fight.fight_system import FightSystem
@@ -208,7 +208,9 @@ class Fighter:
                 return True
         return False
 
-    def _attack_enemy(self) -> bool:
+    def _attack_enemy(self, retry: int = 3) -> bool:
+        if retry == 0:
+            return False
         for area_group in self.__get_area_group_enemy():
             attacked = self.__attack_enemy_in_group(area_group)
             if attacked:
@@ -218,7 +220,7 @@ class Fighter:
 
         in_fight_info = self.image_manager.wait_on_screen(ObjectConfigs.Fight.in_fight)
         if in_fight_info is None:
-            return self._attack_enemy()
+            return self._attack_enemy(retry - 1)
 
         return True
 
