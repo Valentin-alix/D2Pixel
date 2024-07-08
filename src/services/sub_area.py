@@ -71,12 +71,6 @@ class SubAreaService:
             return [SubAreaSchema(**elem) for elem in resp.json()]
 
     @staticmethod
-    @cached(
-        cache={},
-        key=lambda _, server_id, possible_collectable_ids, valid_sub_area_ids: hashkey(
-            server_id, tuple(possible_collectable_ids), tuple(valid_sub_area_ids)
-        ),
-    )
     def get_weights_harvest_map(
         service: ServiceSession,
         character_id: str,
