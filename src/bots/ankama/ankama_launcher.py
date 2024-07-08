@@ -1,4 +1,5 @@
 import subprocess
+from datetime import time
 from logging import Logger
 from threading import Event, RLock, Thread
 from time import sleep
@@ -65,7 +66,7 @@ def launch_launcher():
     sleep(3)
 
 
-sceduler_playtimes: tuple[schedule.Job, schedule.Job] | None = None
+sceduler_playtimes: dict[time, tuple[schedule.Job, schedule.Job]] = {}
 
 
 class AnkamaLauncher:
@@ -324,11 +325,14 @@ class AnkamaLauncher:
                 module_manager.window_info.hwnd = related_window.hwnd
                 module_manager.internal_pause.clear()
 
+        global sceduler_playtimes
         for range_hour_playtime in self.user.config_user.ranges_hour_playtime:
-            global sceduler_playtimes
-            if sceduler_playtimes is not None:
-                schedule.cancel_job(sceduler_playtimes[0])
-                schedule.cancel_job(sceduler_playtimes[1])
+            related_scheduler_playtimes = sceduler_playtimes.get(
+                range_hour_playtime.start_time
+            )
+            if related_scheduler_playtimes is not None:
+                schedule.cancel_job(related_scheduler_playtimes[0])
+                schedule.cancel_job(related_scheduler_playtimes[1])
 
             job_pause = (
                 schedule.every()
@@ -340,6 +344,6 @@ class AnkamaLauncher:
                 .day.at(range_hour_playtime.start_time.strftime("%H:%M"))
                 .do(lambda: resume_bots(modules_managers))
             )
-            sceduler_playtimes = (job_pause, job_play)
+            sceduler_playtimes[range_hour_playtime.start_time] = (job_pause, job_play)
 
         run_continuously()
