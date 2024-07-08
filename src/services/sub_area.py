@@ -1,10 +1,10 @@
 from cachetools import cached
 from cachetools.keys import hashkey
+
 from D2Shared.shared.schemas.item import ItemSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
-
 
 SUBAREA_URL = BACKEND_URL + "/sub_area/"
 
@@ -79,6 +79,7 @@ class SubAreaService:
     )
     def get_weights_harvest_map(
         service: ServiceSession,
+        character_id: str,
         server_id: int,
         possible_collectable_ids: list[int],
         valid_sub_area_ids: list[int],
@@ -86,7 +87,7 @@ class SubAreaService:
         with service.logged_session() as session:
             resp = session.get(
                 f"{SUBAREA_URL}weights_harvest_map",
-                params={"server_id": server_id},
+                params={"server_id": server_id, "character_id": character_id},
                 json={
                     "possible_collectable_ids": possible_collectable_ids,
                     "valid_sub_area_ids": valid_sub_area_ids,

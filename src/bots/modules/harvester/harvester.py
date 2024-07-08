@@ -1,10 +1,11 @@
-from logging import Logger
 import traceback
+from logging import Logger
 from threading import Lock
 from time import perf_counter, sleep
 
 import numpy
 import win32con
+
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from D2Shared.shared.entities.position import Position
@@ -17,7 +18,6 @@ from D2Shared.shared.utils.debugger import timeit
 from D2Shared.shared.utils.randomizer import (
     multiply_offset,
 )
-
 from src.bots.dofus.connection.connection_system import ConnectionSystem
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.hud.highlight import remove_highlighted_zone
@@ -134,6 +134,7 @@ class Harvester:
         valid_sub_area_ids = [elem.id for elem in valid_sub_areas]
         self.weight_by_map_harvest = SubAreaService.get_weights_harvest_map(
             self.service,
+            self.character_state.character.id,
             self.character_state.character.server_id,
             possible_collectable_ids,
             valid_sub_area_ids,
@@ -190,6 +191,7 @@ class Harvester:
                 valid_sub_area_ids = [elem.id for elem in valid_sub_areas]
                 self.weight_by_map_harvest = SubAreaService.get_weights_harvest_map(
                     self.service,
+                    self.character_state.character.id,
                     self.character_state.character.server_id,
                     possible_collectable_ids,
                     valid_sub_area_ids,

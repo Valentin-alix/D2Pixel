@@ -24,12 +24,16 @@ class CharacterService:
 
     @staticmethod
     def update_job_info(
-        service: ServiceSession, character_id: str, job_id: int, lvl: int
+        service: ServiceSession,
+        character_id: str,
+        job_id: int,
+        lvl: int,
+        weight: float | None = None,
     ) -> CharacterJobInfoSchema:
         with service.logged_session() as session:
             resp = session.put(
                 f"{CHARACTER_URL}{character_id}/job_info",
-                params={"job_id": job_id, "lvl": lvl},
+                params={"job_id": job_id, "lvl": lvl, "weight": weight},
             ).json()
             return CharacterJobInfoSchema(**resp)
 
