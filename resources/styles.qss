@@ -44,3 +44,7 @@ QGroupBox {{
 QPushButton.no-border {{
   border: 0px;
 }}
+
+.bordered {{ 
+  border:1px solid {QTMATERIAL_SECONDARYLIGHTCOLOR};
+}}

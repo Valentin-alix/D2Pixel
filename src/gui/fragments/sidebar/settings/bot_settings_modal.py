@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QFormLayout,
     QGroupBox,
+    QLabel,
     QLineEdit,
     QWidget,
 )
@@ -89,7 +90,7 @@ class BotSettingsModal(Dialog):
         self.box_job_lvl.setLayout(box_job_lvl_layout)
         self.main_layout.addWidget(self.box_job_lvl)
 
-        self.form_job_infos: list[
+        self.job_info_edits: list[
             tuple[CharacterJobInfoSchema, QLineEdit, QLineEdit | None]
         ] = []
         job_infos = sorted(
@@ -101,10 +102,21 @@ class BotSettingsModal(Dialog):
         for index in range(0, len(job_infos), GROUP_COUNT):
             group_job = QWidget()
             box_job_lvl_layout.addWidget(group_job)
-            group_form_layout = QFormLayout()
+            group_form_layout = VerticalLayout()
             group_job.setLayout(group_form_layout)
 
             for job_info in job_infos[index : index + GROUP_COUNT]:
+                job_widget = QGroupBox()
+                job_widget.setStyleSheet(""" padding: 0px; """)
+                group_form_layout.addWidget(job_widget)
+                v_layout = VerticalLayout(space=0, margins=(0, 0, 0, 0))
+                job_widget.setLayout(v_layout)
+
+                job_label = QLabel()
+                job_label.setStyleSheet(""" font-size: 16px; """)
+                job_label.setText(job_info.job.name)
+                v_layout.addWidget(job_label)
+
                 job_info_widget = QWidget()
                 h_layout = HorizontalLayout()
                 job_info_widget.setLayout(h_layout)
@@ -117,8 +129,7 @@ class BotSettingsModal(Dialog):
                 job_lvl_edit = QLineEdit()
                 job_lvl_edit.setValidator(self.valid_lvl)
                 job_lvl_edit.setText(str(job_info.lvl))
-                job_lvl_edit.setFixedWidth(50)
-                job_lvl_layout.addRow("Lvl", job_lvl_edit)
+                job_lvl_layout.addRow("Niveau", job_lvl_edit)
 
                 if job_info.job_id in HARVEST_JOBS_ID:
                     job_weight_widget = QWidget()
@@ -128,14 +139,13 @@ class BotSettingsModal(Dialog):
 
                     job_weight_edit = QLineEdit()
                     job_weight_edit.setText(str(job_info.weight))
-                    job_weight_edit.setFixedWidth(50)
                     job_weight_layout.addRow("Poids", job_weight_edit)
                 else:
                     job_weight_edit = None
 
-                self.form_job_infos.append((job_info, job_lvl_edit, job_weight_edit))
+                self.job_info_edits.append((job_info, job_lvl_edit, job_weight_edit))
 
-                group_form_layout.addRow(job_info.job.name, job_info_widget)
+                v_layout.addWidget(job_info_widget)
 
     def set_save_btn(self):
         self.save_btn = PushButton(text="Enregistrer")
@@ -159,13 +169,13 @@ class BotSettingsModal(Dialog):
 
         CharacterService.update_character(self.service, character)
 
-        for job_info, job_lvl_edit, job_weight_edit in self.form_job_infos:
+        for job_info, job_lvl_edit, job_weight_edit in self.job_info_edits:
             job_lvl = int(job_lvl_edit.text())
             if job_weight_edit is not None:
                 job_weight = float(job_weight_edit.text())
             else:
-                job_weight = None
-            if job_info.lvl == job_lvl:
+                job_weight = 1
+            if job_info.lvl == job_lvl and job_weight == job_info.weight:
                 continue
             CharacterService.update_job_info(
                 self.service, character.id, job_info.job_id, job_lvl, job_weight
