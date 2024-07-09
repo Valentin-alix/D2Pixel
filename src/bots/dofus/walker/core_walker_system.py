@@ -4,6 +4,7 @@ from typing import Any, Callable, Literal, NamedTuple, Sequence, TypeVar, overlo
 
 import numpy
 import win32con
+
 from D2Shared.shared.consts.adaptative.positions import (
     PORTAL_INCARNAM_ENTER_POSITION,
     PORTAL_INCARNAM_TAKE_POSITION,
@@ -23,8 +24,6 @@ from D2Shared.shared.schemas.map_direction import MapDirectionSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
 from D2Shared.shared.schemas.waypoint import WaypointSchema
 from D2Shared.shared.schemas.zaapi import ZaapiSchema
-from src.common.randomizer import wait
-
 from src.bots.dofus.hud.hud_system import HudSystem
 from src.bots.dofus.hud.map import get_map
 from src.bots.dofus.walker.directions import (
@@ -33,6 +32,7 @@ from src.bots.dofus.walker.directions import (
 from src.bots.dofus.walker.entities_map.entity_map import EntityMap
 from src.bots.dofus.walker.maps import get_portal_map_id_by_world
 from src.bots.dofus.walker.zaapis import get_position_by_zaapi_category
+from src.common.randomizer import wait
 from src.common.retry import (
     MAX_RETRY,
     RetryTimeArgs,
@@ -209,7 +209,7 @@ class CoreWalkerSystem:
                     if (new_img := self.wait_for_new_map()) is not None:
                         break
                 if new_img is None:
-                    raise UnknowStateException(img, "no_havre_sac")
+                    raise UnknowStateException(self.capturer.capture(), "no_havre_sac")
                 img = new_img
 
             self.controller.click(ZAAP_HAVRE_SAC_POSITION)

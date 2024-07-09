@@ -4,6 +4,7 @@ from typing import Any
 
 import coloredlogs
 
+from src.common.loggers.utils import get_file_handler
 from src.gui.signals.app_signals import AppSignals
 
 
@@ -19,6 +20,7 @@ class AppLogger(logging.Logger):
             stream=sys.stdout,
             fmt="%(asctime)s %(levelname)-8s %(message)s",
         )
+        self.addHandler(get_file_handler("root"))
 
     def debug(self, msg: Any, *args, **kwargs):
         self.app_signals.lvl_with_title_and_msg.emit((logging.DEBUG, str(msg)))
