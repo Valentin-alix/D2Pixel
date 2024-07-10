@@ -17,12 +17,14 @@ from D2Shared.shared.schemas.character import (
 )
 from src.bots.modules.module_manager import ModuleManager
 from src.gui.components.buttons import PushButton
+from src.gui.components.combobox import CheckableComboBox
 from src.gui.components.dialog import Dialog
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.services.breed import BreedService
 from src.services.character import CharacterService
 from src.services.server import ServerService
 from src.services.session import ServiceSession
+from src.services.world import WorldService
 
 
 class BotSettingsModal(Dialog):
@@ -83,6 +85,15 @@ class BotSettingsModal(Dialog):
         self.bot_lvl_form.setValidator(self.valid_lvl)
         self.bot_lvl_form.setText(str(character.lvl))
         form.addRow("Niveau", self.bot_lvl_form)
+
+        self.combo_waypoints = CheckableComboBox(parent=self)
+        character_waypoints = CharacterService.get_waypoints(self.service, character.id)
+        for waypoint in WorldService.get_waypoints(self.service, 1):
+            checked = waypoint in character_waypoints
+            self.combo_waypoints.addItem(
+                waypoint.map.sub_area.name, waypoint.id, checked=checked
+            )
+        form.addRow("Zaaps", self.combo_waypoints)
 
     def set_bot_job_infos(self, character: CharacterSchema):
         self.box_job_lvl = QGroupBox()
@@ -166,6 +177,10 @@ class BotSettingsModal(Dialog):
         character.server_id = server_id
         character.breed_id = breed_id
         character.is_sub = is_sub
+
+        waypoint_ids = self.combo_waypoints.currentData()
+
+        CharacterService.update_waypoints(self.service, character.id, waypoint_ids)
 
         CharacterService.update_character(self.service, character)
 

@@ -50,6 +50,19 @@ class CharacterService:
             )
 
     @staticmethod
+    def update_waypoints(
+        service: ServiceSession,
+        character_id: str,
+        waypoint_ids: list[int],
+    ):
+        with service.logged_session() as session:
+            session.post(
+                f"{CHARACTER_URL}{character_id}/waypoint",
+                params={"character_id": character_id},
+                json=waypoint_ids,
+            )
+
+    @staticmethod
     def get_waypoints(
         service: ServiceSession,
         character_id: str,
