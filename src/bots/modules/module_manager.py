@@ -83,6 +83,7 @@ class ModuleManager:
         self.is_connected = Event()
         self.is_dead = Event()
         self.not_in_fight = Event()
+        self.not_in_fight.set()
         self.action_lock = RLock()
         self.logger = BotLogger(character_id, self.bot_signals)
 
