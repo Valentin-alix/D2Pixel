@@ -4,6 +4,7 @@ from D2Shared.shared.schemas.character import (
 )
 from D2Shared.shared.schemas.collectable import CollectableSchema
 from D2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from D2Shared.shared.schemas.waypoint import WaypointSchema
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
@@ -56,10 +57,23 @@ class CharacterService:
         waypoint_ids: list[int],
     ):
         with service.logged_session() as session:
-            session.post(
-                f"{CHARACTER_URL}{character_id}/waypoint",
+            session.put(
+                f"{CHARACTER_URL}{character_id}/waypoints",
                 params={"character_id": character_id},
                 json=waypoint_ids,
+            )
+
+    @staticmethod
+    def update_sub_areas(
+        service: ServiceSession,
+        character_id: str,
+        sub_area_ids: list[int],
+    ):
+        with service.logged_session() as session:
+            session.put(
+                f"{CHARACTER_URL}{character_id}/sub_areas",
+                params={"character_id": character_id},
+                json=sub_area_ids,
             )
 
     @staticmethod
@@ -70,6 +84,15 @@ class CharacterService:
         with service.logged_session() as session:
             resp = session.get(f"{CHARACTER_URL}{character_id}/waypoints")
             return [WaypointSchema(**elem) for elem in resp.json()]
+
+    @staticmethod
+    def get_sub_areas(
+        service: ServiceSession,
+        character_id: str,
+    ) -> list[SubAreaSchema]:
+        with service.logged_session() as session:
+            resp = session.get(f"{CHARACTER_URL}{character_id}/sub_areas")
+            return [SubAreaSchema(**elem) for elem in resp.json()]
 
     @staticmethod
     def get_job_infos(

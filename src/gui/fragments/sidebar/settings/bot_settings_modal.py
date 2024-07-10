@@ -24,6 +24,7 @@ from src.services.breed import BreedService
 from src.services.character import CharacterService
 from src.services.server import ServerService
 from src.services.session import ServiceSession
+from src.services.sub_area import SubAreaService
 from src.services.world import WorldService
 
 
@@ -87,13 +88,32 @@ class BotSettingsModal(Dialog):
         form.addRow("Niveau", self.bot_lvl_form)
 
         self.combo_waypoints = CheckableComboBox(parent=self)
-        character_waypoints = CharacterService.get_waypoints(self.service, character.id)
-        for waypoint in WorldService.get_waypoints(self.service, 1):
+        self.origin_waypoints = CharacterService.get_waypoints(
+            self.service, character.id
+        )
+        character_waypoints = self.origin_waypoints
+        for waypoint in sorted(
+            WorldService.get_waypoints(self.service, 1),
+            key=lambda elem: elem.map.sub_area.name,
+        ):
             checked = waypoint in character_waypoints
             self.combo_waypoints.addItem(
                 waypoint.map.sub_area.name, waypoint.id, checked=checked
             )
         form.addRow("Zaaps", self.combo_waypoints)
+
+        self.combo_sub_areas = CheckableComboBox(parent=self)
+        self.origin_sub_areas = CharacterService.get_sub_areas(
+            self.service, character.id
+        )
+        character_sub_areas = self.origin_sub_areas
+        for sub_area in sorted(
+            SubAreaService.get_sub_areas(self.service),
+            key=lambda elem: elem.name,
+        ):
+            checked = sub_area in character_sub_areas
+            self.combo_sub_areas.addItem(sub_area.name, sub_area.id, checked=checked)
+        form.addRow("Zones farmable", self.combo_sub_areas)
 
     def set_bot_job_infos(self, character: CharacterSchema):
         self.box_job_lvl = QGroupBox()
@@ -173,16 +193,25 @@ class BotSettingsModal(Dialog):
 
         character = self.module_manager.character_state.character
 
-        character.lvl = lvl
-        character.server_id = server_id
-        character.breed_id = breed_id
-        character.is_sub = is_sub
-
         waypoint_ids = self.combo_waypoints.currentData()
+        if set((elem.id for elem in self.origin_waypoints)) != set(waypoint_ids):
+            CharacterService.update_waypoints(self.service, character.id, waypoint_ids)
 
-        CharacterService.update_waypoints(self.service, character.id, waypoint_ids)
+        sub_area_ids = self.combo_sub_areas.currentData()
+        if set((elem.id for elem in self.origin_sub_areas)) != set(sub_area_ids):
+            CharacterService.update_sub_areas(self.service, character.id, sub_area_ids)
 
-        CharacterService.update_character(self.service, character)
+        if (
+            lvl != character.lvl
+            or server_id != character.server_id
+            or breed_id != character.breed_id
+            or is_sub != character.is_sub
+        ):
+            character.lvl = lvl
+            character.server_id = server_id
+            character.breed_id = breed_id
+            character.is_sub = is_sub
+            CharacterService.update_character(self.service, character)
 
         for job_info, job_lvl_edit, job_weight_edit in self.job_info_edits:
             job_lvl = int(job_lvl_edit.text())

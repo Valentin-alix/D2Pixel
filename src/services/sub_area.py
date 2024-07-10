@@ -103,6 +103,14 @@ class SubAreaService:
             return int(resp.json())
 
     @staticmethod
+    def get_sub_areas(
+        service: ServiceSession,
+    ) -> list[SubAreaSchema]:
+        with service.logged_session() as session:
+            resp = session.get(f"{SUBAREA_URL}")
+            return [SubAreaSchema(**elem) for elem in resp.json()]
+
+    @staticmethod
     def get_valid_sub_areas_harvester(
         service: ServiceSession,
         character_id: str,
