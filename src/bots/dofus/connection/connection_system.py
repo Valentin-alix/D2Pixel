@@ -1,18 +1,16 @@
-from logging import Logger
 import socket
 import traceback
+from logging import Logger
 from threading import Event
 from time import sleep
 
 import numpy
-from D2Shared.shared.consts.object_configs import ObjectConfigs
 
+from D2Shared.shared.consts.object_configs import ObjectConfigs
 from src.bots.dofus.fight.fight_system import FightSystem
 from src.bots.dofus.hud.hud_system import HudSystem
 from src.exceptions import (
-    CharacterIsStuckException,
     StoppedException,
-    UnknowStateException,
 )
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
@@ -110,7 +108,7 @@ class ConnectionSystem:
                 img, _ = self.fight_system.play_fight()
         except StoppedException:
             raise
-        except (UnknowStateException, CharacterIsStuckException):
+        except Exception:
             self.logger.error(traceback.format_exc())
             return self.deblock_character()
         self.hud_system.clean_interface(self.capturer.capture())
