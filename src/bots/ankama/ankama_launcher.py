@@ -275,7 +275,12 @@ class AnkamaLauncher:
             list[WindowInfo]: the refreshed new windows dofus
         """
         for window_info in dofus_windows_info:
-            self.connect_window(window_info, wait_play)
+            while True:
+                try:
+                    self.connect_window(window_info, wait_play)
+                except Exception:
+                    continue
+                break
 
         return get_windows_by_process_and_name(target_process_name="Dofus.exe")
 

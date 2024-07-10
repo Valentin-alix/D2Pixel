@@ -1,5 +1,4 @@
 from D2Shared.shared.schemas.character import CharacterSchema
-
 from src.services.character import CharacterService
 from src.services.session import ServiceSession
 
