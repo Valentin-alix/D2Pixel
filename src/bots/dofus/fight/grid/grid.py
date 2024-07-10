@@ -2,6 +2,7 @@ from typing import Iterator
 
 import cv2
 import numpy
+
 from D2Shared.shared.consts.adaptative.consts import (
     GRID_CELL_HEIGHT,
     GRID_CELL_WIDTH,
@@ -11,10 +12,8 @@ from D2Shared.shared.consts.adaptative.consts import (
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.enums import TypeCellEnum
-from D2Shared.shared.utils.debugger import timeit
-
-
 from D2Shared.shared.schemas.cell import CellSchema
+from D2Shared.shared.utils.debugger import timeit
 from src.image_manager.analysis import is_color_in_range
 from src.image_manager.debug import ColorBGR, draw_form, draw_text
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher

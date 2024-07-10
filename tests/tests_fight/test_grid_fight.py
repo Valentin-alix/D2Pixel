@@ -1,10 +1,10 @@
-from logging import Logger
 import os
 import unittest
+from logging import Logger
 
 import cv2
 
-
+from D2Shared.shared.utils.algos.bfs import bfs
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
 from src.bots.dofus.fight.grid.path_grid import AstarGrid
@@ -47,10 +47,10 @@ class TestGridFight(unittest.TestCase):
             near_mv = self.ldv_grid.get_near_movable_for_ldv_enemy(5)
             print(near_mv)
 
-            print(self.grid.cells[(7, 31)].get_dist_cell(self.grid.cells[(8, 31)]))
-            print(self.grid.cells[(7, 31)].get_dist_cell(self.grid.cells[(8, 30)]))
-            print(self.grid.cells[(7, 31)].get_dist_cell(self.grid.cells[(9, 31)]))
-            print(self.grid.cells[(7, 30)].get_dist_cell(self.grid.cells[(8, 31)]))
+            print(bfs(self.grid.cells[(7, 31)], self.grid.cells[(8, 31)]))
+            print(bfs(self.grid.cells[(7, 31)], self.grid.cells[(8, 30)]))
+            print(bfs(self.grid.cells[(7, 31)], self.grid.cells[(9, 31)]))
+            print(bfs(self.grid.cells[(7, 30)], self.grid.cells[(8, 31)]))
 
             cv2.imshow("i", img)
             cv2.waitKey()
