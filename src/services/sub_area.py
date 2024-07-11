@@ -103,6 +103,7 @@ class SubAreaService:
             return int(resp.json())
 
     @staticmethod
+    @cached(cache={})
     def get_sub_areas(
         service: ServiceSession,
     ) -> list[SubAreaSchema]:

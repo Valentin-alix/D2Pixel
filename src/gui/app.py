@@ -101,8 +101,8 @@ class Application(QApplication):
 
 
 class MainWindow(QMainWindow):
-    BASE_WIDTH = 1280
-    BASE_HEIGHT = 720
+    BASE_WIDTH = 1600
+    BASE_HEIGHT = 900
     sidebar: SideBar
 
     def __init__(
@@ -151,7 +151,7 @@ class MainWindow(QMainWindow):
         self.user = UserService.get_current_user(self.service)
 
         # sidebar
-        self.sidebar = SideBar(self.service, self.app_signals, self.user)
+        self.sidebar = SideBar(self.logger, self.service, self.app_signals, self.user)
         self.sidebar.side_bar_menu.button_refresh.clicked.connect(self.setup_bots)
         self.main_content_layout.addWidget(self.sidebar)
 

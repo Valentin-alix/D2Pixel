@@ -28,6 +28,14 @@ QComboBox:items{{
   color: {QTMATERIAL_PRIMARYCOLOR};
 }}
 
+QHeaderView{{ 
+  font-size: 12px; 
+}}
+
+QHeaderView::section{{ 
+  padding: 4px;
+}}
+
 QListView{{
   color: {QTMATERIAL_PRIMARYCOLOR};
 }}

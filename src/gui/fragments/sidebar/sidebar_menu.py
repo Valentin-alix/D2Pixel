@@ -1,4 +1,5 @@
 from functools import partial
+from logging import Logger
 
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtWidgets import QSizePolicy, QWidget
@@ -11,7 +12,7 @@ from src.gui.components.organization import (
     HorizontalLayout,
     VerticalLayout,
 )
-from src.gui.fragments.sidebar.settings.bot_settings_modal import (
+from src.gui.fragments.sidebar.settings.bot_settings_modal.bot_settings_modal import (
     BotSettingsModal,
 )
 from src.gui.fragments.sidebar.settings.user_settings_modal import (
@@ -24,10 +25,16 @@ from src.services.session import ServiceSession
 
 class SideBarMenuItem(QWidget):
     def __init__(
-        self, service: ServiceSession, module_manager: ModuleManager, *args, **kwargs
+        self,
+        logger: Logger,
+        service: ServiceSession,
+        module_manager: ModuleManager,
+        *args,
+        **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.service = service
+        self.logger = logger
         self.main_layout = HorizontalLayout()
         self.setLayout(self.main_layout)
         self.module_manager = module_manager
@@ -47,7 +54,7 @@ class SideBarMenuItem(QWidget):
 
     @pyqtSlot()
     def on_click_settings(self):
-        modal = BotSettingsModal(self.service, self.module_manager)
+        modal = BotSettingsModal(self.logger, self.service, self.module_manager)
         modal.open()
 
 
@@ -56,6 +63,7 @@ class SideBarMenu(QWidget):
 
     def __init__(
         self,
+        logger: Logger,
         service: ServiceSession,
         side_bar_signals: SideBarSignals,
         app_signals: AppSignals,
@@ -66,6 +74,7 @@ class SideBarMenu(QWidget):
         super().__init__(*args, **kwargs)
         self.setProperty("class", "border-right-slim")
         self.service = service
+        self.logger = logger
         self.app_signals = app_signals
         self.side_bar_signals = side_bar_signals
         self.user = user
@@ -125,17 +134,17 @@ class SideBarMenu(QWidget):
         self.current_index = 0
         for index, module_manager in enumerate(module_managers):
             bot_item = SideBarMenuItem(
-                self.service, module_manager=module_manager, parent=self
+                self.logger, self.service, module_manager=module_manager, parent=self
             )
             bot_item.btn_char.clicked.connect(partial(self.on_clicked_bot, index))
-
-            self.bot_list_layout.addWidget(bot_item)
 
             self.bot_items.append(bot_item)
 
             if index == 0:
                 bot_item.btn_char.setChecked(True)
                 bot_item.btn_char.setEnabled(False)
+
+            self.bot_list_layout.addWidget(bot_item)
 
     @pyqtSlot(bool)
     def on_new_is_connecting_bots_value(self, is_loading: bool):

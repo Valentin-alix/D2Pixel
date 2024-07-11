@@ -22,19 +22,18 @@ from D2Shared.shared.entities.position import Position
 from D2Shared.shared.schemas.item import ItemSchema
 from D2Shared.shared.schemas.recipe import RecipeSchema
 from D2Shared.shared.schemas.region import RegionSchema
-from src.common.randomizer import wait
 from D2Shared.shared.utils.text_similarity import are_similar_text
 from src.bots.dofus.hud.small_bar import get_percentage_inventory_bar_normal
 from src.bots.dofus.walker.buildings.bank_buildings import BankBuilding
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.maps import get_astrub_bank_map
+from src.common.randomizer import wait
 from src.entities.item import ItemProcessedStatus
 from src.image_manager.ocr import get_text_from_image
 from src.image_manager.screen_objects.icon_searcher import IconSearcher
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.image_manager.transformation import crop_image
-from src.services.character import CharacterService
 from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 from src.window_manager.capturer import Capturer
@@ -142,9 +141,7 @@ class BankSystem:
         self.controller.click(pos)
         self._bank_open_chest()
         img = self._bank_transfer_all()
-        self.character_state.pods = CharacterService.get_max_pods(
-            self.service, self.character_state.character.id
-        )
+        self.character_state.pods = self.character_state.character.max_pods
         return img
 
     def bank_get_item(self, item: ItemSchema) -> ItemProcessedStatus:

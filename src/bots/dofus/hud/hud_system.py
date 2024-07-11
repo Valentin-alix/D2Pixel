@@ -2,15 +2,14 @@ from logging import Logger
 from time import sleep
 
 import numpy
-from pydantic import BaseModel, ConfigDict
 import tesserocr
+from pydantic import BaseModel, ConfigDict
+
 from D2Shared.shared.consts.adaptative.consts import MODAL_LVLUP_OFFSET_RIGHT
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.schemas.region import RegionSchema
-
-
 from src.bots.dofus.hud.info_popup.info_popup import EventInfoPopup
 from src.bots.dofus.hud.info_popup.job_level import JobParser
 from src.exceptions import UnknowStateException
@@ -103,8 +102,18 @@ class HudSystem(BaseModel):
             )
             if job_info:
                 job, level = job_info
-                CharacterService.update_job_info(
-                    self.service, self.character_state.character.id, job.id, level
+                related_job_info = next(
+                    (
+                        elem
+                        for elem in self.character_state.character.character_job_info
+                        if elem.job_id == job.id
+                    )
+                )
+                related_job_info.lvl = level
+                CharacterService.update_job_infos(
+                    self.service,
+                    self.character_state.character.id,
+                    self.character_state.character.character_job_info,
                 )
                 self.logger.info(f"new character job lvl : {job}:{level}")
                 if (level % 10) == 0:
@@ -115,8 +124,18 @@ class HudSystem(BaseModel):
             job, level = self.job_parser.get_job_level_from_level_up(
                 img, lvl_up_info[1].region
             )
-            CharacterService.update_job_info(
-                self.service, self.character_state.character.id, job.id, level
+            related_job_info = next(
+                (
+                    elem
+                    for elem in self.character_state.character.character_job_info
+                    if elem.job_id == job.id
+                )
+            )
+            related_job_info.lvl = level
+            CharacterService.update_job_infos(
+                self.service,
+                self.character_state.character.id,
+                self.character_state.character.character_job_info,
             )
             if (level % 10) == 0:
                 events_info_modal.add(EventInfoPopup.LVL_UP_JOB)

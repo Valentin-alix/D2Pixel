@@ -1,10 +1,9 @@
 from collections import defaultdict
 
-
-from D2Shared.shared.schemas.spell_lvl import CurrentBoostSchema
+from D2Shared.shared.enums import CharacteristicEnum
+from D2Shared.shared.schemas.spell import CurrentBoostSchema, SpellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 from src.services.session import ServiceSession
-from src.services.spell import SpellService
 from src.states.character_state import CharacterState
 
 
@@ -23,19 +22,7 @@ class SpellManager:
         self.character_state = character_state
 
     def on_start_fight_spells(self):
-        self._max_range_spell = SpellService.get_max_range_valuable_dmg_spell(
-            self.service,
-            self.character_state.character.elem,
-            self.character_state.character.po_bonus,
-            [
-                elem.id
-                for elem in SpellService.get_spell_lvls(
-                    self.service,
-                    self.character_state.character.lvl,
-                    self.character_state.character.breed_id,
-                )
-            ],
-        )
+        self._max_range_spell = self.get_max_range_valuable_dmg_spell()
         self._turn = 0
         self._current_boosts.clear()
         self._spell_used_ids_with_count.clear()
@@ -48,3 +35,38 @@ class SpellManager:
             if curr_buff.expire_turn > self._turn
         )
         self._spell_used_ids_with_count.clear()
+
+    def get_range_spell(self, spell: SpellSchema):
+        if spell.boostable_range:
+            return self.character_state.character.po_bonus + spell.range
+        return spell.range
+
+    def get_max_range_valuable_dmg_spell(self) -> int:
+        """get max range of dmg spell (prefer same elem)"""
+        character = self.character_state.character
+
+        max_range_prefered_spell = sorted(
+            (
+                elem
+                for elem in character.spells
+                if elem.level <= self.character_state.character.lvl
+            ),
+            key=lambda _spell: (
+                _spell.elem == character.elem,
+                self.get_range_spell(_spell),
+            ),
+            reverse=True,
+        )[0]
+
+        return self.get_range_spell(max_range_prefered_spell)
+
+    def get_spell_lvl_for_boost(self, char: CharacteristicEnum) -> SpellSchema | None:
+        character = self.character_state.character
+        return next(
+            (
+                _spell
+                for _spell in character.spells
+                if _spell.level <= character.lvl and _spell.boost_char == char
+            ),
+            None,
+        )

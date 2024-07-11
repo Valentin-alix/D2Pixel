@@ -1,4 +1,5 @@
 import subprocess
+import traceback
 from datetime import time
 from logging import Logger
 from threading import Event, RLock, Thread
@@ -279,6 +280,7 @@ class AnkamaLauncher:
                 try:
                     self.connect_window(window_info, wait_play)
                 except Exception:
+                    self.logger.error(traceback.format_exc())
                     continue
                 break
 
@@ -326,6 +328,9 @@ class AnkamaLauncher:
                     None,
                 )
                 if related_window is None:
+                    module_manager.logger.info(
+                        "Did not found related window, retrying.."
+                    )
                     return resume_bots(modules_managers)
                 module_manager.window_info.hwnd = related_window.hwnd
                 module_manager.internal_pause.clear()

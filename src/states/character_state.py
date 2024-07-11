@@ -8,7 +8,7 @@ class CharacterState:
         self._character: CharacterSchema | None = None
         self.service = service
         self.character_id = character_id
-        self.pods = CharacterService.get_max_pods(self.service, self.character.id)
+        self.pods = self.character.max_pods
 
     @property
     def character(self) -> CharacterSchema:

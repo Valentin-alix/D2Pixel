@@ -1,4 +1,5 @@
 from logging import Logger
+
 import numpy
 
 from D2Shared.shared.schemas.cell import CellSchema
@@ -73,15 +74,12 @@ class IaBruteFightSystem:
             dist_from_enemy,
             [
                 elem.id
-                for elem in SpellService.get_spell_lvls(
-                    self.service,
-                    self.character_state.character.lvl,
-                    self.character_state.character.breed_id,
-                )
+                for elem in self.character_state.character.spells
+                if elem.level <= self.character_state.character.lvl
             ],
             [],
             False,
-            self.character_state.character,
+            self.character_state.character.id,
             self.spell_manager._pa,
             self.spell_manager._spell_used_ids_with_count,
             list(self.spell_manager._current_boosts),
@@ -89,7 +87,7 @@ class IaBruteFightSystem:
         self.logger.info(f"Choosed spells : {spells}")
 
         for spell in spells:
-            assert spell.on_enemy is True
+            assert spell.is_for_enemy is True
             img, in_fight = self.spell_system.launch_spell_at_enemy(spell, enemy_cell)
             if not in_fight:
                 return img, False, False

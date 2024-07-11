@@ -121,8 +121,11 @@ class CoreWalkerSystem:
             return False, img
 
         if map.waypoint is not None:
-            CharacterService.add_waypoint(
-                self.service, self.character_state.character.id, map.waypoint.id
+            self.character_state.character.waypoints.append(map.waypoint)
+            CharacterService.update_waypoints(
+                self.service,
+                self.character_state.character.id,
+                [elem.id for elem in self.character_state.character.waypoints],
             )
 
         self.map_state.curr_map_info = CurrentMapInfo(map=map, img=img, zone_text=text)
@@ -183,9 +186,7 @@ class CoreWalkerSystem:
     # Transports
 
     def use_zaap(self, waypoint: WaypointSchema) -> numpy.ndarray:
-        character_waypoints = CharacterService.get_waypoints(
-            self.service, self.character_state.character.id
-        )
+        character_waypoints = self.character_state.character.waypoints
         if waypoint not in character_waypoints:
             img = self.travel_to_map([waypoint.map], character_waypoints)
         else:
@@ -529,9 +530,7 @@ class CoreWalkerSystem:
         if available_waypoints is None:
             available_waypoints = [
                 elem
-                for elem in CharacterService.get_waypoints(
-                    self.service, self.character_state.character.id
-                )
+                for elem in self.character_state.character.waypoints
                 if elem.id not in BLACKLISTED_WAYPOINT_IDS
             ]
 

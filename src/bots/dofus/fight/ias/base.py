@@ -2,10 +2,10 @@ from logging import Logger
 from time import sleep
 
 import numpy
+
 from D2Shared.shared.consts.adaptative.regions import CONTENT_REGION
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.enums import CharacteristicEnum
-
 from D2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
@@ -15,7 +15,6 @@ from src.common.retry import RetryTimeArgs
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.session import ServiceSession
-from src.services.spell import SpellService
 from src.states.character_state import CharacterState
 from src.window_manager.controller import Controller
 
@@ -48,30 +47,15 @@ class IaBaseFightSystem:
     def reach_attackable_enemy(
         self, img: numpy.ndarray
     ) -> tuple[numpy.ndarray, CellSchema | None]:
-        max_range_dmg_spell = SpellService.get_max_range_valuable_dmg_spell(
-            self.service,
-            self.character_state.character.elem,
-            self.character_state.character.po_bonus,
-            [
-                elem.id
-                for elem in SpellService.get_spell_lvls(
-                    self.service,
-                    self.character_state.character.lvl,
-                    self.character_state.character.breed_id,
-                )
-            ],
-        )
+        max_range_dmg_spell = self.spell_manager.get_max_range_valuable_dmg_spell()
         while (
             near_mov_ldv_enemy := self.ldv_grid.get_near_movable_for_ldv_enemy(
                 max_range_dmg_spell
             )
         ) is None:
             # did not found ldv for enemy
-            pm_buff_spell = SpellService.get_spell_lvl_for_boost(
-                self.service,
-                self.character_state.character.lvl,
-                self.character_state.character.breed_id,
-                CharacteristicEnum.PM,
+            pm_buff_spell = self.spell_manager.get_spell_lvl_for_boost(
+                CharacteristicEnum.PM
             )
             if (
                 not pm_buff_spell

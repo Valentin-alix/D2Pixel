@@ -1,7 +1,8 @@
 from logging import Logger
-import numpy
-from D2Shared.shared.enums import CharacteristicEnum
 
+import numpy
+
+from D2Shared.shared.enums import CharacteristicEnum
 from D2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.path_grid import AstarGrid
@@ -57,16 +58,14 @@ class IaSmartFightSystem:
             and self.grid.character_cell.get_dist_cell(enemy_cell) <= 1
         )
         self.logger.info(f"Character contact enemy : {is_contact_enemy}")
-        spells_lvl = SpellService.get_best_combination(
+
+        spells = SpellService.get_best_combination(
             self.service,
             None,
             [
                 elem.id
-                for elem in SpellService.get_spell_lvls(
-                    self.service,
-                    self.character_state.character.lvl,
-                    self.character_state.character.breed_id,
-                )
+                for elem in self.character_state.character.spells
+                if elem.level <= self.character_state.character.lvl
             ],
             [
                 CharacteristicEnum.PA,
@@ -75,31 +74,27 @@ class IaSmartFightSystem:
                 CharacteristicEnum.CHANCE,
             ],
             is_full_hp,
-            self.character_state.character,
+            self.character_state.character.id,
             self.spell_manager._pa,
             self.spell_manager._spell_used_ids_with_count,
             list(self.spell_manager._current_boosts),
         )
 
         if not is_contact_enemy:
-            spells_lvl.sort(
-                key=lambda spell_lvl: SpellService.check_if_boost_for_characteristic(
-                    self.service, spell_lvl, CharacteristicEnum.PM
-                ),
+            spells.sort(
+                key=lambda spell: spell.boost_char == CharacteristicEnum.PM,
                 reverse=True,
             )
         did_moved: bool = False
-        for spell_lvl in spells_lvl:
-            if not did_moved and not SpellService.check_if_boost_for_characteristic(
-                self.service, spell_lvl, CharacteristicEnum.PM
-            ):
+        for spell in spells:
+            if not did_moved and not spell.boost_char == CharacteristicEnum.PM:
                 did_moved = True
                 near_mov = self.astar_grid.get_near_movable_to_reach_enemy(enemy_cell)
                 if near_mov is not None:
                     self.logger.info(f"Find near mov to reach enemy : {near_mov}")
                     img = self.ia_base_fight_sys.move_to_cell(near_mov, img)[0]
 
-            img = self.spell_system.launch_spell_at_self(spell_lvl)
+            img = self.spell_system.launch_spell_at_self(spell)
 
         if not did_moved:
             near_mov = self.astar_grid.get_near_movable_to_reach_enemy(enemy_cell)
@@ -128,25 +123,22 @@ class IaSmartFightSystem:
             dist_from_enemy,
             [
                 elem.id
-                for elem in SpellService.get_spell_lvls(
-                    self.service,
-                    self.character_state.character.lvl,
-                    self.character_state.character.breed_id,
-                )
+                for elem in self.character_state.character.spells
+                if elem.level <= self.character_state.character.lvl
             ],
             [
                 CharacteristicEnum.PA,
                 CharacteristicEnum(self.character_state.character.elem),
             ],
             is_full_hp,
-            self.character_state.character,
+            self.character_state.character.id,
             self.spell_manager._pa,
             self.spell_manager._spell_used_ids_with_count,
             list(self.spell_manager._current_boosts),
         )
         self.logger.info(f"Choosed spells : {spells}")
         for spell in spells:
-            if spell.on_enemy:
+            if spell.is_for_enemy:
                 img, in_fight = self.spell_system.launch_spell_at_enemy(
                     spell, enemy_cell
                 )
