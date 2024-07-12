@@ -20,6 +20,8 @@ def get_phenixs_entity_map(service: ServiceSession) -> list[EntityMap]:
         CoordinatesMapSchema(x=-10, y=-54, world_id=1),
         CoordinatesMapSchema(x=-16, y=36, world_id=1),
         CoordinatesMapSchema(x=2, y=-1, world_id=2),
+        CoordinatesMapSchema(x=-58, y=18, world_id=1),
+        CoordinatesMapSchema(x=-67, y=-44, world_id=1),
     ]
     return [
         EntityMap(map_info=MapService.get_related_map(service, map_coordinates))
