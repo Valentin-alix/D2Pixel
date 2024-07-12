@@ -1,8 +1,8 @@
+FIXME Havre sac au début il veux l'ouvrir meme si pas possible pour la map
+
 Fiabiliser l'interface de FM au max (avant de fiabiliser la logique derrière)
 
 quand play puis stop fm & play modules -> la gui freeze
-
-FIGHT FIX ASTAR & BRESENHAM pas précis -> grille bof
 
 Launcher ->
 lister les arguments de process dans cmd : WMIC path win32_process get Caption,Processid,Commandline

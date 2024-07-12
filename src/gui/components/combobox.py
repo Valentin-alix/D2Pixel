@@ -1,9 +1,13 @@
+from typing import TypeVar
+
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QFontMetrics, QPalette, QStandardItem
 from PyQt5.QtWidgets import QComboBox, QStyledItemDelegate, qApp
 
+T = TypeVar("T")
 
-class CheckableComboBox(QComboBox):
+
+class CheckableComboBox[T](QComboBox):
     # Taken from https://gis.stackexchange.com/questions/350148/qcombobox-multiple-selection-pyqt5
     # Subclass Delegate to increase item height
     class Delegate(QStyledItemDelegate):
@@ -81,7 +85,7 @@ class CheckableComboBox(QComboBox):
         self.closeOnLineEditClick = False
 
     def updateText(self):
-        texts = []
+        texts: list[str] = []
         for i in range(self.model().rowCount()):
             if self.model().item(i).checkState() == Qt.Checked:  # type: ignore
                 texts.append(self.model().item(i).text())  # type: ignore
@@ -92,7 +96,7 @@ class CheckableComboBox(QComboBox):
         elidedText = metrics.elidedText(text, Qt.ElideRight, self.lineEdit().width())
         self.lineEdit().setText(elidedText)
 
-    def addItem(self, text, data=None, checked: bool = False):
+    def addItem(self, text: str, data: T | None = None, checked: bool = False):
         item = QStandardItem()
         item.setText(text)
         if data is None:
@@ -110,9 +114,9 @@ class CheckableComboBox(QComboBox):
         for text in texts:
             self.addItem(text)
 
-    def currentData(self):
+    def currentData(self) -> list[T]:
         # Return the list of selected items data
-        res = []
+        res: list[T] = []
         for i in range(self.model().rowCount()):
             if self.model().item(i).checkState() == Qt.Checked:  # type: ignore
                 res.append(self.model().item(i).data())  # type: ignore

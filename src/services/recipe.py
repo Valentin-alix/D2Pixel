@@ -1,8 +1,10 @@
+from cachetools import TTLCache, cached
+from cachetools.keys import hashkey
+
 from D2Shared.shared.enums import CategoryEnum
 from D2Shared.shared.schemas.recipe import RecipeSchema
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
-
 
 RECIPE_URL = BACKEND_URL + "/recipe/"
 
@@ -21,6 +23,12 @@ class RecipeService:
             return [RecipeSchema(**elem) for elem in resp.json()]
 
     @staticmethod
+    @cached(
+        cache=TTLCache(maxsize=100, ttl=600),
+        key=lambda _, server_id, category, type_item_id, limit: hashkey(
+            server_id, category, type_item_id, limit
+        ),
+    )
     def get_best_recipe_benefits(
         service: ServiceSession,
         server_id: int,

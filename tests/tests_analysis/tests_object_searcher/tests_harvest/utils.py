@@ -4,9 +4,9 @@ from pathlib import Path
 
 import cv2
 import numpy
-from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from tqdm import tqdm
 
+from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from src.image_manager.debug import (
     ColorBGR,
     draw_area,

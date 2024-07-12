@@ -10,8 +10,9 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from D2Shared.shared.consts.jobs import HARVEST_JOBS_ID
+from D2Shared.shared.consts.jobs import HARVEST_JOBS_NAME
 from D2Shared.shared.schemas.character import CharacterJobInfoSchema, CharacterSchema
+from D2Shared.shared.schemas.waypoint import WaypointSchema
 from src.gui.components.combobox import CheckableComboBox
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.services.server import ServerService
@@ -58,7 +59,7 @@ class GeneralTab(QWidget):
         self.bot_lvl_form.setText(str(self.character.lvl))
         form.addRow("Niveau", self.bot_lvl_form)
 
-        self.combo_waypoints = CheckableComboBox(parent=self)
+        self.combo_waypoints = CheckableComboBox[WaypointSchema](parent=self)
         self.origin_waypoints = self.character.waypoints
         character_waypoints = self.origin_waypoints
         for waypoint in sorted(
@@ -71,7 +72,7 @@ class GeneralTab(QWidget):
             )
         form.addRow("Zaaps", self.combo_waypoints)
 
-    def set_bot_job_infos(self):
+    def set_bot_job_infos(self) -> None:
         self.box_job_lvl = QGroupBox()
         box_job_lvl_layout = HorizontalLayout()
         self.box_job_lvl.setLayout(box_job_lvl_layout)
@@ -82,7 +83,7 @@ class GeneralTab(QWidget):
         ] = []
         job_infos = sorted(
             self.character.character_job_info,
-            key=lambda elem: (elem.job.id not in HARVEST_JOBS_ID, elem.job.name),
+            key=lambda elem: (elem.job.name not in HARVEST_JOBS_NAME, elem.job.name),
         )
 
         GROUP_COUNT: int = 4
@@ -118,7 +119,7 @@ class GeneralTab(QWidget):
                 job_lvl_edit.setText(str(job_info.lvl))
                 job_lvl_layout.addRow("Niveau", job_lvl_edit)
 
-                if job_info.job_id in HARVEST_JOBS_ID:
+                if job_info.job.name in HARVEST_JOBS_NAME:
                     job_weight_widget = QWidget()
                     h_layout.addWidget(job_weight_widget)
                     job_weight_layout = QFormLayout()

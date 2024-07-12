@@ -9,6 +9,7 @@ from D2Shared.shared.consts.adaptative.consts import MODAL_LVLUP_OFFSET_RIGHT
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from D2Shared.shared.entities.position import Position
+from D2Shared.shared.schemas.character import UpdateCharacterSchema
 from D2Shared.shared.schemas.region import RegionSchema
 from src.bots.dofus.hud.info_popup.info_popup import EventInfoPopup
 from src.bots.dofus.hud.info_popup.job_level import JobParser
@@ -70,9 +71,19 @@ class HudSystem(BaseModel):
     ) -> numpy.ndarray:
         new_level = self.hud.get_level_up_number(img, pos, region)
 
-        self.character_state.character.lvl = new_level
-        self.character_state.character = CharacterService.update_character(
-            self.service, self.character_state.character
+        character = self.character_state.character
+        character.lvl = new_level
+        character = CharacterService.update_character(
+            self.service,
+            UpdateCharacterSchema(
+                id=character.id,
+                lvl=character.lvl,
+                po_bonus=character.po_bonus,
+                is_sub=character.is_sub,
+                time_spent=character.time_spent,
+                elem=character.elem,
+                server_id=character.server_id,
+            ),
         )
 
         modal_ok_info = self.object_searcher.get_position(

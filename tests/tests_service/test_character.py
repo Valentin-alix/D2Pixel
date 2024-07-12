@@ -1,13 +1,12 @@
-from logging import Logger
 import os
 import sys
 import unittest
+from logging import Logger
 from pathlib import Path
 
-
 from D2Shared.shared.consts.maps import (
-    ASTRUB_BANK_MAP_ID,
-    BONTA_WORKSHOP_WOODCUTTER_MAP_ID,
+    ASTRUB_BANK_MAP_CN,
+    BONTA_WORKSHOP_WOODCUTTER_MAP_CN,
 )
 from D2Shared.shared.enums import FromDirection
 from src.gui.signals.app_signals import AppSignals
@@ -63,9 +62,9 @@ class TestServiceCharacter(unittest.TestCase):
             self.service,
             True,
             True,
-            ASTRUB_BANK_MAP_ID,
+            ASTRUB_BANK_MAP_CN,
             FromDirection.UNKNOWN,
             [],
-            [BONTA_WORKSHOP_WOODCUTTER_MAP_ID],
+            [BONTA_WORKSHOP_WOODCUTTER_MAP_CN],
         )
         print(path)

@@ -44,7 +44,7 @@ class ModulesPage(QWidget):
         )
 
     def set_module_combobox(self):
-        self.combo_modules = CheckableComboBox(parent=self)
+        self.combo_modules = CheckableComboBox[str](parent=self)
         for name in DEFAULT_MODULES:
             self.combo_modules.addItem(name, checked=True)
         self.main_layout.addWidget(self.combo_modules)

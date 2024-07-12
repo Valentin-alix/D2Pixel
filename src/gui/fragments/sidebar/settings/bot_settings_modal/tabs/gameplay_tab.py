@@ -45,7 +45,7 @@ class GameplayTab(QWidget):
 
     def set_prefered_ia(self): ...
 
-    def init_spell_configs(self):
+    def init_spell_configs(self) -> None:
         add_spell_btn = PushButtonIcon("add.svg")
         add_spell_btn.setCheckable(False)
         add_spell_btn.clicked.connect(lambda: self.add_spell())
@@ -91,7 +91,7 @@ class GameplayTab(QWidget):
         elem_combo = QComboBox()
         elem_combo.addItem("", None)
         for elem_option in ElemEnum:
-            elem_combo.addItem(elem_option.name, elem_option)
+            elem_combo.addItem(elem_option, elem_option)
         self.spells_table.table.setCellWidget(index, 2, elem_combo)
         if spell:
             elem_index = elem_combo.findData(spell.elem)
@@ -105,7 +105,7 @@ class GameplayTab(QWidget):
         boost_combo = QComboBox()
         boost_combo.addItem("", None)
         for boost_option in CharacteristicEnum:
-            boost_combo.addItem(boost_option.name, boost_option)
+            boost_combo.addItem(boost_option, boost_option)
         self.spells_table.table.setCellWidget(index, 4, boost_combo)
         if spell:
             boost_index = boost_combo.findData(spell.boost_char)

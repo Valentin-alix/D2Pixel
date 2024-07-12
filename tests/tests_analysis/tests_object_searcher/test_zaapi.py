@@ -1,10 +1,10 @@
-from logging import Logger
 import os
 import unittest
+from logging import Logger
 
 import cv2
 
-from D2Shared.shared.consts.maps import BONTA_SALE_HOTEL_CONSUMABLE_MAP_ID
+from D2Shared.shared.consts.maps import BONTA_SALE_HOTEL_CONSUMABLE_MAP_CN
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from src.gui.signals.app_signals import AppSignals
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
@@ -23,6 +23,6 @@ class TestZaapi(unittest.TestCase):
         path_img = os.path.join(ZAAPIS_PATH, "zaapi_consu.png")
         img = cv2.imread(path_img)
         pos = self.object_searcher.get_position(
-            img, ObjectConfigs.PathFinding.zaapi, BONTA_SALE_HOTEL_CONSUMABLE_MAP_ID
+            img, ObjectConfigs.PathFinding.zaapi, BONTA_SALE_HOTEL_CONSUMABLE_MAP_CN
         )
         print(pos)

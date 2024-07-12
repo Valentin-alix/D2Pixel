@@ -3,7 +3,7 @@ from threading import Event
 from time import perf_counter, sleep
 
 from D2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
-
+from D2Shared.shared.schemas.character import UpdateCharacterSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.connection.connection_system import ConnectionSystem
 from src.common.time import convert_time_to_seconds
@@ -40,9 +40,19 @@ class AfkStarter:
         """Handle afk time to avoid antibot, afk the first 5 hour of the bot"""
 
         def update_character_time_spent(init_time: float):
-            self.character_state.character.time_spent += perf_counter() - init_time
+            character = self.character_state.character
+            character.time_spent += perf_counter() - init_time
             self.character_state.character = CharacterService.update_character(
-                self.service, self.character_state.character
+                self.service,
+                UpdateCharacterSchema(
+                    id=character.id,
+                    lvl=character.lvl,
+                    po_bonus=character.po_bonus,
+                    is_sub=character.is_sub,
+                    time_spent=character.time_spent,
+                    elem=character.elem,
+                    server_id=character.server_id,
+                ),
             )
 
         afk_time_at_start = self.user.config_user.afk_time_at_start

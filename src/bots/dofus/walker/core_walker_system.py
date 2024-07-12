@@ -188,48 +188,50 @@ class CoreWalkerSystem:
     def use_zaap(self, waypoint: WaypointSchema) -> numpy.ndarray:
         character_waypoints = self.character_state.character.waypoints
         if waypoint not in character_waypoints:
-            img = self.travel_to_map([waypoint.map], character_waypoints)
+            return self.travel_to_map([waypoint.map], character_waypoints)
+
+        if not self.get_curr_map_info().map.allow_teleport_from:
+            # get near map that can use havre sac
+            near_map_allow_havre = MapService.get_near_map_allow_havre(
+                self.service, self.get_curr_map_info().map.id
+            )
+            img = self.travel_to_map([near_map_allow_havre])
+            return self.use_zaap(waypoint)
+
+        img = self.capturer.capture()
+        if (
+            self.object_searcher.get_position(
+                img, ObjectConfigs.PathFinding.lotery_havre_sac
+            )
+            is None
+        ):
+            new_img: numpy.ndarray | None = None
+            for _ in range(2):
+                self.controller.key("h")
+                if (new_img := self.wait_for_new_map()) is not None:
+                    break
+            if new_img is None:
+                raise UnknowStateException(self.capturer.capture(), "no_havre_sac")
+            img = new_img
+
+        self.controller.click(ZAAP_HAVRE_SAC_POSITION)
+        tp_pos, _, img = self.image_manager.wait_on_screen(
+            ObjectConfigs.PathFinding.teleport_zaap, force=True
+        )
+
+        self.controller.send_text(
+            MapService.get_map(self.service, waypoint.map_id).sub_area.name,
+            pos=SEARCH_ZAAP_POSITION,
+        )
+
+        if (new_img := self.wait_for_new_map(force=False)) is None:
+            self.controller.click(tp_pos)
+            img = self.wait_for_new_map(force=True)
         else:
-            if not self.get_curr_map_info().map.allow_teleport_from:
-                # get near map that can use havre sac
-                near_map_allow_havre = MapService.get_near_map_allow_havre(
-                    self.service, self.get_curr_map_info().map.id
-                )
-                img = self.travel_to_map([near_map_allow_havre])
-                return self.use_zaap(waypoint)
-            img = self.capturer.capture()
-            if (
-                self.object_searcher.get_position(
-                    img, ObjectConfigs.PathFinding.lotery_havre_sac
-                )
-                is None
-            ):
-                new_img: numpy.ndarray | None = None
-                for _ in range(2):
-                    self.controller.key("h")
-                    if (new_img := self.wait_for_new_map()) is not None:
-                        break
-                if new_img is None:
-                    raise UnknowStateException(self.capturer.capture(), "no_havre_sac")
-                img = new_img
+            img = new_img
 
-            self.controller.click(ZAAP_HAVRE_SAC_POSITION)
-            tp_pos, _, img = self.image_manager.wait_on_screen(
-                ObjectConfigs.PathFinding.teleport_zaap, force=True
-            )
-
-            self.controller.send_text(
-                MapService.get_map(self.service, waypoint.map_id).sub_area.name,
-                pos=SEARCH_ZAAP_POSITION,
-            )
-
-            if (new_img := self.wait_for_new_map()) is None:
-                self.controller.click(tp_pos)
-                img = self.wait_for_new_map(force=True)
-            else:
-                img = new_img
-            self.map_state.curr_direction = FromDirection.WAYPOINT
-            self.map_state.building = None
+        self.map_state.curr_direction = FromDirection.WAYPOINT
+        self.map_state.building = None
         return img
 
     def use_zaapi(self, zaapi: ZaapiSchema) -> numpy.ndarray:

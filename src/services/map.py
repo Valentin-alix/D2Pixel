@@ -1,11 +1,12 @@
 from cachetools import cached
 from cachetools.keys import hashkey
-from src.services.session import ServiceSession
+
 from D2Shared.shared.enums import FromDirection
-from D2Shared.shared.schemas.map import MapSchema
+from D2Shared.shared.schemas.map import CoordinatesMapSchema, MapSchema
 from D2Shared.shared.schemas.map_direction import MapDirectionSchema
 from D2Shared.shared.schemas.map_with_action import MapWithActionSchema
 from src.consts import BACKEND_URL
+from src.services.session import ServiceSession
 
 MAP_URL = BACKEND_URL + "/map/"
 
@@ -49,11 +50,11 @@ class MapService:
     @staticmethod
     @cached(cache={}, key=lambda _, x, y, world_id: hashkey(x, y, world_id))
     def get_related_map(
-        service: ServiceSession, x: int, y: int, world_id: int
+        service: ServiceSession, coordinate_map_schema: CoordinatesMapSchema
     ) -> MapSchema:
         with service.logged_session() as session:
             resp = session.get(
-                f"{MAP_URL}related/", params={"x": x, "y": y, "world_id": world_id}
+                f"{MAP_URL}related/", json=coordinate_map_schema.model_dump()
             )
             return MapSchema(**resp.json())
 

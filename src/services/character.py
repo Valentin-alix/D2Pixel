@@ -1,6 +1,7 @@
 from D2Shared.shared.schemas.character import (
     CharacterJobInfoSchema,
     CharacterSchema,
+    UpdateCharacterSchema,
 )
 from D2Shared.shared.schemas.collectable import CollectableSchema
 from D2Shared.shared.schemas.spell import SpellSchema, UpdateSpellSchema
@@ -13,7 +14,7 @@ CHARACTER_URL = BACKEND_URL + "/character/"
 class CharacterService:
     @staticmethod
     def update_character(
-        service: ServiceSession, character: CharacterSchema
+        service: ServiceSession, character: UpdateCharacterSchema
     ) -> CharacterSchema:
         with service.logged_session() as session:
             resp = session.put(

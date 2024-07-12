@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
     QTabWidget,
 )
 
+from D2Shared.shared.schemas.character import UpdateCharacterSchema
 from D2Shared.shared.schemas.spell import UpdateSpellSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from src.bots.modules.module_manager import ModuleManager
@@ -103,11 +104,21 @@ class BotSettingsModal(Dialog):
             or server_id != character_state.character.server_id
             or is_sub != character_state.character.is_sub
         ):
-            character_state.character.lvl = lvl
-            character_state.character.server_id = server_id
-            character_state.character.is_sub = is_sub
+            character = character_state.character
+            character.lvl = lvl
+            character.server_id = server_id
+            character.is_sub = is_sub
             character_state.character = CharacterService.update_character(
-                self.service, character_state.character
+                self.service,
+                UpdateCharacterSchema(
+                    id=character.id,
+                    lvl=character.lvl,
+                    po_bonus=character.po_bonus,
+                    is_sub=character.is_sub,
+                    time_spent=character.time_spent,
+                    elem=character.elem,
+                    server_id=character.server_id,
+                ),
             )
 
         for job_info, job_lvl_edit, job_weight_edit in self.general_tab.job_info_edits:

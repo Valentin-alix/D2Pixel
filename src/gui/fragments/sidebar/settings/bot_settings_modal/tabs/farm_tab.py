@@ -2,6 +2,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFormLayout, QLabel, QWidget
 
 from D2Shared.shared.schemas.character import CharacterSchema
+from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from src.gui.components.combobox import CheckableComboBox
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.services.session import ServiceSession
@@ -16,10 +17,10 @@ class FarmTab(QWidget):
         self.setLayout(VerticalLayout())
         self.service = service
         self.character = character
-        self.combo_sub_areas: list[CheckableComboBox] = []
+        self.combo_sub_areas: list[CheckableComboBox[SubAreaSchema]] = []
         self.set_sub_area_farmable()
 
-    def set_sub_area_farmable(self):
+    def set_sub_area_farmable(self) -> None:
         sub_area_widg = QWidget()
         self.layout().addWidget(sub_area_widg)
         sub_area_layout = VerticalLayout()
@@ -55,7 +56,7 @@ class FarmTab(QWidget):
                 form_l = QFormLayout()
                 area_widg.setLayout(form_l)
 
-                combo_sub = CheckableComboBox(parent=self)
+                combo_sub = CheckableComboBox[SubAreaSchema](parent=self)
                 self.combo_sub_areas.append(combo_sub)
 
                 character_sub_areas = self.origin_sub_areas
