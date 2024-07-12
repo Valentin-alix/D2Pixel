@@ -48,7 +48,9 @@ class MapService:
             return MapSchema(**resp.json())
 
     @staticmethod
-    @cached(cache={}, key=lambda _, x, y, world_id: hashkey(x, y, world_id))
+    @cached(
+        cache={}, key=lambda _, coordinate_map_schema: hashkey(coordinate_map_schema)
+    )
     def get_related_map(
         service: ServiceSession, coordinate_map_schema: CoordinatesMapSchema
     ) -> MapSchema:

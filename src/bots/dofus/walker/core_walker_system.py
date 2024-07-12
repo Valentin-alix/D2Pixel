@@ -171,8 +171,8 @@ class CoreWalkerSystem:
                 )
                 if character_waypoints is None or waypoint in character_waypoints
             ),
-            key=lambda waypoint: min(
-                waypoint.map.get_dist_map(target_map) for target_map in target_maps
+            key=lambda _waypoint: min(
+                _waypoint.map.get_dist_map(target_map) for target_map in target_maps
             ),
             default=None,
         )

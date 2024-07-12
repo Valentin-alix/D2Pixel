@@ -1,6 +1,6 @@
 from logging import Logger
-import numpy
 
+import numpy
 
 from D2Shared.shared.consts.adaptative.positions import (
     CLEAR_SEARCH_INVENTORY_POSITION,
@@ -43,7 +43,9 @@ class Fm:
             img = self.capturer.capture()
             if not self.smithmagic_workshop.has_history_changed(old_img, img):
                 continue
-            current_lines = self.fm_analyser.get_stats_item_selected(img)
+            current_lines: list[LineSchema] | None = (
+                self.fm_analyser.get_stats_item_selected(img)
+            )
             if current_lines is None:
                 self.logger.info("Could not get stats of item")
                 return None

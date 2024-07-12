@@ -1,8 +1,10 @@
 import re
+
 import numpy
 import tesserocr
-from pydantic import BaseModel
 from PIL import Image as Img
+from pydantic import BaseModel
+
 from D2Shared.shared.consts.adaptative.regions import LINE_AREAS
 from D2Shared.shared.schemas.stat import LineSchema, StatSchema
 from D2Shared.shared.utils.clean import clean_line_text
@@ -38,13 +40,13 @@ class FmAnalyser:
 
     def get_line_from_text(self, line_text: str) -> LineSchema | None:
         def extract_value_from_text(text: str) -> int:
-            value = "".join(re.findall(r"\d", text))
-            if len(value) > 0:
-                value = int(value)
+            value_str: str = "".join(re.findall(r"\d", text))
+            if len(value_str) > 0:
+                value: int = int(value_str)
                 if text.startswith("-"):
                     value = -value
             else:
-                value = 0
+                value: int = 0
             return value
 
         def extract_name_from_text(text: str) -> str:
@@ -52,10 +54,10 @@ class FmAnalyser:
                 (char for char in text if not char.isdigit() and char != "-")
             )
 
-        cleaned_text = clean_line_text(line_text)
+        cleaned_text: str = clean_line_text(line_text)
         if len(cleaned_text) > 0:
-            value = extract_value_from_text(cleaned_text)
-            name = extract_name_from_text(cleaned_text)
+            value: int = extract_value_from_text(cleaned_text)
+            name: str = extract_name_from_text(cleaned_text)
 
             stats = StatService.get_stats(self.service)
             most_similar_stat: tuple[StatSchema, float] | None = max(
@@ -65,13 +67,13 @@ class FmAnalyser:
                     if (sim_words := get_similarity(clean_line_text(stat.name), name))
                     > 0.8
                 ],
-                key=lambda elem: elem[1],
+                key=lambda _elem: _elem[1],
                 default=None,
             )
             if most_similar_stat is None:
                 raise ValueError(f"cleaned_text: {cleaned_text} give no stat known")
             stat, _ = most_similar_stat
-            line = LineSchema(value=value, stat_id=stat.id, stat=stat)
+            line: LineSchema = LineSchema(value=value, stat_id=stat.id, stat=stat)
             return line
         return None
 
@@ -117,7 +119,7 @@ class FmAnalyser:
                 for index, _line in enumerate(current_lines)
                 if target_line.stat.name == _line.stat.name
             )
-            difference_weight = current_line.value / target_line.value
+            difference_weight: float = current_line.value / target_line.value
             if difference_weight >= 1.0:
                 continue
             if (

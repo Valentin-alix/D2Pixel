@@ -1,10 +1,9 @@
 from logging import Logger
 
+from D2Shared.shared.schemas.cell import CellSchema
 from D2Shared.shared.utils.algos.astar import find_path
 from D2Shared.shared.utils.debugger import timeit
 from D2Shared.shared.utils.randomizer import multiply_offset
-
-from D2Shared.shared.schemas.cell import CellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 
 
@@ -58,7 +57,7 @@ class AstarGrid:
         near_cell = min(
             self.grid.movable_cells,
             key=lambda mov_cell: min(
-                (cell.get_dist_cell(mov_cell) for cell in target_cells),
+                (_cell.get_dist_cell(mov_cell) for _cell in target_cells),
                 default=float("inf"),
             ),
             default=None,

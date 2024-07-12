@@ -1,5 +1,6 @@
 from logging import Logger
-from PyQt5.QtCore import QThread, Qt, pyqtSlot
+
+from PyQt5.QtCore import Qt, QThread, pyqtSlot
 from PyQt5.QtWidgets import QComboBox, QWidget
 
 from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
@@ -150,7 +151,7 @@ class FmPage(QWidget):
         self.thread_stop.finished.connect(self.worker_stop.deleteLater)
         self.thread_stop.start()
 
-    def combo_refresh_equipments(self):
+    def combo_refresh_equipments(self) -> None:
         self.equipments = EquipmentService.get_equipments(self.service)
 
         treated_indexs: list[int] = []
@@ -167,7 +168,7 @@ class FmPage(QWidget):
                 continue
             self.equipment_combo.removeItem(index)
 
-    def on_selected_item(self):
+    def on_selected_item(self) -> None:
         equipment_id: int | None = self.equipment_combo.currentData()
         if equipment_id is None:
             self.clear_current_item()

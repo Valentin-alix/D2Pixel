@@ -170,5 +170,7 @@ class SideBarMenu(QWidget):
 
     @pyqtSlot()
     def on_clicked_settings(self):
-        modal = UserSettingsModal(self.app_signals, self.user, self.service)
+        modal = UserSettingsModal(
+            self.logger, self.app_signals, self.user, self.service
+        )
         modal.open()

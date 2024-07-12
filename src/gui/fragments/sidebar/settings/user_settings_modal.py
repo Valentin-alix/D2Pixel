@@ -1,5 +1,7 @@
+import traceback
 from datetime import time
 from functools import partial
+from logging import Logger
 
 from PyQt5.QtCore import Qt, QTime, pyqtSlot
 from PyQt5.QtWidgets import QFormLayout, QLineEdit, QTimeEdit, QWidget
@@ -24,6 +26,7 @@ from src.services.session import ServiceSession
 class UserSettingsModal(Dialog):
     def __init__(
         self,
+        logger: Logger,
         app_signals: AppSignals,
         user: ReadUserSchema,
         service: ServiceSession,
@@ -33,6 +36,7 @@ class UserSettingsModal(Dialog):
         super().__init__(*args, **kwargs)
         self.setWindowTitle("Paramètres")
         self.app_signals = app_signals
+        self.logger = logger
         self.service = service
         self.user = user
 
@@ -194,72 +198,75 @@ class UserSettingsModal(Dialog):
 
     @pyqtSlot()
     def on_save(self):
-        afk_time_value = self.afk_time_at_start_edit.time()
-        afk_time_at_start = time(
-            afk_time_value.hour(), afk_time_value.minute(), afk_time_value.second()
-        )
-
-        time_between_value = self.time_between_sentence_edit.time()
-        time_between_sentence = time(
-            time_between_value.hour(),
-            time_between_value.minute(),
-            time_between_value.second(),
-        )
-
-        time_fighter_value = self.time_fighter_edit.time()
-        time_fighter = time(
-            time_fighter_value.hour(),
-            time_fighter_value.minute(),
-            time_fighter_value.second(),
-        )
-
-        time_harvester_value = self.time_harvester_edit.time()
-        time_harvester = time(
-            time_harvester_value.hour(),
-            time_harvester_value.minute(),
-            time_harvester_value.second(),
-        )
-
-        randomizer_duration_activity = float(
-            self.randomizer_duration_activity_edit.text()
-        )
-
-        range_new_map_start = float(self.range_new_map_start_edit.text())
-        range_new_map_end = float(self.range_new_map_end_edit.text())
-        range_new_map = UpdateRangeWaitSchema(
-            start=range_new_map_start, end=range_new_map_end
-        )
-
-        ranges_hour_playtime: list[UpdateRangeHourPlayTimeSchema] = []
-        for range_playtime_edit in self.range_playtime_edits:
-            start_time = time(
-                range_playtime_edit[0].time().hour(),
-                range_playtime_edit[0].time().minute(),
-                range_playtime_edit[0].time().second(),
-            )
-            end_time = time(
-                range_playtime_edit[1].time().hour(),
-                range_playtime_edit[1].time().minute(),
-                range_playtime_edit[1].time().second(),
-            )
-            ranges_hour_playtime.append(
-                UpdateRangeHourPlayTimeSchema(start_time=start_time, end_time=end_time)
-            )
-
-        update_config = UpdateConfigUserSchema(
-            afk_time_at_start=afk_time_at_start,
-            time_between_sentence=time_between_sentence,
-            time_fighter=time_fighter,
-            time_harvester=time_harvester,
-            randomizer_duration_activity=randomizer_duration_activity,
-            range_new_map=range_new_map,
-            ranges_hour_playtime=ranges_hour_playtime,
-        )
         try:
+            afk_time_value = self.afk_time_at_start_edit.time()
+            afk_time_at_start = time(
+                afk_time_value.hour(), afk_time_value.minute(), afk_time_value.second()
+            )
+
+            time_between_value = self.time_between_sentence_edit.time()
+            time_between_sentence = time(
+                time_between_value.hour(),
+                time_between_value.minute(),
+                time_between_value.second(),
+            )
+
+            time_fighter_value = self.time_fighter_edit.time()
+            time_fighter = time(
+                time_fighter_value.hour(),
+                time_fighter_value.minute(),
+                time_fighter_value.second(),
+            )
+
+            time_harvester_value = self.time_harvester_edit.time()
+            time_harvester = time(
+                time_harvester_value.hour(),
+                time_harvester_value.minute(),
+                time_harvester_value.second(),
+            )
+
+            randomizer_duration_activity = float(
+                self.randomizer_duration_activity_edit.text()
+            )
+
+            range_new_map_start = float(self.range_new_map_start_edit.text())
+            range_new_map_end = float(self.range_new_map_end_edit.text())
+            range_new_map = UpdateRangeWaitSchema(
+                start=range_new_map_start, end=range_new_map_end
+            )
+
+            ranges_hour_playtime: list[UpdateRangeHourPlayTimeSchema] = []
+            for range_playtime_edit in self.range_playtime_edits:
+                start_time = time(
+                    range_playtime_edit[0].time().hour(),
+                    range_playtime_edit[0].time().minute(),
+                    range_playtime_edit[0].time().second(),
+                )
+                end_time = time(
+                    range_playtime_edit[1].time().hour(),
+                    range_playtime_edit[1].time().minute(),
+                    range_playtime_edit[1].time().second(),
+                )
+                ranges_hour_playtime.append(
+                    UpdateRangeHourPlayTimeSchema(
+                        start_time=start_time, end_time=end_time
+                    )
+                )
+
+            update_config = UpdateConfigUserSchema(
+                afk_time_at_start=afk_time_at_start,
+                time_between_sentence=time_between_sentence,
+                time_fighter=time_fighter,
+                time_harvester=time_harvester,
+                randomizer_duration_activity=randomizer_duration_activity,
+                range_new_map=range_new_map,
+                ranges_hour_playtime=ranges_hour_playtime,
+            )
             self.user.config_user = ConfigService.update_config_user(
                 self.service, self.user.config_user.id, update_config
             )
         except Exception:
+            self.logger.error(traceback.format_exc())
             return
 
         self.close()

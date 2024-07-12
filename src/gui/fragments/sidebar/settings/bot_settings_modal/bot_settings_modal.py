@@ -68,7 +68,7 @@ class BotSettingsModal(Dialog):
         self.main_layout.addWidget(self.save_btn)
 
     @pyqtSlot()
-    def on_save(self):
+    def on_save(self) -> None:
         server_id = self.general_tab.server_combo.currentData()
         lvl = int(self.general_tab.bot_lvl_form.text())
         is_sub = self.general_tab.sub_checkbox.isChecked()
