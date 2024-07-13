@@ -122,6 +122,8 @@ class GameplayTab(QWidget):
         self.spells_table.table.setCellWidget(index, 6, for_enemy_checkbox)
         if spell:
             for_enemy_checkbox.setChecked(spell.is_for_enemy)
+        else:
+            for_enemy_checkbox.setChecked(True)
 
         ap_cost_edit = QLineEdit()
         self.spells_table.table.setCellWidget(index, 7, ap_cost_edit)

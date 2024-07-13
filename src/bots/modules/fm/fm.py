@@ -10,10 +10,12 @@ from D2Shared.shared.consts.adaptative.positions import (
     RESOURCES_INVENTORY_POSITION,
     SEARCH_INVENTORY_POSITION,
 )
-from D2Shared.shared.schemas.stat import LineSchema, StatSchema
+from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
+from D2Shared.shared.schemas.stat import BaseLineSchema
 from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
 from src.bots.modules.fm.fm_analyser import FmAnalyser
 from src.common.randomizer import wait
+from src.services.line import LineService
 from src.services.session import ServiceSession
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
@@ -35,21 +37,28 @@ class Fm:
         self.logger = logger
         self.smithmagic_workshop = smithmagic_workshop
         self.capturer = capturer
+        self.equipment: ReadEquipmentSchema | None = None
 
-    def run(self, target_lines: list[LineSchema], exo: StatSchema | None = None):
+    def run(
+        self,
+        target_lines: list[BaseLineSchema],
+        exo_line: BaseLineSchema | None = None,
+        equipment: ReadEquipmentSchema | None = None,
+    ):
+        self.equipment = equipment
         old_img: numpy.ndarray | None = None
         while True:
             wait((0.3, 1))
             img = self.capturer.capture()
             if not self.smithmagic_workshop.has_history_changed(old_img, img):
                 continue
-            current_lines: list[LineSchema] | None = (
+            current_lines: list[BaseLineSchema] | None = (
                 self.fm_analyser.get_stats_item_selected(img)
             )
             if current_lines is None:
                 self.logger.info("Could not get stats of item")
                 return None
-            if self.put_rune(current_lines, target_lines, exo) is True:
+            if self.put_rune(current_lines, target_lines, exo_line) is True:
                 self.logger.info("Target item achieved")
                 return None
             old_img = img
@@ -63,50 +72,65 @@ class Fm:
 
     def put_exo(
         self,
-        current_item_lines: list[LineSchema],
-        exo_stat: StatSchema | None = None,
+        current_item_lines: list[BaseLineSchema],
+        exo_line: BaseLineSchema | None = None,
     ) -> bool:
-        if exo_stat is None:
+        if exo_line is None:
             return True
         if (
             next(
                 (
                     line
                     for line in current_item_lines
-                    if line.stat.name == exo_stat.name
+                    if line.stat.name == exo_line.stat.name
                 ),
                 None,
             )
             is not None
         ):
+            # found exo stat in current lines, success
             return True
-        self.place_rune_by_name(exo_stat.runes[0].name)
+        self.place_rune_by_name(exo_line.stat.runes[0].name)
         wait((0.6, 1))
         self.controller.click(MERGE_POSITION)
+        if self.equipment and self.equipment.exo_line:
+            self.equipment.exo_line.spent_quantity += 1
+            LineService.add_spent_quantity(self.service, self.equipment.exo_line.id, 1)
         return False
 
     def put_rune(
         self,
-        current_item_lines: list[LineSchema],
-        target_item_lines: list[LineSchema],
-        exo_stat: StatSchema | None = None,
+        current_item_lines: list[BaseLineSchema],
+        target_item_lines: list[BaseLineSchema],
+        exo_line: BaseLineSchema | None = None,
     ) -> bool:
-        line = self.fm_analyser.get_highest_priority_line(
+        line_prio = self.fm_analyser.get_highest_priority_line(
             current_item_lines, target_item_lines
         )
-        if line is None:
-            return self.put_exo(current_item_lines, exo_stat)
+        if line_prio is None:
+            return self.put_exo(current_item_lines, exo_line)
 
-        column = self.fm_analyser.get_optimal_index_rune_for_target_line(
-            line.current_line, line.target_line
+        col_rune_info = self.fm_analyser.get_optimal_index_rune_for_target_line(
+            line_prio.current_line, line_prio.target_line
         )
-        if column is None:
+        if col_rune_info is None:
             raise ValueError(
-                f"{line.current_line.value} -> {line.target_line.value} for {line.current_line.stat.name}"
+                f"{line_prio.current_line.value} -> {line_prio.target_line.value} for {line_prio.current_line.stat.name}"
             )
+        col_index, rune = col_rune_info
+        self.controller.click(LINES_COLUMNS_POSITION[line_prio.index][col_index])
 
-        self.controller.click(LINES_COLUMNS_POSITION[line.index][column])
+        self.logger.info(f"clicked line {line_prio.index} column {col_index}")
 
-        self.logger.info(f"clicked line {line.index} column {column}")
+        if self.equipment:
+            related_line = next(
+                _elem
+                for _elem in self.equipment.lines
+                if _elem.stat_id == line_prio.target_line.stat_id
+            )
+            related_line.spent_quantity += rune.stat_quantity
+            LineService.add_spent_quantity(
+                self.service, related_line.id, rune.stat_quantity
+            )
 
         return False

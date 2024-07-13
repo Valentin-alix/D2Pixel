@@ -6,7 +6,11 @@ from PIL import Image as Img
 from pydantic import BaseModel
 
 from D2Shared.shared.consts.adaptative.regions import LINE_AREAS
-from D2Shared.shared.schemas.stat import LineSchema, StatSchema
+from D2Shared.shared.schemas.stat import (
+    BaseLineSchema,
+    RuneSchema,
+    StatSchema,
+)
 from D2Shared.shared.utils.clean import clean_line_text
 from D2Shared.shared.utils.text_similarity import get_similarity
 from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
@@ -18,8 +22,8 @@ from src.services.stat import StatService
 
 class LinePriority(BaseModel):
     index: int
-    current_line: LineSchema
-    target_line: LineSchema
+    current_line: BaseLineSchema
+    target_line: BaseLineSchema
 
 
 class FmAnalyser:
@@ -29,7 +33,9 @@ class FmAnalyser:
         self.service = service
         self.smithmagic_workshop = smithmagic_workshop
 
-    def get_stats_item_selected(self, img: numpy.ndarray) -> list[LineSchema] | None:
+    def get_stats_item_selected(
+        self, img: numpy.ndarray
+    ) -> list[BaseLineSchema] | None:
         if self.smithmagic_workshop.is_on_smithmagic_workshop(img):
             try:
                 parsed_item = self.get_lines_from_img(img)
@@ -38,7 +44,7 @@ class FmAnalyser:
                 raise UnknowStateException(img, "magic_stat_item_parse_err")
         return None
 
-    def get_line_from_text(self, line_text: str) -> LineSchema | None:
+    def get_line_from_text(self, line_text: str) -> BaseLineSchema | None:
         def extract_value_from_text(text: str) -> int:
             value_str: str = "".join(re.findall(r"\d", text))
             if len(value_str) > 0:
@@ -73,12 +79,14 @@ class FmAnalyser:
             if most_similar_stat is None:
                 raise ValueError(f"cleaned_text: {cleaned_text} give no stat known")
             stat, _ = most_similar_stat
-            line: LineSchema = LineSchema(value=value, stat_id=stat.id, stat=stat)
+            line: BaseLineSchema = BaseLineSchema(
+                value=value, stat_id=stat.id, stat=stat
+            )
             return line
         return None
 
-    def get_lines_from_img(self, image: numpy.ndarray) -> list[LineSchema]:
-        lines: list[LineSchema] = []
+    def get_lines_from_img(self, image: numpy.ndarray) -> list[BaseLineSchema]:
+        lines: list[BaseLineSchema] = []
         pil_img = Img.fromarray(image)
         with tesserocr.PyTessBaseAPI(**BASE_CONFIG) as tes_api:
             tes_api.SetImage(pil_img)
@@ -96,18 +104,18 @@ class FmAnalyser:
         return lines
 
     def get_optimal_index_rune_for_target_line(
-        self, current_line: LineSchema, target_line: LineSchema
-    ) -> int | None:
+        self, current_line: BaseLineSchema, target_line: BaseLineSchema
+    ) -> tuple[int, RuneSchema] | None:
         for index, rune in list(enumerate(current_line.stat.runes))[::-1]:
             if (
                 target_line.value - current_line.value
             ) >= rune.stat_quantity or current_line.value / rune.stat_quantity >= 5:
-                return index
+                return index, rune
 
         return None
 
     def get_highest_priority_line(
-        self, current_lines: list[LineSchema], target_lines: list[LineSchema]
+        self, current_lines: list[BaseLineSchema], target_lines: list[BaseLineSchema]
     ) -> LinePriority | None:
         priority_line_weight: tuple[LinePriority, float] | None = None
 

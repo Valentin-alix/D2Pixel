@@ -4,7 +4,7 @@ from threading import Event, RLock
 from time import sleep
 from typing import Callable
 
-from D2Shared.shared.schemas.stat import LineSchema, StatSchema
+from D2Shared.shared.schemas.stat import BaseLineSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.antibot.afk_starter import AfkStarter
 from src.bots.dofus.antibot.humanizer import Humanizer
@@ -370,7 +370,7 @@ class ModuleManager:
         self._stop_bot()
         self.bot_signals.is_stopping_bot.emit(False)
 
-    def run_fm(self, lines: list[LineSchema], exo: StatSchema | None):
+    def run_fm(self, lines: list[BaseLineSchema], exo: BaseLineSchema | None):
         self.bot_signals.is_stopping_bot.emit(True)
         self._stop_bot()
         self.is_paused.clear()
@@ -388,6 +388,7 @@ class ModuleManager:
         finally:
             self.logger.info("Bot terminated.")
             self.is_playing.clear()
+            self.bot_signals.is_stopping_bot.emit(False)
 
     def run_bot(self, name_modules: list[str] | None = None):
         if name_modules is None:
@@ -414,7 +415,7 @@ class ModuleManager:
             self.afk_starter.run_afk_in_game()
             self.humanizer.run_humanizer()
             self.hud_sys.clean_interface(self.capturer.capture())
-            while True:
+            while not self.is_paused.is_set():
                 for name, action in modules:
                     self.bot_signals.playing_action.emit(name)
                     try:
@@ -432,3 +433,4 @@ class ModuleManager:
             self.logger.info("Bot terminated.")
             self.is_playing.clear()
             self.humanizer.stop_timers()
+            self.bot_signals.is_stopping_bot.emit(False)

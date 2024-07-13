@@ -2,7 +2,11 @@ from typing import TypeVar
 
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QFontMetrics, QPalette, QStandardItem
-from PyQt5.QtWidgets import QComboBox, QStyledItemDelegate, qApp
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QStyledItemDelegate,
+    qApp,
+)
 
 T = TypeVar("T")
 
