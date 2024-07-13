@@ -182,7 +182,7 @@ class FmPage(QWidget):
             self.current_item = None
 
         self.current_item = FmItem(
-            self.service, equipment.label, equipment.lines, equipment.id
+            self.logger, self.service, equipment.label, equipment.lines, equipment.id
         )
         self.current_item.signals.deleted_item.connect(self.on_deleted_item)
         self.content_layout.insertWidget(0, self.current_item)
@@ -215,7 +215,7 @@ class FmPage(QWidget):
         )
         if lines_item is None:
             return
-        self.current_item = FmItem(self.service, "", lines_item)
+        self.current_item = FmItem(self.logger, self.service, "", lines_item)
         self.current_item.signals.saved_item.connect(self.on_saved_item)
         self.current_item.signals.deleted_item.connect(self.clear_current_item)
         self.content_layout.insertWidget(0, self.current_item)

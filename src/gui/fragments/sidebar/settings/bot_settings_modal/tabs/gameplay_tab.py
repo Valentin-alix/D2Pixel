@@ -89,12 +89,14 @@ class GameplayTab(QWidget):
         self.spells_table.table.setCellWidget(index, 1, index_edit)
 
         elem_combo = QComboBox()
-        elem_combo.addItem("", None)
         for elem_option in ElemEnum:
             elem_combo.addItem(elem_option, elem_option)
         self.spells_table.table.setCellWidget(index, 2, elem_combo)
         if spell:
             elem_index = elem_combo.findData(spell.elem)
+            elem_combo.setCurrentIndex(elem_index)
+        else:
+            elem_index = elem_combo.findData(self.character.elem)
             elem_combo.setCurrentIndex(elem_index)
 
         disenchantment_checkbox = QCheckBox()
@@ -155,6 +157,8 @@ class GameplayTab(QWidget):
         self.spells_table.table.setCellWidget(index, 13, level_edit)
         if spell:
             level_edit.setText(str(spell.level))
+        else:
+            level_edit.setText(str(1))
 
         delete_btn = PushButtonIcon("delete.svg")
         delete_btn.setCheckable(False)

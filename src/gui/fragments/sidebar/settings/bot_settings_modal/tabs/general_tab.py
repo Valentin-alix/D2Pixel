@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
 )
 
 from D2Shared.shared.consts.jobs import HARVEST_JOBS_NAME
+from D2Shared.shared.enums import ElemEnum
 from D2Shared.shared.schemas.character import CharacterJobInfoSchema, CharacterSchema
 from D2Shared.shared.schemas.waypoint import WaypointSchema
 from src.gui.components.combobox import CheckableComboBox
@@ -50,14 +51,21 @@ class GeneralTab(QWidget):
         servers = ServerService.get_servers(self.service)
         for server in servers:
             self.server_combo.addItem(server.name, server.id)
-        index = self.server_combo.findData(self.character.server_id)
-        self.server_combo.setCurrentIndex(index)
+        server_index = self.server_combo.findData(self.character.server_id)
+        self.server_combo.setCurrentIndex(server_index)
         form.addRow("Serveur", self.server_combo)
 
         self.bot_lvl_form = QLineEdit()
         self.bot_lvl_form.setValidator(self.valid_lvl)
         self.bot_lvl_form.setText(str(self.character.lvl))
         form.addRow("Niveau", self.bot_lvl_form)
+
+        self.elem_combo = QComboBox()
+        for elem_option in ElemEnum:
+            self.elem_combo.addItem(elem_option, elem_option)
+        elem_index = self.elem_combo.findData(self.character.elem)
+        self.elem_combo.setCurrentIndex(elem_index)
+        form.addRow("Élément", self.elem_combo)
 
         self.combo_waypoints = CheckableComboBox[WaypointSchema](parent=self)
         self.origin_waypoints = self.character.waypoints

@@ -1,3 +1,6 @@
+import traceback
+from logging import Logger
+
 from PyQt5.QtCore import QObject, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QComboBox, QFormLayout, QLineEdit, QWidget
 
@@ -18,6 +21,7 @@ class FmItemSignals(QObject):
 class FmItem(QWidget):
     def __init__(
         self,
+        logger: Logger,
         service: ServiceSession,
         label: str,
         lines: list[LineSchema],
@@ -26,6 +30,7 @@ class FmItem(QWidget):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
+        self.logger = logger
         self.signals = FmItemSignals()
         self.service = service
         self.equipment_id = equipment_id
@@ -108,6 +113,7 @@ class FmItem(QWidget):
                 self.equipment_id = equipment.id
                 self.set_btn_delete()
         except Exception:
+            self.logger.error(traceback.format_exc())
             return
 
         self.signals.saved_item.emit()

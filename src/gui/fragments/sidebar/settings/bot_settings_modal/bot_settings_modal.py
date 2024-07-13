@@ -6,7 +6,11 @@ from PyQt5.QtWidgets import (
     QTabWidget,
 )
 
-from D2Shared.shared.schemas.character import UpdateCharacterSchema
+from D2Shared.shared.enums import ElemEnum
+from D2Shared.shared.schemas.character import (
+    CharacterJobInfoSchema,
+    UpdateCharacterSchema,
+)
 from D2Shared.shared.schemas.spell import UpdateSpellSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from src.bots.modules.module_manager import ModuleManager
@@ -69,74 +73,82 @@ class BotSettingsModal(Dialog):
 
     @pyqtSlot()
     def on_save(self) -> None:
-        server_id = self.general_tab.server_combo.currentData()
-        lvl = int(self.general_tab.bot_lvl_form.text())
-        is_sub = self.general_tab.sub_checkbox.isChecked()
-
-        character_state = self.module_manager.character_state
-
-        waypoints = self.general_tab.combo_waypoints.currentData()
-        if set((elem.id for elem in self.general_tab.origin_waypoints)) != set(
-            waypoints
-        ):
-            character_state.character.waypoints = waypoints
-            CharacterService.update_waypoints(
-                self.service,
-                character_state.character.id,
-                [elem.id for elem in character_state.character.waypoints],
-            )
-
-        sub_areas: list[SubAreaSchema] = [
-            elem
-            for combo in self.farm_tab.combo_sub_areas
-            for elem in combo.currentData()
-        ]
-        if set((elem.id for elem in self.farm_tab.origin_sub_areas)) != set(sub_areas):
-            character_state.character.sub_areas = sub_areas
-            CharacterService.update_sub_areas(
-                self.service,
-                character_state.character.id,
-                [elem.id for elem in character_state.character.sub_areas],
-            )
-
-        if (
-            lvl != character_state.character.lvl
-            or server_id != character_state.character.server_id
-            or is_sub != character_state.character.is_sub
-        ):
-            character = character_state.character
-            character.lvl = lvl
-            character.server_id = server_id
-            character.is_sub = is_sub
-            character_state.character = CharacterService.update_character(
-                self.service,
-                UpdateCharacterSchema(
-                    id=character.id,
-                    lvl=character.lvl,
-                    po_bonus=character.po_bonus,
-                    is_sub=character.is_sub,
-                    time_spent=character.time_spent,
-                    elem=character.elem,
-                    server_id=character.server_id,
-                ),
-            )
-
-        for job_info, job_lvl_edit, job_weight_edit in self.general_tab.job_info_edits:
-            job_lvl = int(job_lvl_edit.text())
-            if job_weight_edit is not None:
-                job_weight = float(job_weight_edit.text())
-            else:
-                job_weight = 1
-            job_info.lvl = job_lvl
-            job_info.weight = job_weight
-
-        CharacterService.update_job_infos(
-            self.service,
-            character_state.character.id,
-            character_state.character.character_job_info,
-        )
-
         try:
+            server_id: int = self.general_tab.server_combo.currentData()
+            lvl = int(self.general_tab.bot_lvl_form.text())
+            is_sub = self.general_tab.sub_checkbox.isChecked()
+            elem: ElemEnum = self.general_tab.elem_combo.currentData()
+
+            character_state = self.module_manager.character_state
+
+            waypoints = self.general_tab.combo_waypoints.currentData()
+            if set((elem.id for elem in self.general_tab.origin_waypoints)) != set(
+                waypoints
+            ):
+                character_state.character.waypoints = waypoints
+                CharacterService.update_waypoints(
+                    self.service,
+                    character_state.character.id,
+                    [elem.id for elem in character_state.character.waypoints],
+                )
+
+            sub_areas: list[SubAreaSchema] = [
+                elem
+                for combo in self.farm_tab.combo_sub_areas
+                for elem in combo.currentData()
+            ]
+            if set((elem.id for elem in self.farm_tab.origin_sub_areas)) != set(
+                sub_areas
+            ):
+                character_state.character.sub_areas = sub_areas
+                CharacterService.update_sub_areas(
+                    self.service,
+                    character_state.character.id,
+                    [elem.id for elem in character_state.character.sub_areas],
+                )
+
+            if (
+                lvl != character_state.character.lvl
+                or server_id != character_state.character.server_id
+                or is_sub != character_state.character.is_sub
+                or elem != character_state.character.elem
+            ):
+                character_state.character.lvl = lvl
+                character_state.character.server_id = server_id
+                character_state.character.is_sub = is_sub
+                character_state.character.elem = elem
+                CharacterService.update_character(
+                    self.service,
+                    UpdateCharacterSchema(
+                        id=character_state.character.id,
+                        lvl=character_state.character.lvl,
+                        po_bonus=character_state.character.po_bonus,
+                        is_sub=character_state.character.is_sub,
+                        time_spent=character_state.character.time_spent,
+                        elem=character_state.character.elem,
+                        server_id=character_state.character.server_id,
+                    ),
+                )
+
+            job_infos: list[CharacterJobInfoSchema] = []
+            for (
+                job_info,
+                job_lvl_edit,
+                job_weight_edit,
+            ) in self.general_tab.job_info_edits:
+                job_lvl = int(job_lvl_edit.text())
+                if job_weight_edit is not None:
+                    job_weight = float(job_weight_edit.text())
+                else:
+                    job_weight = 1
+                job_info.lvl = job_lvl
+                job_info.weight = job_weight
+                job_infos.append(job_info)
+
+            CharacterService.update_job_infos(
+                self.service, character_state.character.id, job_infos
+            )
+
             spells: list[UpdateSpellSchema] = []
             for spell_info_edit in self.gameplay_tab.spell_edits.values():
                 name = spell_info_edit.name_edit.text()
