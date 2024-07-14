@@ -1,7 +1,5 @@
 from logging import Logger
 
-from D2Shared.shared.schemas.item import ItemSchema
-from D2Shared.shared.schemas.recipe import RecipeSchema
 from src.bots.modules.hdv.craft import Crafter
 from src.bots.modules.hdv.sell import Seller
 from src.services.item import ItemService
@@ -26,29 +24,28 @@ class Hdv:
         self.crafter = crafter
         self.seller = seller
 
-    def run_hdv(
-        self,
-        recipes: list[RecipeSchema] | None = None,
-        sell_items: list[ItemSchema] | None = None,
-    ):
-        if self.character_state.character.lvl < 10:
+    def run_hdv(self):
+        character = self.character_state.character
+        if character.lvl < 10:
             return
 
-        if recipes is None:
+        if len(character.recipes) == 0:
             recipes = RecipeService.get_default_recipes(
                 self.service, self.character_state.character.id
             )
+        else:
+            recipes = character.recipes
+
         if self.character_state.character.is_sub and recipes:
             self.logger.info(f"Gonna craft : {recipes}")
             self.crafter.run_crafter(recipes)
 
         # do not sell items that are in ingredient of craft items
-        if sell_items is None:
-            sell_items = ItemService.get_default_sellable_items(
-                self.service,
-                self.character_state.character.id,
-                [_elem.id for _elem in recipes],
-            )
-        if sell_items:
+        sell_items = ItemService.get_default_sellable_items(
+            self.service,
+            self.character_state.character.id,
+            [_elem.id for _elem in recipes],
+        )
+        if len(sell_items) > 0:
             self.logger.info(f"Gonna sell : {sell_items}")
             self.seller.run_seller(sell_items)

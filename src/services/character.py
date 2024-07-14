@@ -48,6 +48,19 @@ class CharacterService:
             )
 
     @staticmethod
+    def update_recipes(
+        service: ServiceSession,
+        character_id: str,
+        recipe_ids: list[int],
+    ):
+        with service.logged_session() as session:
+            session.put(
+                f"{CHARACTER_URL}{character_id}/recipes",
+                params={"character_id": character_id},
+                json=recipe_ids,
+            )
+
+    @staticmethod
     def update_spells(
         service: ServiceSession,
         character_id: str,

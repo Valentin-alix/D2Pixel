@@ -23,6 +23,18 @@ class RecipeService:
             return [RecipeSchema(**elem) for elem in resp.json()]
 
     @staticmethod
+    def get_available_recipes(
+        service: ServiceSession,
+        character_id: str,
+    ) -> list[RecipeSchema]:
+        with service.logged_session() as session:
+            resp = session.get(
+                f"{RECIPE_URL}available/",
+                params={"character_id": character_id},
+            )
+            return [RecipeSchema(**elem) for elem in resp.json()]
+
+    @staticmethod
     @cached(
         cache=TTLCache(maxsize=100, ttl=600),
         key=lambda _, server_id, category, type_item_id, limit: hashkey(

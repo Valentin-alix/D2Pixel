@@ -1,4 +1,7 @@
-Ajouter une interface pour gérer les recettes à faire plus les trucs à vendre
+Faire en sorte de dissocier l'interface de connexion du character, pour pouvoir ajouter modifier un item hdv sans devoir le connecter, il faut fond relier une liste de character à un user, lors de la connexion ca ajoute character à user, on peux également
+delete un character de la liste pour pas polluer.
+
+lorsuq'on connecte un character, ca passe le status de rouge à vert
 
 Fiabiliser l'interface de FM au max (avant de fiabiliser la logique derrière)
 

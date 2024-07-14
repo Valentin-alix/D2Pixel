@@ -6,6 +6,7 @@ from src.bots.modules.module_manager import ModuleManager
 from src.gui.components.organization import HorizontalLayout
 from src.gui.pages.farm.farm_page import ModulesPage
 from src.gui.pages.fm.fm_page import FmPage
+from src.gui.pages.hdv.hdv_page import HdvPage
 from src.gui.pages.stats.stats_page import StatsPage
 from src.services.session import ServiceSession
 
@@ -32,6 +33,13 @@ class SubHeader(QWidget):
 
         self.module_tab = ModulesPage(module_manager=module_manager)
         self.tabs.addTab(self.module_tab, "Farm")
+
+        self.hdv_frame = HdvPage(
+            self.service,
+            character=module_manager.character_state.character,
+            logger=self.logger,
+        )
+        self.tabs.addTab(self.hdv_frame, "Hdv")
 
         self.fm_frame = FmPage(
             self.service, module_manager=module_manager, logger=self.logger
