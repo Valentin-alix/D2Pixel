@@ -11,10 +11,11 @@ from D2Shared.shared.consts.adaptative.positions import (
     SEARCH_INVENTORY_POSITION,
 )
 from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
-from D2Shared.shared.schemas.stat import BaseLineSchema
+from D2Shared.shared.schemas.stat import BaseLineSchema, StatSchema
 from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
 from src.bots.modules.fm.fm_analyser import FmAnalyser
 from src.common.randomizer import wait
+from src.services.equipment import EquipmentService
 from src.services.line import LineService
 from src.services.session import ServiceSession
 from src.window_manager.capturer import Capturer
@@ -42,7 +43,7 @@ class Fm:
     def run(
         self,
         target_lines: list[BaseLineSchema],
-        exo_line: BaseLineSchema | None = None,
+        exo_stat: StatSchema | None = None,
         equipment: ReadEquipmentSchema | None = None,
     ):
         self.equipment = equipment
@@ -55,10 +56,11 @@ class Fm:
             current_lines: list[BaseLineSchema] | None = (
                 self.fm_analyser.get_stats_item_selected(img)
             )
+            self.logger.info(f"Current lines : {current_lines}")
             if current_lines is None:
                 self.logger.info("Could not get stats of item")
                 return None
-            if self.put_rune(current_lines, target_lines, exo_line) is True:
+            if self.put_rune(current_lines, target_lines, exo_stat) is True:
                 self.logger.info("Target item achieved")
                 return None
             old_img = img
@@ -73,16 +75,16 @@ class Fm:
     def put_exo(
         self,
         current_item_lines: list[BaseLineSchema],
-        exo_line: BaseLineSchema | None = None,
+        exo_stat: StatSchema | None = None,
     ) -> bool:
-        if exo_line is None:
+        if exo_stat is None:
             return True
         if (
             next(
                 (
                     line
                     for line in current_item_lines
-                    if line.stat.name == exo_line.stat.name
+                    if line.stat.name == exo_stat.name
                 ),
                 None,
             )
@@ -90,25 +92,25 @@ class Fm:
         ):
             # found exo stat in current lines, success
             return True
-        self.place_rune_by_name(exo_line.stat.runes[0].name)
+        self.place_rune_by_name(exo_stat.runes[0].name)
         wait((0.6, 1))
         self.controller.click(MERGE_POSITION)
-        if self.equipment and self.equipment.exo_line:
-            self.equipment.exo_line.spent_quantity += 1
-            LineService.add_spent_quantity(self.service, self.equipment.exo_line.id, 1)
+        if self.equipment:
+            self.equipment.exo_attempt += 1
+            EquipmentService.increment_exo_attempt(self.service, self.equipment.id)
         return False
 
     def put_rune(
         self,
         current_item_lines: list[BaseLineSchema],
         target_item_lines: list[BaseLineSchema],
-        exo_line: BaseLineSchema | None = None,
+        exo_stat: StatSchema | None = None,
     ) -> bool:
         line_prio = self.fm_analyser.get_highest_priority_line(
             current_item_lines, target_item_lines
         )
         if line_prio is None:
-            return self.put_exo(current_item_lines, exo_line)
+            return self.put_exo(current_item_lines, exo_stat)
 
         col_rune_info = self.fm_analyser.get_optimal_index_rune_for_target_line(
             line_prio.current_line, line_prio.target_line

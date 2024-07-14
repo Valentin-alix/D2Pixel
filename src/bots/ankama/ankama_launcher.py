@@ -123,7 +123,7 @@ class AnkamaLauncher:
         pos, _, config, _ = self.image_manager.wait_multiple_or_template(
             [ObjectConfigs.Ankama.play, ObjectConfigs.Ankama.empty_play],
             force=True,
-            retry_time_args=RetryTimeArgs(timeout=15, offset_start=1),
+            retry_time_args=RetryTimeArgs(timeout=25, offset_start=1),
         )
         if config == ObjectConfigs.Ankama.play:
             self.controller.click(pos)

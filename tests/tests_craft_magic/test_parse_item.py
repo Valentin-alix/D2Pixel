@@ -10,7 +10,6 @@ from src.common.loggers.app_logger import AppLogger
 from src.gui.signals.app_signals import AppSignals
 from src.services.session import ServiceSession
 
-
 PATH_FIXTURES = os.path.join(Path(__file__).parent, "fixtures", "items")
 
 
@@ -20,13 +19,14 @@ class TestParseItem(unittest.TestCase):
         logger = AppLogger(signals)
         service = ServiceSession(logger, signals)
         smithmagic_wp = SmithMagicWorkshop()
-        self.fm = FmAnalyser(service, smithmagic_wp)
+        self.fm = FmAnalyser(logger, service, smithmagic_wp)
         return super().setUp()
 
     def test_forteresse_guerre(self):
         path_img = os.path.join(PATH_FIXTURES, "forteresse_guerre.png")
         img = cv2.imread(path_img)
         stats = self.fm.get_stats_item_selected(img)
+        print(stats)
         assert stats is not None and len(stats) == 5
         assert stats[0].value == 2
         assert stats[1].value == 4
@@ -49,3 +49,15 @@ class TestParseItem(unittest.TestCase):
         assert stats[7].value == 5
         assert stats[8].value == 6
         assert stats[9].value == 400
+
+    def test_choudini(self):
+        path_img = os.path.join(PATH_FIXTURES, "choudini.png")
+        img = cv2.imread(path_img)
+        stats = self.fm.get_stats_item_selected(img)
+        print(stats)
+        assert stats is not None and len(stats) == 5
+        assert stats[0].value == 3
+        assert stats[1].value == 8
+        assert stats[2].value == 8
+        assert stats[3].value == 6
+        assert stats[4].value == -6

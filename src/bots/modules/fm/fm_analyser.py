@@ -1,8 +1,8 @@
 import re
+from logging import Logger
 
 import numpy
 import tesserocr
-from PIL import Image as Img
 from pydantic import BaseModel
 
 from D2Shared.shared.consts.adaptative.regions import LINE_AREAS
@@ -15,7 +15,8 @@ from D2Shared.shared.utils.clean import clean_line_text
 from D2Shared.shared.utils.text_similarity import get_similarity
 from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
 from src.exceptions import UnknowStateException
-from src.image_manager.ocr import BASE_CONFIG
+from src.image_manager.ocr import BASE_CONFIG, get_text_from_image
+from src.image_manager.transformation import crop_image, img_to_gray
 from src.services.session import ServiceSession
 from src.services.stat import StatService
 
@@ -28,8 +29,12 @@ class LinePriority(BaseModel):
 
 class FmAnalyser:
     def __init__(
-        self, service: ServiceSession, smithmagic_workshop: SmithMagicWorkshop
+        self,
+        logger: Logger,
+        service: ServiceSession,
+        smithmagic_workshop: SmithMagicWorkshop,
     ) -> None:
+        self.logger = logger
         self.service = service
         self.smithmagic_workshop = smithmagic_workshop
 
@@ -87,17 +92,11 @@ class FmAnalyser:
 
     def get_lines_from_img(self, image: numpy.ndarray) -> list[BaseLineSchema]:
         lines: list[BaseLineSchema] = []
-        pil_img = Img.fromarray(image)
         with tesserocr.PyTessBaseAPI(**BASE_CONFIG) as tes_api:
-            tes_api.SetImage(pil_img)
             for line_area in LINE_AREAS:
-                tes_api.SetRectangle(
-                    line_area.left,
-                    line_area.top,
-                    line_area.right - line_area.left,
-                    line_area.bot - line_area.top,
-                )
-                text = tes_api.GetUTF8Text()
+                croped_img = crop_image(image, line_area)
+                croped_img = img_to_gray(croped_img)
+                text = get_text_from_image(croped_img, tes_api)
                 line_text = self.get_line_from_text(text)
                 if line_text is not None:
                     lines.append(line_text)
@@ -122,11 +121,15 @@ class FmAnalyser:
         for target_line in target_lines:
             if target_line.value <= 0:
                 continue
-            index, current_line = next(
-                (index, _line)
-                for index, _line in enumerate(current_lines)
-                if target_line.stat.name == _line.stat.name
-            )
+            try:
+                index, current_line = next(
+                    (index, _line)
+                    for index, _line in enumerate(current_lines)
+                    if target_line.stat.name == _line.stat.name
+                )
+            except StopIteration:
+                self.logger.error(f"Did not found {target_line.stat.name}")
+                raise
             difference_weight: float = current_line.value / target_line.value
             if difference_weight >= 1.0:
                 continue

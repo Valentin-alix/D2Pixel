@@ -153,7 +153,7 @@ class Crafter:
             CharacterService.remove_bank_items(
                 self.service,
                 self.character_state.character.id,
-                [elem.item_id for elem in recipe.ingredients],
+                [_elem.item_id for _elem in recipe.ingredients],
             )
 
         self.hud_sys.close_modals(

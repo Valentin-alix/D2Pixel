@@ -1,7 +1,7 @@
 from logging import Logger
+
 from D2Shared.shared.schemas.item import ItemSchema
 from D2Shared.shared.schemas.recipe import RecipeSchema
-
 from src.bots.modules.hdv.craft import Crafter
 from src.bots.modules.hdv.sell import Seller
 from src.services.item import ItemService
@@ -47,7 +47,7 @@ class Hdv:
             sell_items = ItemService.get_default_sellable_items(
                 self.service,
                 self.character_state.character.id,
-                [elem.id for elem in recipes],
+                [_elem.id for _elem in recipes],
             )
         if sell_items:
             self.logger.info(f"Gonna sell : {sell_items}")

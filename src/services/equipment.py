@@ -34,6 +34,15 @@ class EquipmentService:
             return ReadEquipmentSchema(**resp.json())
 
     @staticmethod
+    def increment_exo_attempt(
+        service: ServiceSession,
+        equipment_id: int,
+    ) -> ReadEquipmentSchema:
+        with service.logged_session() as session:
+            resp = session.put(f"{EQUIPMENT_URL}{equipment_id}/exo_attempt/")
+            return ReadEquipmentSchema(**resp.json())
+
+    @staticmethod
     def delete_equipment(service: ServiceSession, equipment_id: int) -> None:
         with service.logged_session() as session:
             session.delete(f"{EQUIPMENT_URL}{equipment_id}")

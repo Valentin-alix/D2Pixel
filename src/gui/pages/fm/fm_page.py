@@ -9,7 +9,7 @@ from src.gui.components.buttons import PushButtonIcon
 from src.gui.components.loaders import Loading
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.gui.pages.bot_logs import LogBox
-from src.gui.pages.fm.fm_item import FmItem
+from src.gui.pages.fm.fm_item.fm_item import FmItem
 from src.gui.pages.fm.fm_workers import WorkerRunFm
 from src.gui.pages.stop_worker import WorkerStop
 from src.services.equipment import EquipmentService
@@ -21,7 +21,7 @@ class FmPage(QWidget):
         self,
         service: ServiceSession,
         module_manager: ModuleManager,
-        app_logger: Logger,
+        logger: Logger,
         *args,
         **kwargs,
     ):
@@ -30,23 +30,22 @@ class FmPage(QWidget):
         self.thread_stop: QThread | None = None
         self.service = service
         self.module_manager = module_manager
-        self.is_loading = False
-        self.logger = app_logger
+        self.is_loading: bool = False
+        self.logger = logger
 
-        self.fm_item: FmItem | None = None
         self.main_layout = VerticalLayout(margins=(8, 8, 8, 8))
         self.main_layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.main_layout)
 
-        self.set_top_page()
-        self.set_action_widget()
-        self.set_content()
+        self._setup_top_page()
+        self._setup_action_widget()
+        self._setup_content()
 
         self.module_manager.bot_signals.is_stopping_bot.connect(
-            self.on_new_is_stopping_bot
+            self._on_new_is_stopping_bot
         )
 
-    def set_top_page(self):
+    def _setup_top_page(self):
         button_refr_wid = QWidget()
         self.main_layout.addWidget(button_refr_wid)
         refr_layout = HorizontalLayout()
@@ -56,37 +55,18 @@ class FmPage(QWidget):
             "restart.svg", width=80, height=40, icon_size=20, parent=self
         )
         self.button_refresh.setCheckable(False)
-        self.button_refresh.clicked.connect(self.on_refresh)
+        self.button_refresh.clicked.connect(self._on_refresh)
         refr_layout.addWidget(self.button_refresh)
 
         self.equipment_combo = QComboBox()
         self.equipment_combo.addItem("", None)
-        self.refresh_combo_equipments()
-        self.equipment_combo.currentIndexChanged.connect(self.on_selected_item)
+        self.equipments = EquipmentService.get_equipments(self.service)
+        for equipment in self.equipments:
+            self.equipment_combo.addItem(equipment.label, equipment)
+        self.equipment_combo.currentIndexChanged.connect(self._on_selected_item)
         self.main_layout.addWidget(self.equipment_combo)
 
-    def refresh_combo_equipments(self) -> None:
-        self.equipments = EquipmentService.get_equipments(self.service)
-
-        treated_indexs: list[int] = []
-        for equipment in self.equipments:
-            related_index = self.equipment_combo.findData(equipment)
-            treated_indexs.append(related_index)
-            if related_index == -1:
-                self.equipment_combo.addItem(equipment.label, equipment)
-            else:
-                self.equipment_combo.setItemText(related_index, equipment.label)
-
-        for index in range(self.equipment_combo.count()):
-            if index in treated_indexs or index == 0:
-                continue
-            self.equipment_combo.removeItem(index)
-
-        if self.fm_item and self.fm_item.equipment:
-            curr_index = self.equipment_combo.findData(self.fm_item.equipment)
-            self.equipment_combo.setCurrentIndex(curr_index)
-
-    def set_action_widget(self):
+    def _setup_action_widget(self):
         self.action = QWidget()
         self.main_layout.addWidget(self.action)
         self.action_layout = HorizontalLayout()
@@ -117,17 +97,65 @@ class FmPage(QWidget):
 
         self.refresh_state_play_stop_btn()
 
-        self.button_play.clicked.connect(self.on_play)
-        self.button_stop.clicked.connect(self.on_stop)
+        self.button_play.clicked.connect(self._on_play)
+        self.button_stop.clicked.connect(self._on_stop)
 
-    def set_content(self):
+    def _setup_content(self):
         content_widget = QWidget()
         self.main_layout.addWidget(content_widget)
         self.content_layout = VerticalLayout()
         content_widget.setLayout(self.content_layout)
 
+        self.fm_item: FmItem = FmItem(self.logger, self.service)
+        self.fm_item.hide()
+        self.fm_item.signals.saved_item.connect(self._on_saved_equipment)
+        self.fm_item.signals.created_item.connect(self._on_created_equipment)
+        self.fm_item.signals.deleted_item.connect(self._on_deleted_equipment)
+        self.content_layout.insertWidget(0, self.fm_item)
+
         self.log_box = LogBox(bot_signals=self.module_manager.bot_signals)
         self.content_layout.addWidget(self.log_box)
+
+    @pyqtSlot(int)
+    def _on_selected_item(self, index: int) -> None:
+        equipment: ReadEquipmentSchema | None = self.equipment_combo.itemData(index)
+        if equipment is None:
+            self.fm_item.hide()
+            return
+        self.fm_item.set_item_from_equipment(equipment)
+        curr_index = self.equipment_combo.findData(self.fm_item.equipment)
+        self.equipment_combo.setCurrentIndex(curr_index)
+        self.fm_item.show()
+
+    @pyqtSlot(object)
+    def _on_deleted_equipment(self, equipment: ReadEquipmentSchema):
+        self.equipment_combo.setCurrentIndex(0)
+        related_index = self.equipment_combo.findData(equipment)
+        self.equipment_combo.removeItem(related_index)
+        self.fm_item.hide()
+
+    @pyqtSlot(object)
+    def _on_saved_equipment(self, equipment: ReadEquipmentSchema):
+        related_index = self.equipment_combo.findData(equipment)
+        self.equipment_combo.setItemText(related_index, equipment.label)
+
+    @pyqtSlot(object)
+    def _on_created_equipment(self, equipment: ReadEquipmentSchema):
+        self.equipment_combo.addItem(equipment.label, equipment)
+        related_index = self.equipment_combo.findData(equipment)
+        self.equipment_combo.setCurrentIndex(related_index)
+
+    @pyqtSlot()
+    def _on_refresh(self):
+        self.equipment_combo.setCurrentIndex(0)
+        lines_item = self.module_manager.fm_analyser.get_stats_item_selected(
+            self.module_manager.capturer.capture()
+        )
+        if lines_item is None:
+            self.fm_item.hide()
+            return
+        self.fm_item.set_item_from_base_lines(lines_item)
+        self.fm_item.show()
 
     def refresh_state_play_stop_btn(self):
         if self.module_manager.is_playing.is_set():
@@ -137,8 +165,9 @@ class FmPage(QWidget):
             self.button_stop.hide()
             self.button_play.show()
 
-    def on_play(self):
-        if self.fm_item is None:
+    @pyqtSlot()
+    def _on_play(self):
+        if self.fm_item.isHidden():
             self.logger.warning("Veuillez sélectionner un item.")
             return
 
@@ -149,7 +178,7 @@ class FmPage(QWidget):
         self.worker_run = WorkerRunFm(
             self.module_manager,
             self.fm_item.get_edited_lines(),
-            self.fm_item.get_exo_line(),
+            self.fm_item.get_exo_stat(),
         )
         self.thread_run = QThread()
 
@@ -158,7 +187,8 @@ class FmPage(QWidget):
         self.thread_run.finished.connect(self.worker_run.deleteLater)
         self.thread_run.start()
 
-    def on_stop(self):
+    @pyqtSlot()
+    def _on_stop(self):
         if self.thread_stop is not None:
             self.thread_stop.quit()
             self.thread_stop.wait()
@@ -171,58 +201,8 @@ class FmPage(QWidget):
         self.thread_stop.finished.connect(self.worker_stop.deleteLater)
         self.thread_stop.start()
 
-    def on_selected_item(self) -> None:
-        equipment: ReadEquipmentSchema | None = self.equipment_combo.currentData()
-        if equipment is None:
-            self.clear_current_item()
-            return
-        if (
-            self.fm_item
-            and self.fm_item.equipment
-            and self.fm_item.equipment.id == equipment.id
-        ):
-            return
-        if self.fm_item is not None:
-            self.clear_current_item()
-
-        self.fm_item = FmItem(self.logger, self.service, equipment.lines, equipment)
-        self.add_fm_item(self.fm_item)
-
-    def clear_current_item(self):
-        if self.fm_item is not None:
-            self.main_layout.removeWidget(self.fm_item)
-            self.fm_item.deleteLater()
-            self.fm_item = None
-
-    @pyqtSlot()
-    def on_deleted_item(self):
-        self.refresh_combo_equipments()
-        self.clear_current_item()
-        self.equipment_combo.setCurrentIndex(0)
-
-    @pyqtSlot()
-    def on_saved_item(self):
-        self.refresh_combo_equipments()
-
-    @pyqtSlot()
-    def on_refresh(self):
-        self.clear_current_item()
-        self.equipment_combo.setCurrentIndex(0)
-        lines_item = self.module_manager.fm_analyser.get_stats_item_selected(
-            self.module_manager.capturer.capture()
-        )
-        if lines_item is None:
-            return
-        self.fm_item = FmItem(self.logger, self.service, lines_item)
-        self.add_fm_item(self.fm_item)
-
-    def add_fm_item(self, fm_item: FmItem):
-        fm_item.signals.saved_item.connect(self.on_saved_item)
-        fm_item.signals.deleted_item.connect(self.clear_current_item)
-        self.content_layout.insertWidget(0, fm_item)
-
     @pyqtSlot(bool)
-    def on_new_is_stopping_bot(self, value: bool):
+    def _on_new_is_stopping_bot(self, value: bool):
         self.is_loading = value
         if value:
             self.loading.start()

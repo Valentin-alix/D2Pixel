@@ -4,7 +4,7 @@ from threading import Event, RLock
 from time import sleep
 from typing import Callable
 
-from D2Shared.shared.schemas.stat import BaseLineSchema
+from D2Shared.shared.schemas.stat import BaseLineSchema, StatSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.antibot.afk_starter import AfkStarter
 from src.bots.dofus.antibot.humanizer import Humanizer
@@ -341,7 +341,9 @@ class ModuleManager:
         )
 
         self.smithmagic_workshop = SmithMagicWorkshop()
-        self.fm_analyser = FmAnalyser(self.service, self.smithmagic_workshop)
+        self.fm_analyser = FmAnalyser(
+            self.logger, self.service, self.smithmagic_workshop
+        )
         self.fm = Fm(
             self.controller,
             self.service,
@@ -370,7 +372,7 @@ class ModuleManager:
         self._stop_bot()
         self.bot_signals.is_stopping_bot.emit(False)
 
-    def run_fm(self, lines: list[BaseLineSchema], exo: BaseLineSchema | None):
+    def run_fm(self, lines: list[BaseLineSchema], exo_stat: StatSchema | None):
         self.bot_signals.is_stopping_bot.emit(True)
         self._stop_bot()
         self.is_paused.clear()
@@ -378,9 +380,9 @@ class ModuleManager:
         self.bot_signals.is_stopping_bot.emit(False)
 
         self.map_state.reset_map_state()
-
+        self.logger.info("Starting fm")
         try:
-            self.fm.run(lines, exo)
+            self.fm.run(lines, exo_stat)
         except StoppedException:
             self.logger.info("Stopped bot.")
         except Exception:
