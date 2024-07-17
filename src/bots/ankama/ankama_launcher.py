@@ -245,7 +245,6 @@ class AnkamaLauncher:
             image_manager,
             self.logger,
             Event(),
-            Event(),
         )
         if wait_play:
             image_manager.wait_on_screen(

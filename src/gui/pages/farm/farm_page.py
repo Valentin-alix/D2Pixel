@@ -20,13 +20,14 @@ from src.gui.workers.worker_stop import WorkerStop
 
 
 class FarmPage(QWidget):
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: Bot, log_box: LogBox):
         super().__init__()
         self.thread_run: QThread | None = None
         self.thread_stop: QThread | None = None
         self.bot = bot
         self.is_loading = False
 
+        self.log_box = log_box
         self.main_layout = VerticalLayout()
         self.main_layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.main_layout)
@@ -67,7 +68,6 @@ class FarmPage(QWidget):
         self.layout().addWidget(self.name_action)
 
     def _setup_content(self):
-        self.log_box = LogBox()
         self.layout().addWidget(self.log_box)
 
     def _setup_action_btns(self):

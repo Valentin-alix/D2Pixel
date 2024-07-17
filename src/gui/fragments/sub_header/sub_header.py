@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QTabWidget, QWidget
 
 from src.bots.modules.bot import Bot
 from src.gui.components.organization import HorizontalLayout
+from src.gui.pages.bot_logs import LogBox
 from src.gui.pages.farm.farm_page import FarmPage
 from src.gui.pages.fm.fm_page import FmPage
 from src.gui.pages.hdv.hdv_page import HdvPage
@@ -31,7 +32,9 @@ class SubHeader(QWidget):
     def _setup_tabs(self, bot: Bot):
         self.tabs = QTabWidget()
 
-        self.bot_page = FarmPage(bot=bot)
+        log_box = LogBox()
+
+        self.bot_page = FarmPage(bot=bot, log_box=log_box)
         self.tabs.addTab(self.bot_page, "Farm")
 
         self.hdv_frame = HdvPage(
@@ -41,7 +44,9 @@ class SubHeader(QWidget):
         )
         self.tabs.addTab(self.hdv_frame, "Hdv")
 
-        self.fm_frame = FmPage(self.service, bot=bot, logger=self.logger)
+        self.fm_frame = FmPage(
+            self.service, bot=bot, logger=self.logger, log_box=log_box
+        )
         self.tabs.addTab(self.fm_frame, "FM")
 
         self.stats_frame = StatsPage(

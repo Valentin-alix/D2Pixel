@@ -222,7 +222,6 @@ class Bot:
             self.image_manager,
             self.logger,
             self.is_connected,
-            self.is_dead,
         )
         bank_building = BankBuilding(
             core_walker_sys,

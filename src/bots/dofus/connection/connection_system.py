@@ -43,7 +43,6 @@ class ConnectionSystem:
         image_manager: ImageManager,
         logger: Logger,
         is_connected: Event,
-        is_dead: Event,
     ) -> None:
         self.object_searcher = object_searcher
         self.capturer = capturer
@@ -53,11 +52,17 @@ class ConnectionSystem:
         self.logger = logger
         self.is_connected = is_connected
         self.hud_system = hud_system
-        self.is_dead = is_dead
 
     def connect_character(self, img: numpy.ndarray) -> tuple[numpy.ndarray, bool]:
         """return false if not connected"""
-        img = self.hud_system.clean_interface(img)
+        if (
+            self.object_searcher.get_position(img, ObjectConfigs.Fight.grave)
+            is not None
+        ):
+            img = self.fight_system.on_dead_character(img)
+        else:
+            img = self.hud_system.clean_interface(img)
+
         if self.object_searcher.get_position(img, ObjectConfigs.in_game) is not None:
             self.logger.info("Est en jeu.")
             self.is_connected.set()
@@ -102,8 +107,6 @@ class ConnectionSystem:
             if not connected:
                 self.logger.info("Toujours pas connecté au jeu.")
                 return self.deblock_character()
-            if self.is_dead.is_set():
-                self.fight_system.on_dead_character(img)
             elif self.object_searcher.get_position(img, ObjectConfigs.Fight.in_fight):
                 img, _ = self.fight_system.play_fight()
         except StoppedException:
