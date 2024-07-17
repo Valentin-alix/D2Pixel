@@ -1,6 +1,5 @@
 import subprocess
 import traceback
-from datetime import time
 from logging import Logger
 from threading import Event, RLock, Thread
 from time import sleep
@@ -25,7 +24,7 @@ from src.bots.dofus.fight.spells.spell_system import SpellSystem
 from src.bots.dofus.hud.hud_system import Hud, HudSystem
 from src.bots.dofus.hud.info_popup.job_level import JobParser
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
-from src.bots.modules.module_manager import ModuleManager
+from src.bots.modules.bot import Bot
 from src.common.retry import RetryTimeArgs
 from src.common.scheduler import run_continuously
 from src.common.searcher import search_for_file
@@ -64,10 +63,6 @@ def launch_launcher():
         stderr=subprocess.DEVNULL,
         start_new_session=True,
     )
-    sleep(3)
-
-
-sceduler_playtimes: dict[time, tuple[schedule.Job, schedule.Job]] = {}
 
 
 class AnkamaLauncher:
@@ -123,7 +118,7 @@ class AnkamaLauncher:
         pos, _, config, _ = self.image_manager.wait_multiple_or_template(
             [ObjectConfigs.Ankama.play, ObjectConfigs.Ankama.empty_play],
             force=True,
-            retry_time_args=RetryTimeArgs(timeout=25, offset_start=1),
+            retry_time_args=RetryTimeArgs(timeout=35, offset_start=1),
         )
         if config == ObjectConfigs.Ankama.play:
             self.controller.click(pos)
@@ -259,7 +254,7 @@ class AnkamaLauncher:
                 retry_time_args=RetryTimeArgs(offset_start=3, timeout=30),
             )
         while not connecter.connect_character(capturer.capture())[1]:
-            sleep(1)
+            sleep(0.3)
         hud_sys.clean_interface(capturer.capture())
         self.logger.info(f"{character_state.character} est connecté.")
         connecter.is_connected.set()
@@ -286,74 +281,63 @@ class AnkamaLauncher:
 
         return get_windows_by_process_and_name(target_process_name="Dofus.exe")
 
-    def run_playtime_planner(self, modules_managers: list[ModuleManager]):
-        def pause_bots(modules_managers: list[ModuleManager]):
-            def pause_bot(module_manager: ModuleManager):
-                if not module_manager.is_playing.is_set():
+    def run_playtime_planner(self, bots_by_id: dict[str, Bot]):
+        def pause_bots(bots_by_id: dict[str, Bot]):
+            def pause_bot(bot: Bot):
+                if bot.window_info is None:
                     return
-                module_manager.fighter.fight_sys.not_in_fight.wait()
-                module_manager.internal_pause.set()
-                with module_manager.action_lock:
-                    module_manager.logger.info("Bot mis en pause.")
-                    module_manager.is_connected.clear()
-                    module_manager.controller.kill_window()
+                if not bot.is_playing.is_set():
+                    return
+                bot.fighter.fight_sys.not_in_fight.wait()
+                bot.internal_pause.set()
+                with bot.action_lock:
+                    bot.logger.info("Bot mis en pause.")
+                    bot.is_connected.clear()
+                    bot.controller.kill_window()
                     while True:
-                        if not module_manager.internal_pause.is_set():
+                        if not bot.internal_pause.is_set():
                             break
-                        if module_manager.is_paused.is_set():
+                        if bot.is_paused.is_set():
                             break
                         sleep(0.5)
 
             self.pause_threads = []
-            for module_manager in modules_managers:
-                pause_thread = Thread(
-                    target=lambda: pause_bot(module_manager), daemon=True
-                )
+            for bot in bots_by_id.values():
+                pause_thread = Thread(target=lambda: pause_bot(bot), daemon=True)
                 pause_thread.start()
                 self.pause_threads.append(pause_thread)
 
-        def resume_bots(modules_managers: list[ModuleManager]):
-            if not any(elem.is_playing.is_set() for elem in modules_managers):
+        def resume_bots(bots_by_id: dict[str, Bot]):
+            if not any(
+                elem.window_info and elem.is_playing.is_set()
+                for elem in bots_by_id.values()
+            ):
                 return
             dofus_windows_info = self.connect_all()
-            for module_manager in modules_managers:
-                if module_manager.is_playing.is_set():
-                    module_manager.logger.info("Bot sortit de pause.")
+            for bot in bots_by_id.values():
+                if bot.window_info is None or not bot.is_playing.is_set():
+                    continue
+                bot.logger.info("Bot sortit de pause.")
                 related_window = next(
                     (
                         window
                         for window in dofus_windows_info
-                        if window.name == module_manager.window_info.name
+                        if window.name == bot.window_info.name
                     ),
                     None,
                 )
                 if related_window is None:
-                    module_manager.logger.info(
-                        "Did not found related window, retrying.."
-                    )
-                    return resume_bots(modules_managers)
-                module_manager.window_info.hwnd = related_window.hwnd
-                module_manager.internal_pause.clear()
+                    bot.logger.info("Did not found related window, retrying..")
+                    return resume_bots(bots_by_id)
+                bot.window_info.hwnd = related_window.hwnd
+                bot.internal_pause.clear()
 
-        global sceduler_playtimes
         for range_hour_playtime in self.user.config_user.ranges_hour_playtime:
-            related_scheduler_playtimes = sceduler_playtimes.get(
-                range_hour_playtime.start_time
+            schedule.every().day.at(range_hour_playtime.end_time.strftime("%H:%M")).do(
+                lambda: pause_bots(bots_by_id)
             )
-            if related_scheduler_playtimes is not None:
-                schedule.cancel_job(related_scheduler_playtimes[0])
-                schedule.cancel_job(related_scheduler_playtimes[1])
-
-            job_pause = (
-                schedule.every()
-                .day.at(range_hour_playtime.end_time.strftime("%H:%M"))
-                .do(lambda: pause_bots(modules_managers))
-            )
-            job_play = (
-                schedule.every()
-                .day.at(range_hour_playtime.start_time.strftime("%H:%M"))
-                .do(lambda: resume_bots(modules_managers))
-            )
-            sceduler_playtimes[range_hour_playtime.start_time] = (job_pause, job_play)
+            schedule.every().day.at(
+                range_hour_playtime.start_time.strftime("%H:%M")
+            ).do(lambda: resume_bots(bots_by_id))
 
         run_continuously()

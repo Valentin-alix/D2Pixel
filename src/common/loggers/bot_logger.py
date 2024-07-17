@@ -27,21 +27,21 @@ class BotLogger(logging.Logger):
         return f"{self.title}: {msg}"
 
     def debug(self, msg: Any, *args, **kwargs):
-        self.bot_signals.log_msg_by_type.emit((logging.DEBUG, str(msg)))
+        self.bot_signals.log_info.emit((logging.DEBUG, str(msg)))
         super().debug(self._get_log_msg(msg), *args, **kwargs)
 
     def info(self, msg: Any, *args, **kwargs):
-        self.bot_signals.log_msg_by_type.emit((logging.INFO, str(msg)))
+        self.bot_signals.log_info.emit((logging.INFO, str(msg)))
         super().info(self._get_log_msg(msg), *args, **kwargs)
 
     def warning(self, msg: Any, *args, **kwargs):
-        self.bot_signals.log_msg_by_type.emit((logging.WARNING, str(msg)))
+        self.bot_signals.log_info.emit((logging.WARNING, str(msg)))
         super().warning(self._get_log_msg(msg), *args, **kwargs)
 
     def error(self, msg: Any, *args, **kwargs):
-        self.bot_signals.log_msg_by_type.emit((logging.ERROR, str(msg)))
+        self.bot_signals.log_info.emit((logging.ERROR, str(msg)))
         super().error(self._get_log_msg(msg), *args, **kwargs)
 
     def critical(self, msg: Any, *args, **kwargs):
-        self.bot_signals.log_msg_by_type.emit((logging.CRITICAL, str(msg)))
+        self.bot_signals.log_info.emit((logging.CRITICAL, str(msg)))
         super().critical(self._get_log_msg(msg), *args, **kwargs)

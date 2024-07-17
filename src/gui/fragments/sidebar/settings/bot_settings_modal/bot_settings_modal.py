@@ -9,11 +9,11 @@ from PyQt5.QtWidgets import (
 from D2Shared.shared.enums import ElemEnum
 from D2Shared.shared.schemas.character import (
     CharacterJobInfoSchema,
+    CharacterSchema,
     UpdateCharacterSchema,
 )
 from D2Shared.shared.schemas.spell import UpdateSpellSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
-from src.bots.modules.module_manager import ModuleManager
 from src.gui.components.buttons import PushButton
 from src.gui.components.dialog import Dialog
 from src.gui.components.organization import VerticalLayout
@@ -35,41 +35,39 @@ class BotSettingsModal(Dialog):
         self,
         logger: Logger,
         service: ServiceSession,
-        module_manager: ModuleManager,
+        character: CharacterSchema,
         *args,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.service = service
         self.logger = logger
+        self.character = character
 
-        self.setWindowTitle(module_manager.character_state.character.id)
-        self.module_manager = module_manager
+        self.setWindowTitle(self.character.id)
+        self.setLayout(VerticalLayout(margins=(16, 16, 16, 16)))
 
-        self.main_layout = VerticalLayout(margins=(16, 16, 16, 16))
-        self.setLayout(self.main_layout)
+        self._setup_save_btn()
+        self._setup_tabs()
 
-        character = self.module_manager.character_state.character
-
-        self.set_save_btn()
-
-        self.tabs = QTabWidget()
-        self.layout().addWidget(self.tabs)
-
-        self.general_tab = GeneralTab(service, character)
-        self.tabs.addTab(self.general_tab, "Général")
-
-        self.farm_tab = FarmTab(service, character)
-        self.tabs.addTab(self.farm_tab, "Farm")
-
-        self.gameplay_tab = GameplayTab(service, character)
-        self.tabs.addTab(self.gameplay_tab, "Gameplay")
-
-    def set_save_btn(self):
+    def _setup_save_btn(self):
         self.save_btn = PushButton(text="Enregistrer")
         self.save_btn.clicked.connect(self.on_save)
         self.save_btn.setShortcut("Return")
-        self.main_layout.addWidget(self.save_btn)
+        self.layout().addWidget(self.save_btn)
+
+    def _setup_tabs(self) -> None:
+        self.tabs = QTabWidget()
+        self.layout().addWidget(self.tabs)
+
+        self.general_tab = GeneralTab(self.service, self.character)
+        self.tabs.addTab(self.general_tab, "Général")
+
+        self.farm_tab = FarmTab(self.service, self.character)
+        self.tabs.addTab(self.farm_tab, "Farm")
+
+        self.gameplay_tab = GameplayTab(self.service, self.character)
+        self.tabs.addTab(self.gameplay_tab, "Gameplay")
 
     @pyqtSlot()
     def on_save(self) -> None:
@@ -79,54 +77,52 @@ class BotSettingsModal(Dialog):
             is_sub = self.general_tab.sub_checkbox.isChecked()
             elem: ElemEnum = self.general_tab.elem_combo.currentData()
 
-            character_state = self.module_manager.character_state
-
             waypoints = self.general_tab.combo_waypoints.currentData()
             if set((elem.id for elem in self.general_tab.origin_waypoints)) != set(
                 waypoints
             ):
-                character_state.character.waypoints = waypoints
+                self.character.waypoints = waypoints
                 CharacterService.update_waypoints(
                     self.service,
-                    character_state.character.id,
-                    [elem.id for elem in character_state.character.waypoints],
+                    self.character.id,
+                    [elem.id for elem in self.character.waypoints],
                 )
 
             sub_areas: list[SubAreaSchema] = [
-                elem
+                _elem
                 for combo in self.farm_tab.combo_sub_areas
-                for elem in combo.currentData()
+                for _elem in combo.currentData()
             ]
             if set((elem.id for elem in self.farm_tab.origin_sub_areas)) != set(
                 sub_areas
             ):
-                character_state.character.sub_areas = sub_areas
+                self.character.sub_areas = sub_areas
                 CharacterService.update_sub_areas(
                     self.service,
-                    character_state.character.id,
-                    [elem.id for elem in character_state.character.sub_areas],
+                    self.character.id,
+                    [elem.id for elem in self.character.sub_areas],
                 )
 
             if (
-                lvl != character_state.character.lvl
-                or server_id != character_state.character.server_id
-                or is_sub != character_state.character.is_sub
-                or elem != character_state.character.elem
+                lvl != self.character.lvl
+                or server_id != self.character.server_id
+                or is_sub != self.character.is_sub
+                or elem != self.character.elem
             ):
-                character_state.character.lvl = lvl
-                character_state.character.server_id = server_id
-                character_state.character.is_sub = is_sub
-                character_state.character.elem = elem
+                self.character.lvl = lvl
+                self.character.server_id = server_id
+                self.character.is_sub = is_sub
+                self.character.elem = elem
                 CharacterService.update_character(
                     self.service,
                     UpdateCharacterSchema(
-                        id=character_state.character.id,
-                        lvl=character_state.character.lvl,
-                        po_bonus=character_state.character.po_bonus,
-                        is_sub=character_state.character.is_sub,
-                        time_spent=character_state.character.time_spent,
-                        elem=character_state.character.elem,
-                        server_id=character_state.character.server_id,
+                        id=self.character.id,
+                        lvl=self.character.lvl,
+                        po_bonus=self.character.po_bonus,
+                        is_sub=self.character.is_sub,
+                        time_spent=self.character.time_spent,
+                        elem=self.character.elem,
+                        server_id=self.character.server_id,
                     ),
                 )
 
@@ -146,7 +142,7 @@ class BotSettingsModal(Dialog):
                 job_infos.append(job_info)
 
             CharacterService.update_job_infos(
-                self.service, character_state.character.id, job_infos
+                self.service, self.character.id, job_infos
             )
 
             spells: list[UpdateSpellSchema] = []
@@ -194,11 +190,11 @@ class BotSettingsModal(Dialog):
                         max_cast=max_cast,
                         min_range=min_range,
                         range=range,
-                        character_id=character_state.character.id,
+                        character_id=self.character.id,
                     )
                 )
-            character_state.character.spells = CharacterService.update_spells(
-                self.service, character_state.character.id, spells
+            self.character.spells = CharacterService.update_spells(
+                self.service, self.character.id, spells
             )
         except Exception:
             self.logger.error(traceback.format_exc())

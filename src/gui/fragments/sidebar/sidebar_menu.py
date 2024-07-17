@@ -1,170 +1,149 @@
-from functools import partial
+from collections import OrderedDict
 from logging import Logger
 
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import QObject, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QSizePolicy, QWidget
 
+from D2Shared.shared.schemas.character import CharacterSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
-from src.bots.modules.module_manager import ModuleManager
-from src.gui.components.buttons import PushButtonIcon, ToolButtonIcon
+from src.bots.modules.bot import Bot
+from src.gui.components.buttons import PushButtonIcon
 from src.gui.components.loaders import Loading
 from src.gui.components.organization import (
     HorizontalLayout,
     VerticalLayout,
 )
-from src.gui.fragments.sidebar.settings.bot_settings_modal.bot_settings_modal import (
-    BotSettingsModal,
-)
 from src.gui.fragments.sidebar.settings.user_settings_modal import (
     UserSettingsModal,
 )
-from src.gui.fragments.sidebar.sidebar_signals import SideBarSignals
+from src.gui.fragments.sidebar.sidebar_menu_item import SideBarMenuItem
 from src.gui.signals.app_signals import AppSignals
 from src.services.session import ServiceSession
 
 
-class SideBarMenuItem(QWidget):
-    def __init__(
-        self,
-        logger: Logger,
-        service: ServiceSession,
-        module_manager: ModuleManager,
-        *args,
-        **kwargs,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-        self.service = service
-        self.logger = logger
-        self.main_layout = HorizontalLayout()
-        self.setLayout(self.main_layout)
-        self.module_manager = module_manager
-
-        self.btn_char = ToolButtonIcon(
-            width=150, height=80, icon_size=32, checkable=True, filename="people.svg"
-        )
-        self.btn_char.setLayoutDirection(Qt.LeftToRight)
-        self.btn_char.setText(module_manager.character_state.character.id)
-        self.main_layout.addWidget(self.btn_char)
-
-        self.bot_settings_btn = PushButtonIcon(
-            checkable=False, flat=True, filename="settings.svg", width=30, height=80
-        )
-        self.bot_settings_btn.clicked.connect(self.on_click_settings)
-        self.main_layout.addWidget(self.bot_settings_btn)
-
-    @pyqtSlot()
-    def on_click_settings(self):
-        modal = BotSettingsModal(self.logger, self.service, self.module_manager)
-        modal.open()
+class SideBarMenuSignals(QObject):
+    clicked_bot = pyqtSignal(object)
+    clicked_restart = pyqtSignal()
+    deleted_bot = pyqtSignal(object)
 
 
 class SideBarMenu(QWidget):
-    WIDTH = 190
+    WIDTH: int = 235
 
     def __init__(
         self,
         logger: Logger,
         service: ServiceSession,
-        side_bar_signals: SideBarSignals,
         app_signals: AppSignals,
         user: ReadUserSchema,
         *args,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.setProperty("class", "border-right-slim")
+        self.signals = SideBarMenuSignals()
         self.service = service
         self.logger = logger
         self.app_signals = app_signals
-        self.side_bar_signals = side_bar_signals
         self.user = user
-        self.current_index = 0
-        self.bot_items: list[SideBarMenuItem] = []
-
-        self.app_signals.bots_initialized.connect(self.on_bots_initialized)
-        self.app_signals.is_connecting_bots.connect(
-            self.on_new_is_connecting_bots_value
+        self.menu_item_by_char: OrderedDict[CharacterSchema, SideBarMenuItem] = (
+            OrderedDict()
         )
+        self.selected_menu_item: SideBarMenuItem | None = None
 
-        self.side_bar_signals = side_bar_signals
-        self.app_signals = app_signals
-        self.setAttribute(
-            Qt.WA_StyledBackground, True
-        )  # to apply style to whole widget
+        self.setProperty("class", "border-right-slim")
+        self.setAttribute(Qt.WA_StyledBackground, True)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         self.setFixedWidth(self.WIDTH)
+        main_layout = VerticalLayout(margins=(4, 4, 4, 4))
+        main_layout.setAlignment(Qt.AlignTop)
+        self.setLayout(main_layout)
 
-        self.main_layout = VerticalLayout(margins=(4, 4, 4, 4))
-        self.main_layout.setAlignment(Qt.AlignTop)
-        self.setLayout(self.main_layout)
+        self._setup_list_character()
 
-        self.setup_menu()
+        main_layout.addStretch(1)
 
-        self.main_layout.addStretch(1)
+        self._setup_footer()
 
-        self.set_bottom()
+        self.app_signals.is_connecting.connect(self.on_connection_loading)
 
-    def set_bottom(self):
-        self.bottom = QWidget()
-        self.main_layout.addWidget(self.bottom)
-        self.bottom_layout = HorizontalLayout(space=4)
-        self.bottom.setLayout(self.bottom_layout)
+    def _setup_list_character(self):
+        self.list_character_widget = QWidget(parent=self)
+        self.list_character_widget.setLayout(VerticalLayout(space=0))
+        self.layout().addWidget(self.list_character_widget)
+        self.list_char_widget_loading = Loading(parent=self)
+        self.layout().addWidget(self.list_char_widget_loading)
 
-        self.button_refresh = PushButtonIcon("restart.svg", parent=self)
-        self.button_refresh.setCheckable(False)
-        self.bottom_layout.addWidget(self.button_refresh)
+    def _setup_footer(self) -> None:
+        footer = QWidget()
+        footer.setLayout(HorizontalLayout(space=4))
+        self.layout().addWidget(footer)
 
-        self.button_settings = PushButtonIcon("settings.svg", parent=self)
-        self.button_settings.clicked.connect(self.on_clicked_settings)
-        self.button_settings.setCheckable(False)
-        self.bottom_layout.addWidget(self.button_settings)
+        self.refresh_btn = PushButtonIcon("restart.svg", parent=self)
+        self.refresh_btn.setCheckable(False)
+        self.refresh_btn.clicked.connect(self.signals.clicked_restart)
+        footer.layout().addWidget(self.refresh_btn)
 
-    def setup_menu(self):
-        self.bot_list = QWidget(parent=self)
-        self.loading = Loading(parent=self)
-        self.main_layout.addWidget(self.loading)
-        self.main_layout.addWidget(self.bot_list)
-        self.bot_list_layout = VerticalLayout(space=0)
-        self.bot_list.setLayout(self.bot_list_layout)
+        self.settings_btn = PushButtonIcon("settings.svg", parent=self)
+        self.settings_btn.setCheckable(False)
+        self.settings_btn.clicked.connect(self.on_clicked_settings)
+        footer.layout().addWidget(self.settings_btn)
+
+    def add_bot(self, bot: Bot) -> None:
+        side_bar_menu_item = SideBarMenuItem(
+            self.logger, self.service, bot=bot, parent=self
+        )
+        side_bar_menu_item.btn_char.clicked.connect(
+            lambda: self.on_clicked_character(bot.character_state.character)
+        )
+        side_bar_menu_item.bot_delete_btn.clicked.connect(
+            lambda: self.on_deleted_bot(bot)
+        )
+        self.menu_item_by_char[bot.character_state.character] = side_bar_menu_item
+        self.list_character_widget.layout().addWidget(side_bar_menu_item)
+        if self.selected_menu_item is None:
+            self.selected_menu_item = side_bar_menu_item
+            side_bar_menu_item.btn_char.setChecked(True)
+            side_bar_menu_item.btn_char.setEnabled(False)
+
+    def remove_character(self, character: CharacterSchema) -> None:
+        related_widget = self.menu_item_by_char.pop(character, None)
+        if related_widget is None:
+            return
+        self.list_character_widget.layout().removeWidget(related_widget)
+        related_widget.deleteLater()
+        if self.selected_menu_item == related_widget:
+            next_character = next(iter(self.menu_item_by_char.keys()), None)
+            if next_character is not None:
+                self.on_clicked_character(next_character)
+            else:
+                self.selected_menu_item = None
 
     @pyqtSlot(object)
-    def on_bots_initialized(self, module_managers: list[ModuleManager]):
-        self.bot_list_layout.clear_list()
-        self.bot_items = []
-        self.current_index = 0
-        for index, module_manager in enumerate(module_managers):
-            bot_item = SideBarMenuItem(
-                self.logger, self.service, module_manager=module_manager, parent=self
-            )
-            bot_item.btn_char.clicked.connect(partial(self.on_clicked_bot, index))
+    def on_deleted_bot(self, bot: Bot) -> None:
+        self.remove_character(bot.character_state.character)
+        self.signals.deleted_bot.emit(bot)
 
-            self.bot_items.append(bot_item)
-
-            if index == 0:
-                bot_item.btn_char.setChecked(True)
-                bot_item.btn_char.setEnabled(False)
-
-            self.bot_list_layout.addWidget(bot_item)
+    def on_characters_connected(self, bots_by_id: dict[str, Bot]) -> None:
+        for bot in bots_by_id.values():
+            if bot.character_state.character not in self.menu_item_by_char.keys():
+                self.add_bot(bot)
 
     @pyqtSlot(bool)
-    def on_new_is_connecting_bots_value(self, is_loading: bool):
+    def on_connection_loading(self, is_loading: bool):
+        self.refresh_btn.setEnabled(not is_loading)
         if is_loading:
-            self.bot_list.hide()
-            self.loading.start()
-            self.button_refresh.setEnabled(False)
+            self.list_char_widget_loading.start()
         else:
-            self.bot_list.show()
-            self.loading.stop()
-            self.button_refresh.setEnabled(True)
+            self.list_char_widget_loading.stop()
 
-    def on_clicked_bot(self, index: int):
-        related_item = self.bot_items[index]
+    def on_clicked_character(self, character: CharacterSchema):
+        related_item = self.menu_item_by_char[character]
+        self.selected_menu_item = related_item
 
-        self.bot_items[self.current_index].btn_char.setEnabled(True)
-        self.bot_items[self.current_index].btn_char.setChecked(False)
-        self.current_index = index
+        related_item.btn_char.setEnabled(True)
+        related_item.btn_char.setChecked(False)
 
-        self.side_bar_signals.clicked_bot.emit(index)
+        self.signals.clicked_bot.emit(character)
 
         related_item.btn_char.setEnabled(False)
 

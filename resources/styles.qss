@@ -56,3 +56,19 @@ QPushButton.no-border {{
 .bordered {{ 
   border:1px solid {QTMATERIAL_SECONDARYLIGHTCOLOR};
 }}
+
+.empty {{ 
+  background-color: none;
+}}
+
+.grey {{ 
+  background-color: {QTMATERIAL_SECONDARYLIGHTCOLOR};
+}}
+
+.green {{
+  background-color: green;
+}}
+
+.red {{
+  background-color: {QTMATERIAL_PRIMARYCOLOR};
+}}

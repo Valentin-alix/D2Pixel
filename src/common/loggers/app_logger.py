@@ -23,21 +23,21 @@ class AppLogger(logging.Logger):
         self.addHandler(get_file_handler("root"))
 
     def debug(self, msg: Any, *args, **kwargs):
-        self.app_signals.lvl_with_title_and_msg.emit((logging.DEBUG, str(msg)))
+        self.app_signals.log_info.emit((logging.DEBUG, str(msg)))
         super().debug(msg, *args, **kwargs)
 
     def info(self, msg: Any, *args, **kwargs):
-        self.app_signals.lvl_with_title_and_msg.emit((logging.INFO, str(msg)))
+        self.app_signals.log_info.emit((logging.INFO, str(msg)))
         super().info(msg, *args, **kwargs)
 
     def warning(self, msg: Any, *args, **kwargs):
-        self.app_signals.lvl_with_title_and_msg.emit((logging.WARNING, str(msg)))
+        self.app_signals.log_info.emit((logging.WARNING, str(msg)))
         super().warning(msg, *args, **kwargs)
 
     def error(self, msg: Any, *args, **kwargs):
-        self.app_signals.lvl_with_title_and_msg.emit((logging.ERROR, str(msg)))
+        self.app_signals.log_info.emit((logging.ERROR, str(msg)))
         super().error(msg, *args, **kwargs)
 
     def critical(self, msg: Any, *args, **kwargs):
-        self.app_signals.lvl_with_title_and_msg.emit((logging.CRITICAL, str(msg)))
+        self.app_signals.log_info.emit((logging.CRITICAL, str(msg)))
         super().critical(msg, *args, **kwargs)

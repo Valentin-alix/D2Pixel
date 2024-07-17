@@ -108,7 +108,7 @@ class Harvester:
         self.harvest_sub_areas_farming_ids = harvest_sub_areas_farming_ids
         self.harvest_map_time = harvest_map_time
 
-    def run_harvest(self) -> None:
+    def run(self) -> None:
         if self.character_state.character.lvl < 10:
             return None
 

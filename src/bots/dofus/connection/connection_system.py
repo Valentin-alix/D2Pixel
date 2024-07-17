@@ -95,7 +95,7 @@ class ConnectionSystem:
         self.logger.info("En train de débloquer le bot...")
         while not has_internet_connection():
             self.logger.info("En attente d'une connexion internet...")
-            sleep(2)
+            sleep(1)
         try:
             img = self.capturer.capture()
             img, connected = self.connect_character(img)

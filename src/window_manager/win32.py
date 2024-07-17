@@ -1,18 +1,18 @@
 import ctypes
-from logging import Logger
 import threading
 from ctypes import windll
 from ctypes.wintypes import DWORD, HWND, RECT
+from logging import Logger
 from time import sleep
 
 import numpy
 import psutil
 import win32con
 import win32gui
-from win32process import GetWindowThreadProcessId
 import win32ui
 from pynput.keyboard import Controller as KeyBoardController
 from pynput.keyboard import Key as PyKey
+from win32process import GetWindowThreadProcessId
 
 from src.exceptions import NotPrintableWindow
 
@@ -179,12 +179,12 @@ def adjust_window_size(
     window_place = win32gui.GetWindowPlacement(hwnd)[1]
     if window_place == win32con.SW_SHOWMINIMIZED:
         set_restored(hwnd)
-        sleep(1)
+        sleep(0.3)
         window_place = win32gui.GetWindowPlacement(hwnd)[1]
 
     if window_place == win32con.SW_SHOWMAXIMIZED:
         set_restored(hwnd)
-        sleep(1)
+        sleep(0.3)
 
     _, _, client_width, client_height = win32gui.GetClientRect(hwnd)
 
@@ -243,5 +243,5 @@ def adjust_window_size(
         False,
     )
 
-    sleep(1)
+    sleep(0.3)
     win32gui.UpdateWindow(hwnd)

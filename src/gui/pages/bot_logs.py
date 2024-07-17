@@ -5,7 +5,6 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QListWidget, QListWidgetItem
 
 from src.gui.components.organization import VerticalLayout
-from src.gui.signals.bot_signals import BotSignals
 
 
 class LogBox(QGroupBox):
@@ -34,7 +33,7 @@ class LogBox(QGroupBox):
             painter.drawText(option.rect, QtCore.Qt.AlignLeft, log_msg)
             painter.restore()
 
-    def __init__(self, bot_signals: BotSignals, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(title="Logs", *args, **kwargs)
         self.log_box_layout = VerticalLayout()
         self.log_box_layout.setAlignment(Qt.AlignTop)
@@ -46,9 +45,7 @@ class LogBox(QGroupBox):
 
         self.log_box_layout.addWidget(self.list_logs)
 
-        bot_signals.log_msg_by_type.connect(self.on_new_log_msg)
-
-    def on_new_log_msg(self, msg_with_type: tuple[int, str]):
+    def add_log_msg(self, msg_with_type: tuple[int, str]):
         scrollbar = self.list_logs.verticalScrollBar()
 
         if self.list_logs.count() > 500:

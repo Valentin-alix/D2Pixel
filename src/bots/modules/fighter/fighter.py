@@ -109,7 +109,7 @@ class Fighter:
         self.fighter_maps_time = fighter_maps_time
         self.fighter_sub_areas_farming_ids = fighter_sub_areas_farming_ids
 
-    def run_fighter(self) -> None:
+    def run(self) -> None:
         limit_time = convert_time_to_seconds(
             self.user.config_user.time_fighter
         ) * multiply_offset(

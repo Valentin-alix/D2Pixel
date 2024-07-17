@@ -8,7 +8,9 @@ from PyQt5.QtWidgets import QAbstractButton, QPushButton, QToolButton
 from src.consts import ASSET_FOLDER_PATH
 
 
-class AbstractButton(QAbstractButton):
+class AbstractButton(
+    QAbstractButton,
+):
     def __init__(self, checkable: bool = True, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.setCheckable(checkable)

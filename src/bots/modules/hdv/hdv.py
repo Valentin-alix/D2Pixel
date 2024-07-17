@@ -24,7 +24,7 @@ class Hdv:
         self.crafter = crafter
         self.seller = seller
 
-    def run_hdv(self):
+    def run(self):
         character = self.character_state.character
         if character.lvl < 10:
             return

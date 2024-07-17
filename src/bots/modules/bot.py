@@ -41,9 +41,7 @@ from src.bots.modules.hdv.hdv import Hdv
 from src.bots.modules.hdv.sell import Seller
 from src.common.loggers.bot_logger import BotLogger
 from src.consts import DOFUS_WINDOW_SIZE
-from src.exceptions import (
-    StoppedException,
-)
+from src.exceptions import StoppedException
 from src.gui.signals.bot_signals import BotSignals
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.icon_searcher import IconSearcher
@@ -59,24 +57,27 @@ from src.window_manager.organizer import Organizer, WindowInfo
 DEFAULT_MODULES: list[str] = ["Hdv", "Fighter", "Harvester"]
 
 
-class ModuleManager:
+class Bot:
     def __init__(
         self,
+        character_id: str,
         service: ServiceSession,
-        window_info: WindowInfo,
         fake_sentence: FakeSentence,
+        user: ReadUserSchema,
         fighter_maps_time: dict[int, float],
         fighter_sub_areas_farming_ids: list[int],
         harvest_sub_areas_farming_ids: list[int],
         harvest_map_time: dict[int, float],
-        user: ReadUserSchema,
-    ):
-        self.window_info = window_info
-        self.user = user
-        character_id = window_info.name.split(" - Dofus")[0]
-        self.bot_signals = BotSignals()
-        self.fake_sentence = fake_sentence
+    ) -> None:
+        self.fighter_maps_time = fighter_maps_time
+        self.fighter_sub_areas_farming_ids = fighter_sub_areas_farming_ids
+        self.harvest_sub_areas_farming_ids = harvest_sub_areas_farming_ids
+        self.harvest_map_time = harvest_map_time
+        self.character_id = character_id
         self.service = service
+        self.fake_sentence = fake_sentence
+        self.user = user
+        self.bot_signals = BotSignals()
         self.is_paused = Event()
         self.internal_pause = Event()
         self.is_playing = Event()
@@ -86,6 +87,12 @@ class ModuleManager:
         self.not_in_fight.set()
         self.action_lock = RLock()
         self.logger = BotLogger(character_id, self.bot_signals)
+        self.character_state = CharacterState(self.service, character_id)
+
+        self.window_info: WindowInfo | None = None
+
+    def init_bot(self, window_info: WindowInfo):
+        self.window_info = window_info
 
         self.organizer = Organizer(
             window_info=window_info,
@@ -106,7 +113,7 @@ class ModuleManager:
         self.image_manager = ImageManager(self.capturer, self.object_searcher)
         grid = Grid(self.object_searcher)
 
-        self.character_state = CharacterState(self.service, character_id)
+        self.character_state = CharacterState(self.service, self.character_id)
         spell_manager = SpellManager(grid, self.service, self.character_state)
 
         self.controller = Controller(
@@ -316,8 +323,8 @@ class ModuleManager:
             self.capturer,
             self.image_manager,
             self.logger,
-            fighter_maps_time,
-            fighter_sub_areas_farming_ids,
+            self.fighter_maps_time,
+            self.fighter_sub_areas_farming_ids,
             self.user,
         )
 
@@ -335,8 +342,8 @@ class ModuleManager:
             self.capturer,
             self.image_manager,
             self.logger,
-            harvest_sub_areas_farming_ids,
-            harvest_map_time,
+            self.harvest_sub_areas_farming_ids,
+            self.harvest_map_time,
             self.user,
         )
 
@@ -354,9 +361,9 @@ class ModuleManager:
         )
 
         self.modules: dict[str, Callable[..., None]] = {
-            "Hdv": self.hdv.run_hdv,
-            "Fighter": self.fighter.run_fighter,
-            "Harvester": self.harvester.run_harvest,
+            "Hdv": self.hdv.run,
+            "Fighter": self.fighter.run,
+            "Harvester": self.harvester.run,
         }
 
     def _stop_bot(self):
@@ -364,7 +371,7 @@ class ModuleManager:
             self.is_paused.set()
             while self.is_playing.is_set():
                 self.logger.info("Waiting for stopped bot")
-                sleep(0.5)
+                sleep(0.3)
             self.is_paused.clear()
 
     def stop_bot(self):
@@ -373,6 +380,9 @@ class ModuleManager:
         self.bot_signals.is_stopping_bot.emit(False)
 
     def run_fm(self, lines: list[BaseLineSchema], exo_stat: StatSchema | None):
+        if self.window_info is None:
+            raise Exception("Bot is not initialized.")
+
         self.bot_signals.is_stopping_bot.emit(True)
         self._stop_bot()
         self.is_paused.clear()
@@ -393,6 +403,9 @@ class ModuleManager:
             self.bot_signals.is_stopping_bot.emit(False)
 
     def run_bot(self, name_modules: list[str] | None = None):
+        if self.window_info is None:
+            raise Exception("Bot is not initialized.")
+
         if name_modules is None:
             name_modules = DEFAULT_MODULES
 

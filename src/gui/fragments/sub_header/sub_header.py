@@ -2,9 +2,9 @@ from logging import Logger
 
 from PyQt5.QtWidgets import QTabWidget, QWidget
 
-from src.bots.modules.module_manager import ModuleManager
+from src.bots.modules.bot import Bot
 from src.gui.components.organization import HorizontalLayout
-from src.gui.pages.farm.farm_page import ModulesPage
+from src.gui.pages.farm.farm_page import FarmPage
 from src.gui.pages.fm.fm_page import FmPage
 from src.gui.pages.hdv.hdv_page import HdvPage
 from src.gui.pages.stats.stats_page import StatsPage
@@ -15,7 +15,7 @@ class SubHeader(QWidget):
     def __init__(
         self,
         service: ServiceSession,
-        module_manager: ModuleManager,
+        bot: Bot,
         logger: Logger,
         *args,
         **kwargs,
@@ -23,30 +23,30 @@ class SubHeader(QWidget):
         super().__init__(*args, **kwargs)
         self.service = service
         self.logger = logger
-        self.main_layout = HorizontalLayout()
-        self.setLayout(self.main_layout)
+        self.bot = bot
 
-        self.setup_tabs(module_manager)
+        self.setLayout(HorizontalLayout())
+        self._setup_tabs(self.bot)
 
-    def setup_tabs(self, module_manager: ModuleManager):
+    def _setup_tabs(self, bot: Bot):
         self.tabs = QTabWidget()
 
-        self.module_tab = ModulesPage(module_manager=module_manager)
-        self.tabs.addTab(self.module_tab, "Farm")
+        self.bot_page = FarmPage(bot=bot)
+        self.tabs.addTab(self.bot_page, "Farm")
 
         self.hdv_frame = HdvPage(
             self.service,
-            character=module_manager.character_state.character,
+            character=bot.character_state.character,
             logger=self.logger,
         )
         self.tabs.addTab(self.hdv_frame, "Hdv")
 
-        self.fm_frame = FmPage(
-            self.service, module_manager=module_manager, logger=self.logger
-        )
+        self.fm_frame = FmPage(self.service, bot=bot, logger=self.logger)
         self.tabs.addTab(self.fm_frame, "FM")
 
-        self.stats_frame = StatsPage(self.service, module_manager=module_manager)
+        self.stats_frame = StatsPage(
+            self.service, character=bot.character_state.character
+        )
         self.tabs.addTab(self.stats_frame, "Stats")
 
-        self.main_layout.addWidget(self.tabs)
+        self.layout().addWidget(self.tabs)

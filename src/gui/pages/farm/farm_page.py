@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from src.bots.modules.module_manager import DEFAULT_MODULES, ModuleManager
+from src.bots.modules.bot import DEFAULT_MODULES, Bot
 from src.gui.components.buttons import PushButtonIcon
 from src.gui.components.combobox import CheckableComboBox
 from src.gui.components.loaders import Loading
@@ -13,59 +13,76 @@ from src.gui.components.organization import (
     VerticalLayout,
 )
 from src.gui.pages.bot_logs import LogBox
-from src.gui.pages.farm.farm_workers import (
-    WorkerRunFarming,
+from src.gui.workers.worker_farm import (
+    WorkerFarm,
 )
-from src.gui.pages.stop_worker import WorkerStop
+from src.gui.workers.worker_stop import WorkerStop
 
 
-class ModulesPage(QWidget):
-    def __init__(self, module_manager: ModuleManager):
+class FarmPage(QWidget):
+    def __init__(self, bot: Bot):
         super().__init__()
         self.thread_run: QThread | None = None
         self.thread_stop: QThread | None = None
-        self.module_manager = module_manager
+        self.bot = bot
         self.is_loading = False
 
         self.main_layout = VerticalLayout()
         self.main_layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.main_layout)
 
-        self.set_action_widget()
+        self._setup_action_btns()
 
-        self.set_module_combobox()
+        self._setup_module_combobox()
 
-        self.setup_info_action()
+        self._setup_info_action()
 
-        self.set_content()
+        self._setup_content()
 
-        self.module_manager.bot_signals.is_stopping_bot.connect(
-            self.on_new_is_stopping_bot
-        )
+        bot.bot_signals.is_stopping_bot.connect(self.on_new_is_stopping_bot)
+        bot.bot_signals.log_info.connect(self.log_box.add_log_msg)
+        bot.bot_signals.playing_action.connect(self.on_playing_action)
+        self.button_play.clicked.connect(lambda: self.on_play(bot))
+        self.button_stop.clicked.connect(lambda: self.on_stop(bot))
 
-    def set_module_combobox(self):
+        self.bot.bot_signals.connected_bot.connect(self.on_connected_bot)
+        self.bot.bot_signals.disconnected_bot.connect(self.on_disconnected_bot)
+
+    @pyqtSlot()
+    def on_connected_bot(self):
+        self.button_play.setDisabled(False)
+
+    @pyqtSlot()
+    def on_disconnected_bot(self):
+        self.button_play.setDisabled(True)
+
+    def _setup_module_combobox(self):
         self.combo_modules = CheckableComboBox[str](parent=self)
-        for name in DEFAULT_MODULES:
-            self.combo_modules.addItem(name, checked=True)
-        self.main_layout.addWidget(self.combo_modules)
+        for module_name in DEFAULT_MODULES:
+            self.combo_modules.addItem(module_name, checked=True)
+        self.layout().addWidget(self.combo_modules)
 
-    def set_content(self):
-        self.log_box = LogBox(bot_signals=self.module_manager.bot_signals)
-        self.main_layout.addWidget(self.log_box)
+    def _setup_info_action(self):
+        self.name_action = QLabel()
+        self.layout().addWidget(self.name_action)
 
-    def set_action_widget(self):
-        self.action = QWidget()
-        self.main_layout.addWidget(self.action)
-        self.action_layout = HorizontalLayout()
-        self.action.setLayout(self.action_layout)
+    def _setup_content(self):
+        self.log_box = LogBox()
+        self.layout().addWidget(self.log_box)
 
-        self.loading = Loading(parent=self.action)
-        self.action.setFixedHeight(self.loading.height() + 5)
+    def _setup_action_btns(self):
+        self.action_widget = QWidget()
+        self.layout().addWidget(self.action_widget)
+        self.action_widget.setLayout(HorizontalLayout())
 
-        self.action_layout.addWidget(self.loading)
+        self.action_loading = Loading(parent=self.action_widget)
+        self.action_widget.setFixedHeight(self.action_loading.height() + 5)
+
+        self.action_widget.layout().addWidget(self.action_loading)
 
         self.action_content = QWidget()
-        self.action_layout.addWidget(self.action_content)
+        self.action_widget.layout().addWidget(self.action_content)
+
         self.action_content_layout = HorizontalLayout()
         self.action_content_layout.setAlignment(Qt.AlignCenter)
         self.action_content.setLayout(self.action_content_layout)
@@ -73,52 +90,28 @@ class ModulesPage(QWidget):
         self.button_play = PushButtonIcon(
             "play.svg", width=80, height=40, icon_size=20, parent=self
         )
+        self.button_play.setDisabled(True)
         self.button_play.setCheckable(False)
-        self.action_content_layout.addWidget(self.button_play)
+        self.action_content.layout().addWidget(self.button_play)
 
         self.button_stop = PushButtonIcon(
             "stop.svg", width=80, height=40, icon_size=20, parent=self
         )
         self.button_stop.setCheckable(False)
-        self.action_content_layout.addWidget(self.button_stop)
-
-        self.refresh_state_play_stop_btn()
-
-        self.button_play.clicked.connect(self.on_play)
-        self.button_stop.clicked.connect(self.on_stop)
-
-    def setup_info_action(self):
-        self.info_action = QWidget()
-        self.main_layout.addWidget(self.info_action)
-        self.info_action.hide()
-        self.info_action_layout = HorizontalLayout()
-        self.info_action.setLayout(self.info_action_layout)
-
-        self.name_action = QLabel()
-        self.info_action_layout.addWidget(self.name_action)
-        self.module_manager.bot_signals.playing_action.connect(self.on_playing_action)
+        self.button_stop.hide()
+        self.action_content.layout().addWidget(self.button_stop)
 
     @pyqtSlot(str)
     def on_playing_action(self, name: str):
         self.name_action.setText(name)
-        self.info_action.show()
 
-    def refresh_state_play_stop_btn(self):
-        if self.module_manager.is_playing.is_set():
-            self.button_play.hide()
-            self.button_stop.show()
-        else:
-            self.button_stop.hide()
-            self.button_play.show()
-
-    def on_play(self):
+    @pyqtSlot(object)
+    def on_play(self, bot: Bot):
         if self.thread_run is not None:
             self.thread_run.quit()
             self.thread_run.wait()
 
-        self.worker_run = WorkerRunFarming(
-            self.module_manager, name_modules=self.combo_modules.currentData()
-        )
+        self.worker_run = WorkerFarm(bot, name_modules=self.combo_modules.currentData())
         self.thread_run = QThread()
 
         self.worker_run.moveToThread(self.thread_run)
@@ -126,12 +119,16 @@ class ModulesPage(QWidget):
         self.thread_run.finished.connect(self.worker_run.deleteLater)
         self.thread_run.start()
 
-    def on_stop(self):
+        self.button_stop.show()
+        self.button_play.hide()
+
+    @pyqtSlot(object)
+    def on_stop(self, bot: Bot):
         if self.thread_stop is not None:
             self.thread_stop.quit()
             self.thread_stop.wait()
 
-        self.worker_stop = WorkerStop(self.module_manager)
+        self.worker_stop = WorkerStop(bot)
         self.thread_stop = QThread()
 
         self.worker_stop.moveToThread(self.thread_stop)
@@ -139,15 +136,15 @@ class ModulesPage(QWidget):
         self.thread_stop.finished.connect(self.worker_stop.deleteLater)
         self.thread_stop.start()
 
+        self.button_stop.hide()
+        self.button_play.show()
+
     @pyqtSlot(bool)
     def on_new_is_stopping_bot(self, value: bool):
         self.is_loading = value
         if value:
-            self.loading.start()
+            self.action_loading.start()
             self.action_content.hide()
-            self.info_action.hide()
         else:
-            self.refresh_state_play_stop_btn()
             self.action_content.show()
-            self.info_action.show()
-            self.loading.stop()
+            self.action_loading.stop()
