@@ -181,7 +181,7 @@ class Fighter:
 
     def __get_area_group_enemy(self) -> Iterator[RegionSchema]:
         with self.controller.hold("z"):
-            sleep(0.3)
+            sleep(0.6)
             img = self.capturer.capture()
 
         yield from self.__get_valid_group_infobul_on_img(img)
@@ -212,6 +212,7 @@ class Fighter:
         if retry == 0:
             return False
         for area_group in self.__get_area_group_enemy():
+            self.logger.info(area_group)
             attacked = self.__attack_enemy_in_group(area_group)
             if attacked:
                 break
