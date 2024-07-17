@@ -137,15 +137,17 @@ class SideBarMenu(QWidget):
             self.list_char_widget_loading.stop()
 
     def on_clicked_character(self, character: CharacterSchema):
+        if self.selected_menu_item is not None:
+            self.selected_menu_item.btn_char.setEnabled(True)
+            self.selected_menu_item.btn_char.setChecked(False)
+
         related_item = self.menu_item_by_char[character]
         self.selected_menu_item = related_item
 
-        related_item.btn_char.setEnabled(True)
-        related_item.btn_char.setChecked(False)
+        related_item.btn_char.setEnabled(False)
+        related_item.btn_char.setChecked(True)
 
         self.signals.clicked_bot.emit(character)
-
-        related_item.btn_char.setEnabled(False)
 
     @pyqtSlot()
     def on_clicked_settings(self):

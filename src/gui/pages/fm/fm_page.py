@@ -22,7 +22,6 @@ class FmPage(QWidget):
         service: ServiceSession,
         bot: Bot,
         logger: Logger,
-        log_box: LogBox,
         *args,
         **kwargs,
     ):
@@ -33,7 +32,6 @@ class FmPage(QWidget):
         self.bot = bot
         self.logger = logger
 
-        self.log_box = log_box
         self.main_layout = VerticalLayout(margins=(8, 8, 8, 8))
         self.main_layout.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         self.setLayout(self.main_layout)
@@ -111,6 +109,7 @@ class FmPage(QWidget):
         self.fm_item.signals.deleted_item.connect(self._on_deleted_equipment)
         content_widget_layout.insertWidget(0, self.fm_item)
 
+        self.log_box = LogBox()
         content_widget.layout().addWidget(self.log_box)
 
     @pyqtSlot()

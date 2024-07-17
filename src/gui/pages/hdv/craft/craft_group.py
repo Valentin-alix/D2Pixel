@@ -41,6 +41,9 @@ class CraftGroup(QGroupBox):
 
     def setup_list_recipe(self, recipes: list[RecipeSchema]) -> None:
         self.list_wid_recipe = QListWidget()
+        self.list_wid_recipe.setLayoutMode(QListWidget.Batched)
+        self.list_wid_recipe.setBatchSize(10)
+        self.list_wid_recipe.setUniformItemSizes(True)
         for recipe in recipes:
             self.add_recipe(recipe)
         self.list_wid_recipe.itemClicked.connect(self._on_click_recipe_widget)
