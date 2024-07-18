@@ -112,9 +112,11 @@ class Bot:
             window_info=self.window_info,
             logger=self.logger,
         )
-        self.icon_searcher = IconSearcher(self.service)
-        self.animation_manager = AnimationManager(capturer=self.capturer)
-        self.object_searcher = ObjectSearcher(self.service)
+        self.icon_searcher = IconSearcher(logger=self.logger, service=self.service)
+        self.animation_manager = AnimationManager(
+            logger=self.logger, capturer=self.capturer
+        )
+        self.object_searcher = ObjectSearcher(logger=self.logger, service=self.service)
         self.image_manager = ImageManager(self.capturer, self.object_searcher)
         grid = Grid(self.object_searcher)
 

@@ -146,7 +146,7 @@ class AnkamaLauncher:
             window_info=window_info,
             logger=self.logger,
         )
-        animation_manager = AnimationManager(capturer=capturer)
+        animation_manager = AnimationManager(logger=self.logger, capturer=capturer)
         object_searcher = ObjectSearcher(self.logger, self.service)
         image_manager = ImageManager(capturer, object_searcher)
         grid = Grid(object_searcher)

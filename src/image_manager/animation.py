@@ -1,10 +1,11 @@
+from logging import Logger
 from time import sleep
 from typing import Literal, overload
 
 import numpy
 from pydantic import BaseModel, ConfigDict
-from D2Shared.shared.schemas.region import RegionSchema
 
+from D2Shared.shared.schemas.region import RegionSchema
 from src.common.retry import RetryTimeArgs, retry_time
 from src.exceptions import UnknowStateException
 from src.image_manager.analysis import are_image_similar
@@ -30,11 +31,13 @@ class AnimationManager(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     capturer: Capturer
+    logger: Logger
     _prev_img: numpy.ndarray | None = None
 
     def _is_end_animation(
         self, region: RegionSchema | None = None, img: numpy.ndarray | None = None
     ) -> numpy.ndarray | None:
+        self.logger.debug(f"Checking if end animation at {region}")
         if img is None:
             img = self.capturer.capture()
 
@@ -52,6 +55,7 @@ class AnimationManager(BaseModel):
     def _is_start_animation(
         self, region: RegionSchema | None = None, img: numpy.ndarray | None = None
     ) -> numpy.ndarray | None:
+        self.logger.debug(f"Checking if start animation at {region}")
         if img is None:
             img = self.capturer.capture()
 
