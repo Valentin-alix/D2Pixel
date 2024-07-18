@@ -23,7 +23,6 @@ class AppLogger(logging.Logger):
         self.addHandler(get_file_handler("root"))
 
     def debug(self, msg: Any, *args, **kwargs):
-        self.app_signals.log_info.emit((logging.DEBUG, str(msg)))
         super().debug(msg, *args, **kwargs)
 
     def info(self, msg: Any, *args, **kwargs):

@@ -1,3 +1,4 @@
+from logging import Logger
 from typing import Iterator
 
 import cv2
@@ -82,7 +83,8 @@ def get_base_cells() -> dict[tuple[int, int], CellSchema]:
 
 
 class Grid:
-    def __init__(self, object_searcher: ObjectSearcher):
+    def __init__(self, logger: Logger, object_searcher: ObjectSearcher):
+        self.logger = logger
         self.object_searcher = object_searcher
         self._cells: dict[tuple[int, int], CellSchema] | None = None
         self.character_cell: CellSchema | None = None
@@ -129,6 +131,7 @@ class Grid:
         Args:
             img (numpy.ndarray)
         """
+        self.logger.info("Parsing grid at preparation")
         for cell in self.cells.values():
             if cell.type_cell in [TypeCellEnum.VOID, TypeCellEnum.OPAQUE]:
                 continue
@@ -151,6 +154,7 @@ class Grid:
         """refresh allies cell, enemy cell, need to be in fight (not in fight prep)"""
         self.clear_grid()
 
+        self.logger.info("Parsing grid")
         did_found_character: bool = False
         for cell in self.cells.values():
             if cell.type_cell in [TypeCellEnum.VOID, TypeCellEnum.OPAQUE]:

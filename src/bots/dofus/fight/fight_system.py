@@ -117,6 +117,8 @@ class FightSystem:
         ):
             img = self.handle_fight_preparation(img)
 
+        self.logger.info("Fight initialized")
+
         return img
 
     def handle_fight_preparation(self, img: numpy.ndarray) -> numpy.ndarray:

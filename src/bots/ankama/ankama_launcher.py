@@ -65,6 +65,22 @@ def launch_launcher():
     )
 
 
+def relink_windows_dofus_hwnd(bot: Bot, dofus_windows_info: list[WindowInfo]):
+    if bot.window_info is None:
+        return
+    related_window = next(
+        (
+            window
+            for window in dofus_windows_info
+            if window.name == bot.window_info.name
+        ),
+        None,
+    )
+    if related_window is None:
+        return
+    bot.window_info.hwnd = related_window.hwnd
+
+
 class AnkamaLauncher:
     def __init__(
         self, logger: Logger, service: ServiceSession, user: ReadUserSchema
@@ -149,7 +165,7 @@ class AnkamaLauncher:
         animation_manager = AnimationManager(logger=self.logger, capturer=capturer)
         object_searcher = ObjectSearcher(self.logger, self.service)
         image_manager = ImageManager(capturer, object_searcher)
-        grid = Grid(object_searcher)
+        grid = Grid(self.logger, object_searcher)
         character_id = window_info.name.split(" - Dofus")[0]
         character_state = CharacterState(self.service, character_id)
         spell_manager = SpellManager(grid, self.service, character_state)
@@ -321,18 +337,7 @@ class AnkamaLauncher:
                 if bot.window_info is None or not bot.is_playing.is_set():
                     continue
                 bot.logger.info("Bot sortit de pause.")
-                related_window = next(
-                    (
-                        window
-                        for window in dofus_windows_info
-                        if window.name == bot.window_info.name
-                    ),
-                    None,
-                )
-                if related_window is None:
-                    bot.logger.info("Did not found related window, retrying..")
-                    return resume_bots(bots_by_id)
-                bot.window_info.hwnd = related_window.hwnd
+                relink_windows_dofus_hwnd(bot, dofus_windows_info)
                 bot.internal_pause.clear()
 
         for range_hour_playtime in self.user.config_user.ranges_hour_playtime:

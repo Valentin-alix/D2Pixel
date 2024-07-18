@@ -27,7 +27,6 @@ class BotLogger(logging.Logger):
         return f"{self.title}: {msg}"
 
     def debug(self, msg: Any, *args, **kwargs):
-        self.bot_signals.log_info.emit((logging.DEBUG, str(msg)))
         super().debug(self._get_log_msg(msg), *args, **kwargs)
 
     def info(self, msg: Any, *args, **kwargs):

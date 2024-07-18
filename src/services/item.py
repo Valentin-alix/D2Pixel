@@ -1,7 +1,8 @@
-from cachetools import cached
-from cachetools.keys import hashkey
 import cv2
 import numpy
+from cachetools import cached
+from cachetools.keys import hashkey
+
 from D2Shared.shared.schemas.item import ItemSchema
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
@@ -28,7 +29,8 @@ class ItemService:
         with service.logged_session() as session:
             resp = session.get(f"{ITEM_URL}{item_id}/image/")
             img = resp.content
-            if img is None:
+            print(img)
+            if not img:
                 return None
             np_arr = numpy.fromstring(img, numpy.uint8)  # type: ignore
             img_np = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)

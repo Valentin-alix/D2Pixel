@@ -4,11 +4,12 @@ import unittest
 from logging import Logger
 from pathlib import Path
 
+from src.services.item import ItemService
+
 sys.path.append(os.path.join(Path(__file__).parent.parent.parent))
 from D2Shared.shared.enums import JobEnum
 from src.gui.signals.app_signals import AppSignals
 from src.services.character import CharacterService
-from src.services.map import MapService
 from src.services.recipe import RecipeService
 from src.services.session import ServiceSession
 
@@ -25,11 +26,9 @@ class TestServiceCharacter(unittest.TestCase):
         #     )
         return super().setUp()
 
-    def test_map(self):
-        map = MapService.get_map_from_hud(
-            self.service, "temp", 14419205, ["-16", "-24"]
-        )
-        print(map.waypoint)
+    def test_icon(self):
+        icon = ItemService.get_icon_img(self.service, 303)
+        print(icon)
 
     def test_get_or_create(self):
         for job_info in self.character.character_job_info:

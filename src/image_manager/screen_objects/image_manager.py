@@ -1,10 +1,10 @@
 from typing import Literal, overload
 
 import numpy
+
 from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.schemas.template_found import TemplateFoundPlacementSchema
-
 from src.common.retry import RetryTimeArgs, retry_time
 from src.exceptions import UnknowStateException
 from src.image_manager.analysis import are_same_image
@@ -157,9 +157,13 @@ class ImageManager:
         return res
 
     def _not_found_template(
-        self, config: ObjectSearchConfig, map_id: int | None = None
+        self,
+        config: ObjectSearchConfig,
+        map_id: int | None = None,
+        img: numpy.ndarray | None = None,
     ) -> numpy.ndarray | None:
-        img = self.capturer.capture()
+        if img is None:
+            img = self.capturer.capture()
         return self.object_searcher.is_not_on_screen(img, config, map_id)
 
     def is_cursor_type(self, cursor_type: CursorType) -> bool:

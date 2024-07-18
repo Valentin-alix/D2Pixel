@@ -93,11 +93,10 @@ class Bot:
         self.window_info: WindowInfo | None = None
 
     def init_bot(self, window_info: WindowInfo):
-        self.window_info = window_info
-
         if self.is_init_bot:
             self.logger.info("already initialized bot")
             return
+        self.window_info = window_info
         self.is_init_bot = True
         self.organizer = Organizer(
             window_info=window_info,
@@ -118,7 +117,7 @@ class Bot:
         )
         self.object_searcher = ObjectSearcher(logger=self.logger, service=self.service)
         self.image_manager = ImageManager(self.capturer, self.object_searcher)
-        grid = Grid(self.object_searcher)
+        grid = Grid(self.logger, self.object_searcher)
 
         self.character_state = CharacterState(self.service, self.character_id)
         spell_manager = SpellManager(grid, self.service, self.character_state)

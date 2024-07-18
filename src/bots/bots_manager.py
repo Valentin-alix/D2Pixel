@@ -2,7 +2,7 @@ from collections import defaultdict
 from logging import Logger
 
 from D2Shared.shared.schemas.user import ReadUserSchema
-from src.bots.ankama.ankama_launcher import AnkamaLauncher
+from src.bots.ankama.ankama_launcher import AnkamaLauncher, relink_windows_dofus_hwnd
 from src.bots.dofus.chat.sentence import FakeSentence
 from src.bots.modules.bot import Bot
 from src.gui.signals.app_signals import AppSignals
@@ -56,6 +56,7 @@ class BotsManager:
                     self.harvest_sub_area_farming_ids,
                     self.harvest_map_time,
                 )
+            relink_windows_dofus_hwnd(bot, dofus_windows)
             bot.init_bot(window)
             bot.is_connected.set()
             self.bots[character_id] = bot

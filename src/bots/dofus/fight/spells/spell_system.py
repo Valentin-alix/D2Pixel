@@ -10,6 +10,7 @@ from D2Shared.shared.schemas.cell import CellSchema
 from D2Shared.shared.schemas.spell import CurrentBoostSchema, SpellSchema
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.spells.spell_manager import SpellManager
+from src.bots.dofus.hud.info_bar import get_percentage_info_bar_fight
 from src.bots.dofus.hud.pa import get_pa
 from src.common.randomizer import wait
 from src.common.retry import RetryTimeArgs, retry_time
@@ -98,15 +99,28 @@ class SpellSystem:
     def wait_end_animation_launch_spell_enemy(
         self, img: numpy.ndarray
     ) -> numpy.ndarray:
+        def is_end_animation_launch_spell() -> numpy.ndarray | None:
+            _img = self.capturer.capture()
+            if (
+                self.animation_manager._is_end_animation(CONTENT_REGION, _img)
+                is not None
+            ):
+                return _img
+            if (
+                self.image_manager._not_found_template(
+                    ObjectConfigs.Fight.in_fight, img=_img
+                )
+                is not None
+            ):
+                return _img
+            if get_percentage_info_bar_fight(_img) > 0:
+                return _img
+            return None
+
         self.animation_manager._prev_img = img
 
         res = retry_time(RetryTimeArgs(repeat_time=0.3, wait_end=(0.1, 0.2)))(
-            [
-                lambda: self.animation_manager._is_end_animation(CONTENT_REGION),
-                lambda: self.image_manager._not_found_template(
-                    ObjectConfigs.Fight.in_fight
-                ),
-            ]
+            is_end_animation_launch_spell
         )()
         if res is None:
             raise UnknowStateException(

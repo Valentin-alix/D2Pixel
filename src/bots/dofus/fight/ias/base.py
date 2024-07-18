@@ -97,6 +97,7 @@ class IaBaseFightSystem:
             tuple[numpy.ndarray, bool]: new img, sucessfully moved
         """
         while True:
+            self.logger.info(f"Moving to {cell}")
             if cell not in self.grid.movable_cells:
                 return img, False
 
