@@ -285,9 +285,13 @@ class AnkamaLauncher:
             def pause_bot(bot: Bot):
                 if bot.window_info is None:
                     return
-                if not bot.is_playing.is_set():
-                    return
-                bot.fighter.fight_sys.not_in_fight.wait()
+                while True:
+                    bot.logger.info("Waiting for not in fight bot")
+                    if not bot.is_playing.is_set() or bot.is_paused.is_set():
+                        return
+                    if bot.fighter.fight_sys.not_in_fight.is_set():
+                        break
+                    sleep(0.5)
                 bot.internal_pause.set()
                 with bot.action_lock:
                     bot.logger.info("Bot mis en pause.")
