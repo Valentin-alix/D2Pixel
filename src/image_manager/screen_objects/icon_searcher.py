@@ -1,6 +1,9 @@
 import os
+from logging import Logger
+
 import cv2
 import numpy
+
 from D2Shared.shared.consts.adaptative.consts import (
     INVENTORY_CELL_HEIGHT,
     INVENTORY_CELL_OFFSET,
@@ -11,7 +14,6 @@ from D2Shared.shared.consts.adaptative.regions import LEFT_INVENTORY_REGION
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.schemas.item import ItemSchema
 from D2Shared.shared.schemas.region import RegionSchema
-
 from src.consts import ASSET_FOLDER_PATH
 from src.image_manager.analysis import get_position_template_in_image
 from src.image_manager.masks import get_not_brown_masked
@@ -26,8 +28,9 @@ STORAGE_COUNT_CELL_Y = 10
 
 
 class IconSearcher:
-    def __init__(self, service: ServiceSession) -> None:
+    def __init__(self, logger: Logger, service: ServiceSession) -> None:
         self.service = service
+        self.logger = logger
 
     def get_icon_item_img(self, item: ItemSchema) -> numpy.ndarray | None:
         img_icon = ItemService.get_icon_img(self.service, item.id)
@@ -51,6 +54,7 @@ class IconSearcher:
         img: numpy.ndarray,
         area: RegionSchema = LEFT_INVENTORY_REGION,
     ) -> Position | None:
+        self.logger.debug(f"Searching for icon item {item}")
         icon_img = self.get_icon_item_img(item)
         if icon_img is None:
             return None

@@ -55,6 +55,7 @@ class ConnectionSystem:
 
     def connect_character(self, img: numpy.ndarray) -> tuple[numpy.ndarray, bool]:
         """return false if not connected"""
+        self.logger.info("Connecting character")
         if (
             self.object_searcher.get_position(img, ObjectConfigs.Fight.grave)
             is not None
@@ -87,7 +88,7 @@ class ConnectionSystem:
             img, ObjectConfigs.Connection.play
         )
         if pos_play_info is not None:
-            self.logger.info("A trouvé le button jouer.")
+            self.logger.info("A trouvé le bouton jouer.")
             self.controller.click(pos_play_info[0])
             in_game_info = self.image_manager.wait_on_screen(ObjectConfigs.in_game)
             if in_game_info is not None:

@@ -1,11 +1,13 @@
 import math
 import os
+from logging import Logger
 from typing import Iterator, Literal, Sequence, overload
 
-from cachetools import cached
-from cachetools.keys import hashkey
 import cv2
 import numpy
+from cachetools import cached
+from cachetools.keys import hashkey
+
 from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.schemas.region import RegionSchema
@@ -13,7 +15,6 @@ from D2Shared.shared.schemas.template_found import (
     InfoTemplateFoundPlacementSchema,
     TemplateFoundPlacementSchema,
 )
-
 from src.consts import ASSET_FOLDER_PATH
 from src.exceptions import UnknowStateException
 from src.image_manager.analysis import (
@@ -72,8 +73,9 @@ def get_region_from_template(template: numpy.ndarray, pos: Position) -> RegionSc
 
 
 class ObjectSearcher:
-    def __init__(self, service: ServiceSession) -> None:
+    def __init__(self, logger: Logger, service: ServiceSession) -> None:
         self.service = service
+        self.logger = logger
 
     def iter_position_from_template_info(
         self,
@@ -103,6 +105,7 @@ class ObjectSearcher:
         map_id: int | None = None,
         use_cache: bool = True,
     ) -> Iterator[tuple[Position, InfoTemplateFoundPlacementSchema]]:
+        self.logger.debug(f"Searching for {config}")
         if (
             config.cache_info is not None
             and (
@@ -117,6 +120,7 @@ class ObjectSearcher:
                 position,
                 template_found_place,
             ) in self.iter_position_from_template_info(img, config, templates_place):
+                self.logger.debug(f"Found from cache {config}")
                 yield position, template_found_place
         else:
             img = get_prepared_img(img, config, use_cache)
@@ -128,6 +132,7 @@ class ObjectSearcher:
                     offset_area=config.lookup_region if use_cache else None,
                 ):
                     region_schema = get_region_from_template(template, position)
+                    self.logger.debug(f"Found {config}")
                     yield (
                         position,
                         InfoTemplateFoundPlacementSchema(

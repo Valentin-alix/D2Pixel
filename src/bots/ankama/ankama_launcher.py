@@ -70,12 +70,13 @@ class AnkamaLauncher:
         self, logger: Logger, service: ServiceSession, user: ReadUserSchema
     ) -> None:
         if not (window_info := get_ankama_window_info(logger)):
-            # launcher not found, launch...
+            logger.info("Launch launcher")
             launch_launcher()
             while True:
                 window_info = get_ankama_window_info(logger)
                 if window_info is not None:
                     break
+                logger.info("Did not found ankama window avec launching...")
                 sleep(1)
 
         self.pause_threads: list[Thread] | None = None
@@ -106,12 +107,13 @@ class AnkamaLauncher:
             logger=self.logger,
         )
         self.user = user
-        object_searcher = ObjectSearcher(self.service)
+        object_searcher = ObjectSearcher(self.logger, self.service)
         self.image_manager = ImageManager(capturer, object_searcher)
 
     def launch_games(self):
         """launch games by clicking play on ankama launcher & wait 12 seconds"""
         if not is_window_visible(self.window_info.hwnd):
+            self.logger.info("Launch launcher for visible window")
             launch_launcher()  # to have window visible
 
         self.controller.click(EMPTY_POSITION)  # to defocus play button
@@ -123,8 +125,6 @@ class AnkamaLauncher:
         if config == ObjectConfigs.Ankama.play:
             self.controller.click(pos)
             sleep(15)
-        else:
-            self.logger.info("Did not found play button")
 
     def connect_all(self) -> list[WindowInfo]:
         self.launch_games()
@@ -147,7 +147,7 @@ class AnkamaLauncher:
             logger=self.logger,
         )
         animation_manager = AnimationManager(capturer=capturer)
-        object_searcher = ObjectSearcher(self.service)
+        object_searcher = ObjectSearcher(self.logger, self.service)
         image_manager = ImageManager(capturer, object_searcher)
         grid = Grid(object_searcher)
         character_id = window_info.name.split(" - Dofus")[0]
