@@ -89,14 +89,16 @@ class Bot:
         self.logger = BotLogger(character_id, self.bot_signals)
         self.character_state = CharacterState(self.service, character_id)
 
+        self.is_init_bot: bool = False
         self.window_info: WindowInfo | None = None
 
     def init_bot(self, window_info: WindowInfo):
         self.window_info = window_info
 
-        if self.organizer is not None:
+        if self.is_init_bot:
             self.logger.info("already initialized bot")
             return
+        self.is_init_bot = True
         self.organizer = Organizer(
             window_info=window_info,
             is_paused=self.is_paused,
