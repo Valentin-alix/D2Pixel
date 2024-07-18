@@ -94,6 +94,9 @@ class Bot:
     def init_bot(self, window_info: WindowInfo):
         self.window_info = window_info
 
+        if self.organizer is not None:
+            self.logger.info("already initialized bot")
+            return
         self.organizer = Organizer(
             window_info=window_info,
             is_paused=self.is_paused,

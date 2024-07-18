@@ -61,6 +61,7 @@ class ConnectionSystem:
         ):
             img = self.fight_system.on_dead_character(img)
         else:
+            self.logger.info("Clean interface")
             img = self.hud_system.clean_interface(img)
 
         if self.object_searcher.get_position(img, ObjectConfigs.in_game) is not None:
