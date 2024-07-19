@@ -1,3 +1,4 @@
+import os
 from logging import Logger
 
 from PyQt5.QtCore import Qt, pyqtSlot
@@ -35,13 +36,23 @@ class SideBarMenuItem(QWidget):
         self.bot.bot_signals.connected_bot.connect(self.on_connected_bot)
         self.bot.bot_signals.disconnected_bot.connect(self.on_disconnected_bot)
 
+    def alight_button(self):
+        self.btn_char.setStyleSheet(
+            f"border-right-color: {os.environ.get("QTMATERIAL_PRIMARYCOLOR")};"
+        )
+
+    def turn_off_button(self):
+        self.btn_char.setStyleSheet(
+            f"border-right-color: {os.environ.get("QTMATERIAL_SECONDARYLIGHTCOLOR")};"
+        )
+
     @pyqtSlot()
     def on_connected_bot(self):
-        self.btn_char.setStyleSheet("border-right-color: green;")
+        self.alight_button()
 
     @pyqtSlot()
     def on_disconnected_bot(self):
-        self.btn_char.setStyleSheet("border-right-color: red;")
+        self.turn_off_button()
 
     def _setup_btns(self):
         self.btn_char = ToolButtonIcon(
@@ -50,7 +61,6 @@ class SideBarMenuItem(QWidget):
         self.btn_char.setAutoRaise(True)
         self.btn_char.setLayoutDirection(Qt.LeftToRight)
         self.btn_char.setText(self.bot.character_id)
-        self.btn_char.setStyleSheet("border-right-color: green;")
         self.layout().addWidget(self.btn_char)
 
         self.bot_settings_btn = PushButtonIcon(

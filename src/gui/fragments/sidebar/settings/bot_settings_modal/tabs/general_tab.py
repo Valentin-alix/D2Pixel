@@ -103,13 +103,13 @@ class GeneralTab(QWidget):
 
             for job_info in job_infos[index : index + GROUP_COUNT]:
                 job_widget = QGroupBox()
-                job_widget.setStyleSheet(""" padding: 0px; """)
+                job_widget.setProperty("class", "p-0")
                 group_form_layout.addWidget(job_widget)
                 v_layout = VerticalLayout(space=0, margins=(0, 0, 0, 0))
                 job_widget.setLayout(v_layout)
 
                 job_label = QLabel()
-                job_label.setStyleSheet(""" font-size: 16px; """)
+                job_label.setProperty("class", "fs-16")
                 job_label.setText(job_info.job.name)
                 v_layout.addWidget(job_label)
 

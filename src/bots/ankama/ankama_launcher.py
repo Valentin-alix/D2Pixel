@@ -65,20 +65,21 @@ def launch_launcher():
     )
 
 
-def relink_windows_dofus_hwnd(bot: Bot, dofus_windows_info: list[WindowInfo]):
-    if bot.window_info is None:
-        return
+def relink_windows_dofus_hwnd(
+    previous_window_info: WindowInfo, dofus_windows_info: list[WindowInfo]
+) -> bool:
     related_window = next(
         (
             window
             for window in dofus_windows_info
-            if window.name == bot.window_info.name
+            if window.name == previous_window_info.name
         ),
         None,
     )
     if related_window is None:
-        return
-    bot.window_info.hwnd = related_window.hwnd
+        return False
+    previous_window_info.hwnd = related_window.hwnd
+    return True
 
 
 class AnkamaLauncher:
@@ -337,7 +338,7 @@ class AnkamaLauncher:
                 if bot.window_info is None or not bot.is_playing.is_set():
                     continue
                 bot.logger.info("Bot sortit de pause.")
-                relink_windows_dofus_hwnd(bot, dofus_windows_info)
+                relink_windows_dofus_hwnd(bot.window_info, dofus_windows_info)
                 bot.internal_pause.clear()
 
         for range_hour_playtime in self.user.config_user.ranges_hour_playtime:

@@ -25,7 +25,5 @@ class Loading(WaitingSpinner):
 class SplashScreen(QSplashScreen):
     def __init__(self):
         super(QSplashScreen, self).__init__()
-        pixmap = QPixmap(
-            os.path.join(ASSET_FOLDER_PATH, "icons", "logo_evoker_bot.png")
-        )
+        pixmap = QPixmap(os.path.join(ASSET_FOLDER_PATH, "icons", "logo_safe_bot.png"))
         self.setPixmap(pixmap)

@@ -24,8 +24,10 @@ class Application(QApplication):
         super().__init__(argv)
         self.setAttribute(Qt.ApplicationAttribute.AA_DisableWindowContextHelpButton)
         self.setApplicationName(self.TITLE)
+
         apply_stylesheet(
             self,
-            theme="dark_pink.xml",
+            theme="dark_yellow.xml",
             css_file=os.path.join(RESOURCE_FOLDER_PATH, "styles.qss"),
+            invert_secondary=False,
         )

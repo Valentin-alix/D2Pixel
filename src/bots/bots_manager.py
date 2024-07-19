@@ -56,7 +56,8 @@ class BotsManager:
                     self.harvest_sub_area_farming_ids,
                     self.harvest_map_time,
                 )
-            relink_windows_dofus_hwnd(bot, dofus_windows)
+            if bot.window_info is not None:
+                relink_windows_dofus_hwnd(bot.window_info, dofus_windows)
             bot.init_bot(window)
             bot.is_connected.set()
             self.bots[character_id] = bot

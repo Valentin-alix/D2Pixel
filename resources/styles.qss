@@ -13,11 +13,6 @@ QTimeEdit {{
   color: {QTMATERIAL_PRIMARYCOLOR};
 }}
 
-
-.border-right-slim {{
-  border-right: 1px solid {QTMATERIAL_SECONDARYLIGHTCOLOR};
-}}
-
 QListWidget::item {{
   padding:0px;
   margin:0px;
@@ -49,26 +44,18 @@ QGroupBox {{
   qproperty-alignment: AlignCenter;
 }}
 
-QPushButton.no-border {{
+.no-border {{
   border: 0px;
 }}
 
-.bordered {{ 
-  border:1px solid {QTMATERIAL_SECONDARYLIGHTCOLOR};
+.border-right-slim {{
+  border-right: 1px solid {QTMATERIAL_SECONDARYLIGHTCOLOR};
 }}
 
-.empty {{ 
-  background-color: none;
+.p-0 {{
+  padding: 0px;
 }}
 
-.grey {{ 
-  background-color: {QTMATERIAL_SECONDARYLIGHTCOLOR};
-}}
-
-.green {{
-  background-color: green;
-}}
-
-.red {{
-  background-color: {QTMATERIAL_PRIMARYCOLOR};
+.fs-16 {{
+  font-size: 16px;
 }}

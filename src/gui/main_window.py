@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
         self.sub_header_by_character: dict[CharacterSchema, SubHeader] = {}
 
         icon_bot = QtGui.QIcon(
-            os.path.join(ASSET_FOLDER_PATH, "icons", "logo_evoker_bot.png")
+            os.path.join(ASSET_FOLDER_PATH, "icons", "logo_safe_bot.png")
         )
         self.setWindowIcon(icon_bot)
         self.app_signals = app_signals
