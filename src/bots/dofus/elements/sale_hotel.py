@@ -1,10 +1,11 @@
-from logging import Logger
 import traceback
+from logging import Logger
 from time import sleep
 
 import numpy
 import tesserocr
 import win32con
+
 from D2Shared.shared.consts.adaptative.positions import (
     HOTEL_OPEN_QUANTITY_PANEL_POSITION,
     HOTEL_PRICE_INPUT_POSITION,
@@ -23,12 +24,11 @@ from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.enums import CategoryEnum
 from D2Shared.shared.schemas.item import ItemSchema
 from D2Shared.shared.schemas.region import RegionSchema
-from src.common.randomizer import wait
-
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.entities_map.sale_hotel import (
     get_sales_hotels_by_category,
 )
+from src.common.randomizer import wait
 from src.exceptions import UnknowStateException
 from src.image_manager.ocr import (
     BASE_CONFIG,
@@ -261,11 +261,17 @@ class SaleHotelSystem:
         """
         self.controller.click(SALE_HOTEL_ALL_CATEGORY_POSITION)
 
-        img = self.capturer.capture()
-        count_remaining_slot: int = self.sale_hotel.sale_hotel_get_count_remaining_slot(
-            img
-        )
-        self.logger.info(f"Remaining Slots : {count_remaining_slot}")
+        while True:
+            img = self.capturer.capture()
+            try:
+                count_remaining_slot: int = (
+                    self.sale_hotel.sale_hotel_get_count_remaining_slot(img)
+                )
+            except ValueError:
+                sleep(1)
+                continue
+            self.logger.info(f"Remaining Slots : {count_remaining_slot}")
+            break
 
         if (
             self.object_searcher.get_position(img, ObjectConfigs.Check.medium_inventory)
@@ -352,4 +358,3 @@ class SaleHotelSystem:
             ObjectConfigs.SaleHotel.sale_category, force=True
         )[0]
         self.controller.click(pos)
-        wait((3.5, 4))

@@ -12,8 +12,5 @@ if __name__ == "__main__":
     service = ServiceSession(app_logger, app_signals)
 
     app = Application(sys.argv)
-    # splash = SplashScreen()
-    # splash.show()
     main_window = MainWindow(app.TITLE, app_logger, service, app_signals)
-    # splash.finish(main_window)
     sys.exit(app.exec_())

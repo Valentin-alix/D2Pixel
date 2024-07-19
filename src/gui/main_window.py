@@ -94,6 +94,8 @@ class MainWindow(QMainWindow):
         self._setup_bots()
 
     def _setup_bots(self):
+        self.app_signals.is_connecting.emit(True)
+
         if self.thread_connect_bots is not None:
             self.thread_connect_bots.quit()
             self.thread_connect_bots.wait()
@@ -176,6 +178,8 @@ class MainWindow(QMainWindow):
             if not related_menu_item:
                 continue
             related_menu_item.bot.bot_signals.disconnected_bot.emit()
+
+        self.app_signals.is_connecting.emit(False)
 
     def closeEvent(self, _: QCloseEvent):
         self.app_signals.on_close.emit()

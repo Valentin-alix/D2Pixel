@@ -2,7 +2,7 @@ from collections import defaultdict
 from logging import Logger
 
 from D2Shared.shared.schemas.user import ReadUserSchema
-from src.bots.ankama.ankama_launcher import AnkamaLauncher, relink_windows_dofus_hwnd
+from src.bots.ankama.ankama_launcher import AnkamaLauncher
 from src.bots.dofus.chat.sentence import FakeSentence
 from src.bots.modules.bot import Bot
 from src.gui.signals.app_signals import AppSignals
@@ -25,7 +25,7 @@ class BotsManager:
         self.fake_sentence = FakeSentence()
         self.logger = logger
         self.user = user
-        self.ankama_launcher: None | AnkamaLauncher = None
+        self.ankama_launcher: AnkamaLauncher = AnkamaLauncher(logger, service, user)
         self.bots: dict[str, Bot] = {}
         self.fighter_map_time: dict[int, float] = defaultdict(lambda: 0)
         self.fighter_sub_area_farming_ids: list[int] = []
@@ -34,13 +34,9 @@ class BotsManager:
         self.harvest_sub_area_farming_ids: list[int] = []
 
     def connect_all(self):
-        self.app_signals.is_connecting.emit(True)
-        if self.ankama_launcher is None:
-            self.ankama_launcher = AnkamaLauncher(self.logger, self.service, self.user)
-            self.ankama_launcher.run_playtime_planner(self.bots)
-        dofus_windows = self.ankama_launcher.connect_all()
+        self.ankama_launcher.run_playtime_planner(self.bots)
+        dofus_windows = self.ankama_launcher.connect_all_dofus_account()
         self._setup_bots(dofus_windows)
-        self.app_signals.is_connecting.emit(False)
 
     def _setup_bots(self, dofus_windows: list[WindowInfo]):
         for window in dofus_windows:
@@ -57,7 +53,9 @@ class BotsManager:
                     self.harvest_map_time,
                 )
             if bot.window_info is not None:
-                relink_windows_dofus_hwnd(bot.window_info, dofus_windows)
+                self.ankama_launcher.relink_windows_dofus_hwnd(
+                    bot.window_info, dofus_windows
+                )
             bot.init_bot(window)
             bot.is_connected.set()
             self.bots[character_id] = bot
