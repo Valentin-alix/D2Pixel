@@ -15,10 +15,13 @@ from D2Shared.shared.consts.adaptative.positions import (
 from D2Shared.shared.consts.adaptative.regions import (
     RIGHT_INVENTORY_SALE_HOTEL,
     SALE_HOTEL_AVAILABLE_SLOT_REGION,
-    SALE_HOTEL_HUNDRED_PRICE_REGION,
-    SALE_HOTEL_ONE_PRICE_REGION,
+    SALE_HOTEL_FIRST_PRICE_REGION,
+    SALE_HOTEL_FIRST_QUANTITY_REGION,
     SALE_HOTEL_QUANTITY_REGION,
-    SALE_HOTEL_TEN_PRICE_REGION,
+    SALE_HOTEL_SECOND_PRICE_REGION,
+    SALE_HOTEL_SECOND_QUANTITY_REGION,
+    SALE_HOTEL_THIRD_PRICE_REGION,
+    SALE_HOTEL_THIRD_QUANTITY_REGION,
 )
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.enums import CategoryEnum
@@ -67,26 +70,34 @@ class SaleHotel:
             except ValueError:
                 return None
 
-    def sale_hotel_get_area_price_by_quantity(self, quantity: int) -> RegionSchema:
+    def sale_hotel_get_area_price_by_quantity(
+        self, img: numpy.ndarray, quantity: int
+    ) -> RegionSchema | None:
         """get area of price based on quantity (1, 10, 100)
 
         Args:
             quantity (int)
 
-        Raises:
-            ValueError: not coherent quantity found
 
         Returns:
             Area: the area of price wanted
         """
-        match quantity:
-            case 1:
-                return SALE_HOTEL_ONE_PRICE_REGION
-            case 10:
-                return SALE_HOTEL_TEN_PRICE_REGION
-            case 100:
-                return SALE_HOTEL_HUNDRED_PRICE_REGION
-        raise ValueError(f"Invalid quantity value : {quantity}")
+        with tesserocr.PyTessBaseAPI(**BASE_CONFIG) as tes_api:
+            tes_api.SetPageSegMode(tesserocr.PSM.SINGLE_LINE)
+            tes_api.SetVariable("tessedit_char_whitelist", "10")
+            for quantity_region, price_region in [
+                (SALE_HOTEL_FIRST_QUANTITY_REGION, SALE_HOTEL_FIRST_PRICE_REGION),
+                (SALE_HOTEL_SECOND_QUANTITY_REGION, SALE_HOTEL_SECOND_PRICE_REGION),
+                (SALE_HOTEL_THIRD_QUANTITY_REGION, SALE_HOTEL_THIRD_PRICE_REGION),
+            ]:
+                croped_img = crop_image(img, quantity_region)
+                try:
+                    quantity_found = int(get_text_from_image(croped_img, tes_api))
+                except ValueError:
+                    continue
+                if quantity_found == quantity:
+                    return price_region
+        return None
 
     def sale_hotel_get_price_by_area_item(
         self, img: numpy.ndarray, area_price: RegionSchema
@@ -123,7 +134,9 @@ class SaleHotel:
         sum_prices: float = 0
         quantity_found: int = 0
         for quantity in [1, 10, 100]:
-            area_price = self.sale_hotel_get_area_price_by_quantity(quantity)
+            area_price = self.sale_hotel_get_area_price_by_quantity(img, quantity)
+            if area_price is None:
+                continue
             price = self.sale_hotel_get_price_by_area_item(img, area_price)
             if price is None:
                 continue
@@ -152,10 +165,12 @@ class SaleHotel:
             self.logger.info("No quantity found.")
             return None
 
-        area_price = self.sale_hotel_get_area_price_by_quantity(quantity)
+        area_price = self.sale_hotel_get_area_price_by_quantity(img, quantity)
         if (
-            price := self.sale_hotel_get_price_by_area_item(img, area_price)
-        ) is not None:
+            area_price is not None
+            and (price := self.sale_hotel_get_price_by_area_item(img, area_price))
+            is not None
+        ):
             self.logger.info(f"Found price {price} for quantity {quantity}")
             return price, quantity
 
@@ -170,7 +185,9 @@ class SaleHotel:
         prices = []
         # calculate price based on other quantities
         for other_quantity in other_quantities:
-            area_price = self.sale_hotel_get_area_price_by_quantity(other_quantity)
+            area_price = self.sale_hotel_get_area_price_by_quantity(img, other_quantity)
+            if area_price is None:
+                continue
             price = self.sale_hotel_get_price_by_area_item(img, area_price)
             if price is not None:
                 prices.append(int(price * quantity / other_quantity))

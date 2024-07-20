@@ -29,7 +29,6 @@ class ItemService:
         with service.logged_session() as session:
             resp = session.get(f"{ITEM_URL}{item_id}/image/")
             img = resp.content
-            print(img)
             if not img:
                 return None
             np_arr = numpy.fromstring(img, numpy.uint8)  # type: ignore

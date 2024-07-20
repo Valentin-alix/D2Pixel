@@ -89,10 +89,10 @@ class SideBarMenu(QWidget):
         side_bar_menu_item = SideBarMenuItem(
             self.logger, self.service, bot=bot, parent=self
         )
+        self.menu_item_by_char[bot.character_state.character] = side_bar_menu_item
         side_bar_menu_item.btn_char.clicked.connect(
             lambda: self.on_clicked_character(bot.character_state.character)
         )
-        self.menu_item_by_char[bot.character_state.character] = side_bar_menu_item
         self.list_character_widget.layout().addWidget(side_bar_menu_item)
         if self.selected_menu_item is None:
             self.selected_menu_item = side_bar_menu_item

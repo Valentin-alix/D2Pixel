@@ -39,8 +39,11 @@ class BotsManager:
         self._setup_bots(dofus_windows)
 
     def _setup_bots(self, dofus_windows: list[WindowInfo]):
+        untreated_ids: list[str] = list(self.bots.keys())
         for window in dofus_windows:
             character_id = window.name.split(" - Dofus")[0]
+            if character_id in untreated_ids:
+                untreated_ids.remove(character_id)
             if (bot := self.bots.get(character_id)) is None:
                 bot = Bot(
                     character_id,
@@ -59,3 +62,6 @@ class BotsManager:
                 )
             bot.is_connected.set()
             self.bots[character_id] = bot
+
+        for _id in untreated_ids:
+            del self.bots[_id]
