@@ -412,6 +412,7 @@ class Bot:
             self.logger.info("Bot terminated.")
             self.is_playing.clear()
             self.humanizer.stop_timers()
+            self.bot_signals.terminated_bot.emit()
             self.bot_signals.is_stopping_bot.emit(False)
 
     def run_craft(self, recipes: list[RecipeSchema]):

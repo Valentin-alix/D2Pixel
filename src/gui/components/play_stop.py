@@ -21,6 +21,7 @@ class PlayStopWidget(QWidget):
         self.setLayout(VerticalLayout())
         self.signals = PlayStopSignals()
         self._setup_btns()
+        bot_signals.terminated_bot.connect(self.on_click_stop)
         bot_signals.is_stopping_bot.connect(self.on_new_is_stopping_bot)
         app_signals.is_connecting.connect(self.on_connecting)
 
@@ -63,16 +64,22 @@ class PlayStopWidget(QWidget):
             self.button_play.setDisabled(False)
             self.button_stop.setDisabled(False)
 
-    @pyqtSlot()
-    def on_play(self):
+    def on_click_play(self):
         self.button_play.hide()
         self.button_stop.show()
+
+    def on_click_stop(self):
+        self.button_stop.hide()
+        self.button_play.show()
+
+    @pyqtSlot()
+    def on_play(self):
+        self.on_click_play()
         self.signals.played.emit()
 
     @pyqtSlot()
     def on_stop(self):
-        self.button_stop.hide()
-        self.button_play.show()
+        self.on_click_stop()
         self.signals.stopped.emit()
 
     @pyqtSlot(bool)

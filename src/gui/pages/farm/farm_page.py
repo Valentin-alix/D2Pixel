@@ -69,8 +69,7 @@ class FarmPage(QWidget):
     def on_play(self, bot: Bot):
         name_modules = self.combo_modules.currentData()
         if len(name_modules) == 0:
-            self.play_stop_widget.button_play.show()
-            self.play_stop_widget.button_stop.hide()
+            self.play_stop_widget.on_click_stop()
             self.logger.warning("Veuillez sélectionner au moins une action.")
             return
 

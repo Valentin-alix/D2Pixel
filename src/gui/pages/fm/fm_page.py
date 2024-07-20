@@ -121,8 +121,7 @@ class FmPage(QWidget):
     @pyqtSlot(object)
     def _on_play(self, bot: Bot):
         if self.fm_item.isHidden():
-            self.play_stop_widget.button_play.show()
-            self.play_stop_widget.button_stop.hide()
+            self.play_stop_widget.on_click_stop()
             self.logger.warning("Veuillez sélectionner un item.")
             return
 

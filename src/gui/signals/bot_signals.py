@@ -5,4 +5,4 @@ class BotSignals(QObject):
     playing_action = pyqtSignal(str)
     is_stopping_bot = pyqtSignal(bool)
     log_info = pyqtSignal(object)
-    disconnected_bot = pyqtSignal()
+    terminated_bot = pyqtSignal()
