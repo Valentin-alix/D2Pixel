@@ -1,13 +1,15 @@
 import logging
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGroupBox, QListWidget, QListWidgetItem
+from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtWidgets import QListWidget, QListWidgetItem
 
+from src.bots.modules.bot import Bot
+from src.gui.components.dialog import Dialog
 from src.gui.components.organization import VerticalLayout
 
 
-class LogBox(QGroupBox):
+class BotLogDialog(Dialog):
     class LogsDelegate(QtWidgets.QStyledItemDelegate):
         def paint(self, painter, option, index):
             log_msg = index.data(QtCore.Qt.DisplayRole)
@@ -33,19 +35,25 @@ class LogBox(QGroupBox):
             painter.drawText(option.rect, QtCore.Qt.AlignLeft, log_msg)
             painter.restore()
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(title="Logs", *args, **kwargs)
+    def __init__(self, bot: Bot, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.bot = bot
+        self.setWindowTitle(f"Logs de {bot.character_id}")
+        self.resize(800, 300)
         self.log_box_layout = VerticalLayout()
         self.log_box_layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.log_box_layout)
 
         self.list_logs = QListWidget()
-        self.log_delegate = LogBox.LogsDelegate()
+        self.log_delegate = BotLogDialog.LogsDelegate()
         self.list_logs.setItemDelegate(self.log_delegate)
 
         self.log_box_layout.addWidget(self.list_logs)
 
-    def add_log_msg(self, msg_with_type: tuple[int, str]):
+        self.bot.bot_signals.log_info.connect(self.on_log_info)
+
+    @pyqtSlot(object)
+    def on_log_info(self, msg_with_type: tuple[int, str]):
         scrollbar = self.list_logs.verticalScrollBar()
 
         if self.list_logs.count() > 500:

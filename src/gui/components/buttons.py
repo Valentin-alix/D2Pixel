@@ -11,7 +11,7 @@ from src.consts import ASSET_FOLDER_PATH
 class AbstractButton(
     QAbstractButton,
 ):
-    def __init__(self, checkable: bool = True, *args, **kwargs) -> None:
+    def __init__(self, checkable: bool = False, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.setCheckable(checkable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))

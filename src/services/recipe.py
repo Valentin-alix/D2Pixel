@@ -11,14 +11,16 @@ RECIPE_URL = BACKEND_URL + "/recipe/"
 
 class RecipeService:
     @staticmethod
-    def get_default_recipes(
+    def get_valid_ordered(
         service: ServiceSession,
+        recipe_ids: list[int],
         character_id: str,
     ) -> list[RecipeSchema]:
         with service.logged_session() as session:
             resp = session.get(
-                f"{RECIPE_URL}craft_default",
+                f"{RECIPE_URL}valid_ordered/",
                 params={"character_id": character_id},
+                json=recipe_ids,
             )
             return [RecipeSchema(**elem) for elem in resp.json()]
 

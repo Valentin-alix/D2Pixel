@@ -11,4 +11,4 @@ class WorkerFarm(QObject):
 
     @pyqtSlot()
     def run(self):
-        self.bot.run_bot(self.name_modules)
+        self.bot.run_farming(self.name_modules)

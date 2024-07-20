@@ -1,6 +1,7 @@
 from logging import Logger
 
-from src.bots.modules.hdv.craft import Crafter
+from D2Shared.shared.schemas.recipe import RecipeSchema
+from src.bots.modules.hdv.craft.craft import Crafter
 from src.bots.modules.hdv.sell import Seller
 from src.services.item import ItemService
 from src.services.recipe import RecipeService
@@ -24,19 +25,19 @@ class Hdv:
         self.crafter = crafter
         self.seller = seller
 
-    def run(self):
+    def run(self, recipes: list[RecipeSchema] | None = None):
         character = self.character_state.character
         if character.lvl < 10:
             return
 
-        if len(character.recipes) == 0:
-            recipes = RecipeService.get_default_recipes(
-                self.service, self.character_state.character.id
+        if recipes is None:
+            recipes = RecipeService.get_valid_ordered(
+                self.service,
+                [elem.id for elem in character.recipes],
+                self.character_state.character.id,
             )
-        else:
-            recipes = character.recipes
 
-        if self.character_state.character.is_sub and recipes:
+        if self.character_state.character.is_sub and len(recipes) > 0:
             self.logger.info(f"Gonna craft : {recipes}")
             self.crafter.run_crafter(recipes)
 

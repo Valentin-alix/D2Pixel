@@ -128,7 +128,6 @@ class UserSettingsModal(Dialog):
         self.range_playtime_edits: list[tuple[QTimeEdit, QTimeEdit]] = []
 
         button_add = PushButtonIcon("add.svg", parent=self)
-        button_add.setCheckable(False)
         self.play_time_widget_layout.addWidget(button_add)
         button_add.clicked.connect(lambda: self.add_range_playtime(time(), time()))
 
@@ -167,7 +166,6 @@ class UserSettingsModal(Dialog):
         self.range_playtime_edits.append((time_start_edit, time_end_edit))
 
         button_delete = PushButtonIcon("close.svg", parent=self)
-        button_delete.setCheckable(False)
         range_playtime_widget_layout.addWidget(button_delete)
         button_delete.clicked.connect(
             partial(

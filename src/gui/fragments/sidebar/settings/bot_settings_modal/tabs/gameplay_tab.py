@@ -47,7 +47,6 @@ class GameplayTab(QWidget):
 
     def init_spell_configs(self) -> None:
         add_spell_btn = PushButtonIcon("add.svg")
-        add_spell_btn.setCheckable(False)
         add_spell_btn.clicked.connect(lambda: self.add_spell())
         self.layout().addWidget(add_spell_btn)
 
@@ -163,7 +162,6 @@ class GameplayTab(QWidget):
             level_edit.setText(str(1))
 
         delete_btn = PushButtonIcon("delete.svg")
-        delete_btn.setCheckable(False)
         self.spells_table.table.setCellWidget(index, 14, delete_btn)
         delete_btn.clicked.connect(partial(self.on_delete_spell, index))
 

@@ -1,4 +1,3 @@
-import os
 from logging import Logger
 
 from PyQt5.QtCore import Qt, pyqtSlot
@@ -10,6 +9,7 @@ from src.gui.components.buttons import (
     ToolButtonIcon,
 )
 from src.gui.components.organization import HorizontalLayout
+from src.gui.fragments.sidebar.bot_log_dialog import BotLogDialog
 from src.gui.fragments.sidebar.settings.bot_settings_modal.bot_settings_modal import (
     BotSettingsModal,
 )
@@ -31,28 +31,8 @@ class SideBarMenuItem(QWidget):
         self.bot = bot
         self.setLayout(HorizontalLayout(space=0, margins=(0, 0, 0, 0)))
 
+        self.bot_log_dialog = BotLogDialog(self.bot)
         self._setup_btns()
-
-        self.bot.bot_signals.connected_bot.connect(self.on_connected_bot)
-        self.bot.bot_signals.disconnected_bot.connect(self.on_disconnected_bot)
-
-    def alight_button(self):
-        self.btn_char.setStyleSheet(
-            f"border-right-color: {os.environ.get("QTMATERIAL_PRIMARYCOLOR")};"
-        )
-
-    def turn_off_button(self):
-        self.btn_char.setStyleSheet(
-            f"border-right-color: {os.environ.get("QTMATERIAL_SECONDARYLIGHTCOLOR")};"
-        )
-
-    @pyqtSlot()
-    def on_connected_bot(self):
-        self.alight_button()
-
-    @pyqtSlot()
-    def on_disconnected_bot(self):
-        self.turn_off_button()
 
     def _setup_btns(self):
         self.btn_char = ToolButtonIcon(
@@ -63,20 +43,25 @@ class SideBarMenuItem(QWidget):
         self.btn_char.setText(self.bot.character_id)
         self.layout().addWidget(self.btn_char)
 
+        self.logs_btn = PushButtonIcon(
+            "logs.svg", flat=True, width=40, height=80, parent=self
+        )
+        self.logs_btn.clicked.connect(self.on_clicked_logs)
+        self.layout().addWidget(self.logs_btn)
+
         self.bot_settings_btn = PushButtonIcon(
-            checkable=False, flat=True, filename="settings.svg", width=40, height=80
+            flat=True, filename="settings.svg", width=40, height=80
         )
         self.bot_settings_btn.clicked.connect(self.on_click_settings)
         self.layout().addWidget(self.bot_settings_btn)
 
-        self.bot_delete_btn = PushButtonIcon(
-            checkable=False, flat=True, filename="delete.svg", width=40, height=80
-        )
-        self.layout().addWidget(self.bot_delete_btn)
-
     @pyqtSlot()
     def on_click_settings(self):
-        modal = BotSettingsModal(
+        self.bot_settings_dialog = BotSettingsModal(
             self.logger, self.service, self.bot.character_state.character
         )
-        modal.open()
+        self.bot_settings_dialog.open()
+
+    @pyqtSlot()
+    def on_clicked_logs(self):
+        self.bot_log_dialog.open()

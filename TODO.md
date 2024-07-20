@@ -1,5 +1,4 @@
-Faire en sorte de dissocier l'interface de connexion du character, pour pouvoir ajouter modifier un item hdv sans devoir le connecter, il faut fond relier une liste de character à un user, lors de la connexion ca ajoute character à user, on peux également
-delete un character de la liste pour pas polluer.
+Enlever bouton de delete, au moment de refresh, delete des character si ya pus
 
 lorsuq'on connecte un character, ca passe le status de rouge à vert
 

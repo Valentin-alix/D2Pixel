@@ -267,7 +267,7 @@ class SaleHotelSystem:
                 count_remaining_slot: int = (
                     self.sale_hotel.sale_hotel_get_count_remaining_slot(img)
                 )
-            except ValueError:
+            except UnknowStateException:
                 sleep(1)
                 continue
             self.logger.info(f"Remaining Slots : {count_remaining_slot}")

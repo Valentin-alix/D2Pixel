@@ -76,7 +76,6 @@ class MainWindow(QMainWindow):
             self.logger, self.service, self.app_signals, self.user
         )
         self.sidebar.signals.clicked_restart.connect(self._setup_bots)
-        self.sidebar.signals.deleted_bot.connect(self.remove_bot)
         self.sidebar.signals.clicked_bot.connect(self.on_clicked_sidebar_char)
         self.main_content.layout().addWidget(self.sidebar)
 
@@ -113,15 +112,18 @@ class MainWindow(QMainWindow):
         related_menu_item = self.sub_header_by_character.get(character)
         if not related_menu_item:
             related_menu_item = SubHeader(
-                self.service, bot, self.logger, parent=self.stacked_frames
+                self.service,
+                self.app_signals,
+                bot,
+                self.logger,
+                parent=self.stacked_frames,
             )
             self.sub_header_by_character[character] = related_menu_item
             self.stacked_frames.addWidget(related_menu_item)
         if len(self.sub_header_by_character) == 1:
             self.stacked_frames.setCurrentWidget(related_menu_item)
 
-    def remove_bot(self, bot: Bot) -> None:
-        character = bot.character_state.character
+    def remove_character(self, character: CharacterSchema) -> None:
         related_menu_item = self.sub_header_by_character.pop(character, None)
         if related_menu_item is None:
             return
@@ -166,18 +168,14 @@ class MainWindow(QMainWindow):
             self.sub_header_by_character.keys()
         )
         for bot in bots_by_id.values():
-            character = bot.character_state.character
             self.add_bot(bot)
-            bot.bot_signals.connected_bot.emit()
 
+            character = bot.character_state.character
             if character in untreated_character:
                 untreated_character.remove(character)
 
         for character in untreated_character:
-            related_menu_item = self.sub_header_by_character.get(character)
-            if not related_menu_item:
-                continue
-            related_menu_item.bot.bot_signals.disconnected_bot.emit()
+            self.remove_character(character)
 
         self.app_signals.is_connecting.emit(False)
 

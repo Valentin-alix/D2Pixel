@@ -115,6 +115,7 @@ class ConnectionSystem:
             raise
         except Exception:
             self.logger.error(traceback.format_exc())
+            sleep(1)
             return self.deblock_character()
         self.hud_system.clean_interface(self.capturer.capture())
         self.logger.info("Bot débloqué.")

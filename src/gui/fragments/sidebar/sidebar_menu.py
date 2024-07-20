@@ -24,11 +24,10 @@ from src.services.session import ServiceSession
 class SideBarMenuSignals(QObject):
     clicked_bot = pyqtSignal(object)
     clicked_restart = pyqtSignal()
-    deleted_bot = pyqtSignal(object)
 
 
 class SideBarMenu(QWidget):
-    WIDTH: int = 235
+    WIDTH: int = 240
 
     def __init__(
         self,
@@ -79,12 +78,10 @@ class SideBarMenu(QWidget):
         self.layout().addWidget(footer)
 
         self.refresh_btn = PushButtonIcon("restart.svg", parent=self)
-        self.refresh_btn.setCheckable(False)
         self.refresh_btn.clicked.connect(self.signals.clicked_restart)
         footer.layout().addWidget(self.refresh_btn)
 
         self.settings_btn = PushButtonIcon("settings.svg", parent=self)
-        self.settings_btn.setCheckable(False)
         self.settings_btn.clicked.connect(self.on_clicked_settings)
         footer.layout().addWidget(self.settings_btn)
 
@@ -94,9 +91,6 @@ class SideBarMenu(QWidget):
         )
         side_bar_menu_item.btn_char.clicked.connect(
             lambda: self.on_clicked_character(bot.character_state.character)
-        )
-        side_bar_menu_item.bot_delete_btn.clicked.connect(
-            lambda: self.on_deleted_bot(bot)
         )
         self.menu_item_by_char[bot.character_state.character] = side_bar_menu_item
         self.list_character_widget.layout().addWidget(side_bar_menu_item)
@@ -118,15 +112,16 @@ class SideBarMenu(QWidget):
             else:
                 self.selected_menu_item = None
 
-    @pyqtSlot(object)
-    def on_deleted_bot(self, bot: Bot) -> None:
-        self.remove_character(bot.character_state.character)
-        self.signals.deleted_bot.emit(bot)
-
     def on_characters_connected(self, bots_by_id: dict[str, Bot]) -> None:
+        untreated_chars: list[CharacterSchema] = list(self.menu_item_by_char.keys())
         for bot in bots_by_id.values():
             if bot.character_state.character not in self.menu_item_by_char.keys():
                 self.add_bot(bot)
+            if bot.character_state.character in untreated_chars:
+                untreated_chars.remove(bot.character_state.character)
+
+        for char in untreated_chars:
+            self.remove_character(char)
 
     @pyqtSlot(bool)
     def on_connection_loading(self, is_loading: bool):

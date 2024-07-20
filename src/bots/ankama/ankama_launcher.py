@@ -93,7 +93,7 @@ class AnkamaLauncher:
                     self.logger.error(traceback.format_exc())
                     continue
                 break
-        return dofus_windows_info
+        return get_dofus_window_infos()
 
     def connect_dofus_account(self, window_info: WindowInfo, wait_play: bool = False):
         character_id = window_info.name.split(" - Dofus")[0]
@@ -336,17 +336,20 @@ class AnkamaLauncher:
                 elem.window_info and elem.is_playing.is_set()
                 for elem in bots_by_id.values()
             ):
-                self.logger.info(
-                    "Aucun bot n'est initialisé ou en train de jouer, skipping resume."
-                )
+                self.logger.info("Aucun bot n'est initialisé ou en train de jouer.")
                 return
             dofus_windows_info = self.connect_all_dofus_account()
             for bot in bots_by_id.values():
                 if bot.window_info is None or not bot.is_playing.is_set():
                     continue
                 bot.logger.info("Bot sortit de pause.")
-                self.relink_windows_dofus_hwnd(bot.window_info, dofus_windows_info)
+                if not self.relink_windows_dofus_hwnd(
+                    bot.window_info, dofus_windows_info
+                ):
+                    bot.logger.info("Did not found related new window, retrying...")
+                    return resume_bots(bots_by_id)
                 bot.internal_pause.clear()
+                bot.is_connected.set()
 
         for range_hour_playtime in self.user.config_user.ranges_hour_playtime:
             schedule.every().day.at(range_hour_playtime.end_time.strftime("%H:%M")).do(

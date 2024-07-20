@@ -6,10 +6,10 @@ from PyQt5.QtWidgets import QComboBox, QWidget
 from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
 from src.bots.modules.bot import Bot
 from src.gui.components.buttons import PushButtonIcon
-from src.gui.components.loaders import Loading
-from src.gui.components.organization import HorizontalLayout, VerticalLayout
-from src.gui.pages.bot_logs import LogBox
+from src.gui.components.organization import VerticalLayout
+from src.gui.components.play_stop import PlayStopWidget
 from src.gui.pages.fm.fm_item.fm_item import FmItem
+from src.gui.signals.app_signals import AppSignals
 from src.gui.workers.worker_fm import WorkerFm
 from src.gui.workers.worker_stop import WorkerStop
 from src.services.equipment import EquipmentService
@@ -20,6 +20,7 @@ class FmPage(QWidget):
     def __init__(
         self,
         service: ServiceSession,
+        app_signals: AppSignals,
         bot: Bot,
         logger: Logger,
         *args,
@@ -29,32 +30,26 @@ class FmPage(QWidget):
         self.thread_run: QThread | None = None
         self.thread_stop: QThread | None = None
         self.service = service
+        self.app_signals = app_signals
         self.bot = bot
         self.logger = logger
 
         self.main_layout = VerticalLayout(margins=(8, 8, 8, 8))
-        self.main_layout.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        self.main_layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.main_layout)
 
-        self._setup_top_page()
         self._setup_action_widget()
+        self._setup_top_page()
         self._setup_content()
 
-        bot.bot_signals.is_stopping_bot.connect(self._on_new_is_stopping_bot)
-        bot.bot_signals.log_info.connect(self.log_box.add_log_msg)
         self.refresh_btn.clicked.connect(lambda: self._on_refresh(bot))
-        self.button_play.clicked.connect(lambda: self._on_play(bot))
-        self.button_stop.clicked.connect(lambda: self._on_stop(bot))
-
-        self.bot.bot_signals.connected_bot.connect(self.on_connected_bot)
-        self.bot.bot_signals.disconnected_bot.connect(self.on_disconnected_bot)
+        self.play_stop_widget.signals.played.connect(lambda: self._on_play(bot))
+        self.play_stop_widget.signals.stopped.connect(lambda: self._on_stop(bot))
 
     def _setup_top_page(self):
         self.refresh_btn = PushButtonIcon(
             "restart.svg", width=80, height=40, icon_size=20, parent=self
         )
-        self.refresh_btn.setCheckable(False)
-        self.refresh_btn.setDisabled(True)
 
         self.layout().addWidget(self.refresh_btn)
 
@@ -67,34 +62,8 @@ class FmPage(QWidget):
         self.layout().addWidget(self.equipment_combo)
 
     def _setup_action_widget(self):
-        self.action_widget = QWidget()
-        self.layout().addWidget(self.action_widget)
-        self.action_widget.setLayout(HorizontalLayout())
-
-        self.loading = Loading(parent=self.action_widget)
-        self.action_widget.setFixedHeight(self.loading.height() + 5)
-
-        self.action_widget.layout().addWidget(self.loading)
-
-        self.action_content = QWidget()
-        self.action_widget.layout().addWidget(self.action_content)
-        self.action_content_layout = HorizontalLayout()
-        self.action_content_layout.setAlignment(Qt.AlignCenter)
-        self.action_content.setLayout(self.action_content_layout)
-
-        self.button_play = PushButtonIcon(
-            "play.svg", width=80, height=40, icon_size=20, parent=self
-        )
-        self.button_play.setDisabled(True)
-        self.button_play.setCheckable(False)
-        self.action_content.layout().addWidget(self.button_play)
-
-        self.button_stop = PushButtonIcon(
-            "stop.svg", width=80, height=40, icon_size=20, parent=self
-        )
-        self.button_stop.hide()
-        self.button_stop.setCheckable(False)
-        self.action_content.layout().addWidget(self.button_stop)
+        self.play_stop_widget = PlayStopWidget(self.app_signals, self.bot.bot_signals)
+        self.layout().addWidget(self.play_stop_widget)
 
     def _setup_content(self) -> None:
         content_widget = QWidget()
@@ -108,19 +77,6 @@ class FmPage(QWidget):
         self.fm_item.signals.created_item.connect(self._on_created_equipment)
         self.fm_item.signals.deleted_item.connect(self._on_deleted_equipment)
         content_widget_layout.insertWidget(0, self.fm_item)
-
-        self.log_box = LogBox()
-        content_widget.layout().addWidget(self.log_box)
-
-    @pyqtSlot()
-    def on_connected_bot(self) -> None:
-        self.refresh_btn.setDisabled(False)
-        self.button_play.setDisabled(False)
-
-    @pyqtSlot()
-    def on_disconnected_bot(self) -> None:
-        self.refresh_btn.setDisabled(True)
-        self.button_play.setDisabled(True)
 
     @pyqtSlot(int)
     def _on_selected_item(self, index: int) -> None:
@@ -154,6 +110,7 @@ class FmPage(QWidget):
     @pyqtSlot(object)
     def _on_refresh(self, bot: Bot):
         self.equipment_combo.setCurrentIndex(0)
+        bot.init_bot()
         lines_item = bot.fm_analyser.get_stats_item_selected(bot.capturer.capture())
         if lines_item is None:
             self.fm_item.hide()
@@ -164,6 +121,8 @@ class FmPage(QWidget):
     @pyqtSlot(object)
     def _on_play(self, bot: Bot):
         if self.fm_item.isHidden():
+            self.play_stop_widget.button_play.show()
+            self.play_stop_widget.button_stop.hide()
             self.logger.warning("Veuillez sélectionner un item.")
             return
 
@@ -183,9 +142,6 @@ class FmPage(QWidget):
         self.thread_run.finished.connect(self.worker_run.deleteLater)
         self.thread_run.start()
 
-        self.button_play.hide()
-        self.button_stop.show()
-
     @pyqtSlot(object)
     def _on_stop(self, bot: Bot):
         if self.thread_stop is not None:
@@ -199,15 +155,3 @@ class FmPage(QWidget):
         self.thread_stop.started.connect(self.worker_stop.run)
         self.thread_stop.finished.connect(self.worker_stop.deleteLater)
         self.thread_stop.start()
-
-        self.button_play.show()
-        self.button_stop.hide()
-
-    @pyqtSlot(bool)
-    def _on_new_is_stopping_bot(self, value: bool):
-        if value:
-            self.loading.start()
-            self.action_content.hide()
-        else:
-            self.action_content.show()
-            self.loading.stop()

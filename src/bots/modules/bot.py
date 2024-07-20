@@ -4,6 +4,7 @@ from threading import Event, RLock
 from time import sleep
 from typing import Callable
 
+from D2Shared.shared.schemas.recipe import RecipeSchema
 from D2Shared.shared.schemas.stat import BaseLineSchema, StatSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.antibot.afk_starter import AfkStarter
@@ -36,7 +37,7 @@ from src.bots.modules.fighter.fighter import Fighter
 from src.bots.modules.fm.fm import Fm
 from src.bots.modules.fm.fm_analyser import FmAnalyser
 from src.bots.modules.harvester.harvester import Harvester
-from src.bots.modules.hdv.craft import Crafter
+from src.bots.modules.hdv.craft.craft import Crafter
 from src.bots.modules.hdv.hdv import Hdv
 from src.bots.modules.hdv.sell import Seller
 from src.common.loggers.bot_logger import BotLogger
@@ -63,6 +64,7 @@ class Bot:
         character_id: str,
         service: ServiceSession,
         fake_sentence: FakeSentence,
+        window_info: WindowInfo,
         user: ReadUserSchema,
         fighter_maps_time: dict[int, float],
         fighter_sub_areas_farming_ids: list[int],
@@ -75,6 +77,7 @@ class Bot:
         self.harvest_map_time = harvest_map_time
         self.character_id = character_id
         self.service = service
+        self.window_info = window_info
         self.fake_sentence = fake_sentence
         self.user = user
         self.bot_signals = BotSignals()
@@ -90,16 +93,14 @@ class Bot:
         self.character_state = CharacterState(self.service, character_id)
 
         self.is_init_bot: bool = False
-        self.window_info: WindowInfo | None = None
 
-    def init_bot(self, window_info: WindowInfo):
+    def init_bot(self):
         if self.is_init_bot:
             self.logger.info("already initialized bot")
             return
-        self.window_info = window_info
         self.is_init_bot = True
         self.organizer = Organizer(
-            window_info=window_info,
+            window_info=self.window_info,
             is_paused=self.is_paused,
             target_window_size=DOFUS_WINDOW_SIZE,
             logger=self.logger,
@@ -123,7 +124,11 @@ class Bot:
         spell_manager = SpellManager(grid, self.service, self.character_state)
 
         self.controller = Controller(
-            self.logger, window_info, self.is_paused, self.organizer, self.action_lock
+            self.logger,
+            self.window_info,
+            self.is_paused,
+            self.organizer,
+            self.action_lock,
         )
         spell_sys = SpellSystem(
             self.service,
@@ -283,7 +288,7 @@ class Bot:
             self.chat_sys, self.is_connected, self.is_playing, self.user
         )
 
-        crafter = Crafter(
+        self.crafter = Crafter(
             self.hud_sys,
             bank_sys,
             self.logger,
@@ -306,7 +311,9 @@ class Bot:
             self.capturer,
             self.image_manager,
         )
-        self.hdv = Hdv(self.service, self.character_state, crafter, seller, self.logger)
+        self.hdv = Hdv(
+            self.service, self.character_state, self.crafter, seller, self.logger
+        )
 
         sub_area_farming = SubAreaFarming(self.service, self.character_state)
         sub_area_farming_sys = SubAreaFarmingSystem(
@@ -384,9 +391,8 @@ class Bot:
         self._stop_bot()
         self.bot_signals.is_stopping_bot.emit(False)
 
-    def run_fm(self, lines: list[BaseLineSchema], exo_stat: StatSchema | None):
-        if self.window_info is None:
-            raise Exception("Bot is not initialized.")
+    def run_action(self, func: Callable) -> None:
+        self.init_bot()
 
         self.bot_signals.is_stopping_bot.emit(True)
         self._stop_bot()
@@ -395,9 +401,9 @@ class Bot:
         self.bot_signals.is_stopping_bot.emit(False)
 
         self.map_state.reset_map_state()
-        self.logger.info("Starting fm")
+
         try:
-            self.fm.run(lines, exo_stat)
+            func()
         except StoppedException:
             self.logger.info("Stopped bot.")
         except Exception:
@@ -405,33 +411,31 @@ class Bot:
         finally:
             self.logger.info("Bot terminated.")
             self.is_playing.clear()
+            self.humanizer.stop_timers()
             self.bot_signals.is_stopping_bot.emit(False)
 
-    def run_bot(self, name_modules: list[str] | None = None):
-        if self.window_info is None:
-            raise Exception("Bot is not initialized.")
+    def run_craft(self, recipes: list[RecipeSchema]):
+        self.logger.info("Starting crafter")
+        self.run_action(lambda: self.crafter.run_crafter(recipes))
 
-        if name_modules is None:
-            name_modules = DEFAULT_MODULES
+    def run_fm(self, lines: list[BaseLineSchema], exo_stat: StatSchema | None):
+        self.logger.info("Starting fm")
+        self.run_action(lambda: self.fm.run(lines, exo_stat))
 
-        self.bot_signals.is_stopping_bot.emit(True)
-        self._stop_bot()
-        self.is_paused.clear()
-        self.is_playing.set()
-        self.bot_signals.is_stopping_bot.emit(False)
+    def run_farming(self, farming_actions: list[str] | None = None):
+        def _run_farming(_farming_actions: list[str] | None):
+            if _farming_actions is None:
+                _farming_actions = DEFAULT_MODULES
 
-        self.map_state.reset_map_state()
+            if len(_farming_actions) == 0:
+                return
 
-        if len(name_modules) == 0:
-            return
-
-        modules: list[tuple[str, Callable[..., None]]] = [
-            (name, action)
-            for name, action in self.modules.items()
-            if name in name_modules
-        ]
-        shuffle(modules)
-        try:
+            modules: list[tuple[str, Callable[..., None]]] = [
+                (name, action)
+                for name, action in self.modules.items()
+                if name in _farming_actions
+            ]
+            shuffle(modules)
             self.afk_starter.run_afk_in_game()
             self.humanizer.run_humanizer()
             self.hud_sys.clean_interface(self.capturer.capture())
@@ -445,12 +449,7 @@ class Bot:
                     except Exception:
                         self.logger.error(traceback.format_exc())
                         self.connection_sys.deblock_character()
-        except StoppedException:
-            self.logger.info("Stopped bot.")
-        except Exception:
-            self.logger.error(traceback.format_exc())
-        finally:
-            self.logger.info("Bot terminated.")
-            self.is_playing.clear()
-            self.humanizer.stop_timers()
-            self.bot_signals.is_stopping_bot.emit(False)
+                sleep(1)
+
+        self.logger.info("Starting farming")
+        self.run_action(lambda: _run_farming(farming_actions))

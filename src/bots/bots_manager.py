@@ -46,16 +46,16 @@ class BotsManager:
                     character_id,
                     self.service,
                     self.fake_sentence,
+                    window,
                     self.user,
                     self.fighter_map_time,
                     self.fighter_sub_area_farming_ids,
                     self.harvest_sub_area_farming_ids,
                     self.harvest_map_time,
                 )
-            if bot.window_info is not None:
+            else:
                 self.ankama_launcher.relink_windows_dofus_hwnd(
                     bot.window_info, dofus_windows
                 )
-            bot.init_bot(window)
             bot.is_connected.set()
             self.bots[character_id] = bot
