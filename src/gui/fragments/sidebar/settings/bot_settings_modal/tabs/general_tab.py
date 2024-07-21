@@ -12,10 +12,15 @@ from PyQt5.QtWidgets import (
 
 from D2Shared.shared.consts.jobs import HARVEST_JOBS_NAME
 from D2Shared.shared.enums import ElemEnum
-from D2Shared.shared.schemas.character import CharacterJobInfoSchema, CharacterSchema
+from D2Shared.shared.schemas.character import (
+    CharacterJobInfoSchema,
+    CharacterSchema,
+    UpdateCharacterSchema,
+)
 from D2Shared.shared.schemas.waypoint import WaypointSchema
 from src.gui.components.combobox import CheckableComboBox
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
+from src.services.character import CharacterService
 from src.services.server import ServerService
 from src.services.session import ServiceSession
 from src.services.world import WorldService
@@ -33,10 +38,26 @@ class GeneralTab(QWidget):
         self.valid_lvl = QIntValidator()
         self.valid_lvl.setRange(1, 200)
 
-        self.set_base_infos()
-        self.set_bot_job_infos()
+        self._set_base_infos()
+        self._set_bot_job_infos()
 
-    def set_base_infos(self):
+        self.set_default_values()
+
+    def set_default_values(self) -> None:
+        self.bot_lvl_form.setText(str(self.character.lvl))
+        self.combo_waypoints.clear()
+        for waypoint in sorted(
+            WorldService.get_waypoints(self.service, 1),
+            key=lambda elem: elem.map.sub_area.name,
+        ):
+            checked = waypoint in self.character.waypoints
+            self.combo_waypoints.addItem(
+                waypoint.map.sub_area.name, waypoint, checked=checked
+            )
+        for char_job_info, job_lvl_edit, _ in self.job_info_edits:
+            job_lvl_edit.setText(str(char_job_info.lvl))
+
+    def _set_base_infos(self) -> None:
         base_info_wid = QWidget()
         self.layout().addWidget(base_info_wid)
         form = QFormLayout()
@@ -57,7 +78,6 @@ class GeneralTab(QWidget):
 
         self.bot_lvl_form = QLineEdit()
         self.bot_lvl_form.setValidator(self.valid_lvl)
-        self.bot_lvl_form.setText(str(self.character.lvl))
         form.addRow("Niveau", self.bot_lvl_form)
 
         self.elem_combo = QComboBox()
@@ -68,19 +88,9 @@ class GeneralTab(QWidget):
         form.addRow("Élément", self.elem_combo)
 
         self.combo_waypoints = CheckableComboBox[WaypointSchema](parent=self)
-        self.origin_waypoints = self.character.waypoints
-        character_waypoints = self.origin_waypoints
-        for waypoint in sorted(
-            WorldService.get_waypoints(self.service, 1),
-            key=lambda elem: elem.map.sub_area.name,
-        ):
-            checked = waypoint in character_waypoints
-            self.combo_waypoints.addItem(
-                waypoint.map.sub_area.name, waypoint, checked=checked
-            )
         form.addRow("Zaaps", self.combo_waypoints)
 
-    def set_bot_job_infos(self) -> None:
+    def _set_bot_job_infos(self) -> None:
         self.box_job_lvl = QGroupBox()
         box_job_lvl_layout = HorizontalLayout()
         self.box_job_lvl.setLayout(box_job_lvl_layout)
@@ -124,7 +134,6 @@ class GeneralTab(QWidget):
 
                 job_lvl_edit = QLineEdit()
                 job_lvl_edit.setValidator(self.valid_lvl)
-                job_lvl_edit.setText(str(job_info.lvl))
                 job_lvl_layout.addRow("Niveau", job_lvl_edit)
 
                 if job_info.job.name in HARVEST_JOBS_NAME:
@@ -142,3 +151,58 @@ class GeneralTab(QWidget):
                 self.job_info_edits.append((job_info, job_lvl_edit, job_weight_edit))
 
                 v_layout.addWidget(job_info_widget)
+
+    def on_save(self):
+        server_id: int = self.server_combo.currentData()
+        lvl = int(self.bot_lvl_form.text())
+        is_sub = self.sub_checkbox.isChecked()
+        elem: ElemEnum = self.elem_combo.currentData()
+
+        waypoints = self.combo_waypoints.currentData()
+        if set(self.character.waypoints) != set(waypoints):
+            self.character.waypoints = waypoints
+            CharacterService.update_waypoints(
+                self.service,
+                self.character.id,
+                [elem.id for elem in self.character.waypoints],
+            )
+
+        if (
+            lvl != self.character.lvl
+            or server_id != self.character.server_id
+            or is_sub != self.character.is_sub
+            or elem != self.character.elem
+        ):
+            self.character.lvl = lvl
+            self.character.server_id = server_id
+            self.character.is_sub = is_sub
+            self.character.elem = elem
+            CharacterService.update_character(
+                self.service,
+                UpdateCharacterSchema(
+                    id=self.character.id,
+                    lvl=self.character.lvl,
+                    po_bonus=self.character.po_bonus,
+                    is_sub=self.character.is_sub,
+                    time_spent=self.character.time_spent,
+                    elem=self.character.elem,
+                    server_id=self.character.server_id,
+                ),
+            )
+
+        job_infos: list[CharacterJobInfoSchema] = []
+        for (
+            job_info,
+            job_lvl_edit,
+            job_weight_edit,
+        ) in self.job_info_edits:
+            job_lvl = int(job_lvl_edit.text())
+            if job_weight_edit is not None:
+                job_weight = float(job_weight_edit.text())
+            else:
+                job_weight = 1
+            job_info.lvl = job_lvl
+            job_info.weight = job_weight
+            job_infos.append(job_info)
+
+        CharacterService.update_job_infos(self.service, self.character.id, job_infos)

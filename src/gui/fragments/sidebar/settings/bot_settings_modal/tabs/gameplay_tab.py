@@ -5,10 +5,11 @@ from PyQt5.QtWidgets import QCheckBox, QComboBox, QLineEdit, QWidget
 
 from D2Shared.shared.enums import CharacteristicEnum, ElemEnum
 from D2Shared.shared.schemas.character import CharacterSchema
-from D2Shared.shared.schemas.spell import SpellSchema
+from D2Shared.shared.schemas.spell import SpellSchema, UpdateSpellSchema
 from src.gui.components.buttons import PushButtonIcon
 from src.gui.components.organization import VerticalLayout
 from src.gui.components.table import TableWidget
+from src.services.character import CharacterService
 from src.services.session import ServiceSession
 
 
@@ -41,11 +42,11 @@ class GameplayTab(QWidget):
         self.character = character
         self.setLayout(VerticalLayout())
         self.set_prefered_ia()
-        self.init_spell_configs()
+        self._init_spell_configs()
 
     def set_prefered_ia(self): ...
 
-    def init_spell_configs(self) -> None:
+    def _init_spell_configs(self) -> None:
         add_spell_btn = PushButtonIcon("add.svg")
         add_spell_btn.clicked.connect(lambda: self.add_spell())
         self.layout().addWidget(add_spell_btn)
@@ -195,3 +196,52 @@ class GameplayTab(QWidget):
             del self.spell_edits[index]
         self.spells_table.table.removeRow(index)
         self.update_delete_buttons()
+
+    def on_save(self):
+        spells: list[UpdateSpellSchema] = []
+        for spell_info_edit in self.spell_edits.values():
+            name = spell_info_edit.name_edit.text()
+            index = int(spell_info_edit.index_edit.text())
+            elem = spell_info_edit.elem_combo.currentData()
+            is_disenchantement = spell_info_edit.disenchantment_checkbox.isChecked()
+
+            if (data_boost_char := spell_info_edit.boost_combo.currentData()) != "":
+                boost_char = data_boost_char
+            else:
+                boost_char = None
+
+            is_healing = spell_info_edit.healing_checkbox.isChecked()
+            is_for_enemy = spell_info_edit.for_enemy_checkbox.isChecked()
+            ap_cost = int(spell_info_edit.ap_cost_edit.text())
+            max_cast = int(spell_info_edit.max_cast_edit.text())
+            min_range = int(spell_info_edit.min_range_edit.text())
+            range = int(spell_info_edit.range_edit.text())
+            if (str_duration_boost := spell_info_edit.duration_boost_edit.text()) != "":
+                duration_boost = int(str_duration_boost)
+            else:
+                duration_boost = 0
+            is_boostable_range = spell_info_edit.boostable_range_checkbox.isChecked()
+            level = int(spell_info_edit.level_edit.text())
+
+            spells.append(
+                UpdateSpellSchema(
+                    name=name,
+                    boost_char=boost_char,
+                    ap_cost=ap_cost,
+                    boostable_range=is_boostable_range,
+                    duration_boost=duration_boost,
+                    elem=elem,
+                    index=index,
+                    is_disenchantment=is_disenchantement,
+                    is_for_enemy=is_for_enemy,
+                    is_healing=is_healing,
+                    level=level,
+                    max_cast=max_cast,
+                    min_range=min_range,
+                    range=range,
+                    character_id=self.character.id,
+                )
+            )
+        self.character.spells = CharacterService.update_spells(
+            self.service, self.character.id, spells
+        )

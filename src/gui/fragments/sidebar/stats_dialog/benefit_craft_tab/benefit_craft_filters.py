@@ -1,8 +1,10 @@
-from D2Shared.shared.enums import CategoryEnum
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QComboBox, QWidget
 
+from D2Shared.shared.enums import CategoryEnum
+from D2Shared.shared.schemas.server import ServerSchema
 from src.gui.components.organization import VerticalLayout
+from src.services.server import ServerService
 from src.services.session import ServiceSession
 from src.services.type_item import TypeItemService
 
@@ -19,9 +21,18 @@ class BenefitCraftFilters(QWidget):
         self.main_layout = VerticalLayout()
         self.setLayout(self.main_layout)
 
+        self.setup_filters_server_id()
         self.setup_filters_category()
 
         self.setup_filters_type()
+
+    def setup_filters_server_id(self) -> None:
+        self.servers: list[ServerSchema] = ServerService.get_servers(self.service)
+        self.combo_servers = QComboBox(parent=self)
+        for server in self.servers:
+            self.combo_servers.addItem(server.name, server.id)
+        self.combo_servers.currentIndexChanged.connect(self.on_select_server)
+        self.main_layout.addWidget(self.combo_servers)
 
     def setup_filters_category(self) -> None:
         self.categories: list[tuple[CategoryEnum | None, str]] = [
@@ -35,6 +46,10 @@ class BenefitCraftFilters(QWidget):
             self.combo_category.addItem(name, category)
         self.combo_category.currentIndexChanged.connect(self.on_select_category)
         self.main_layout.addWidget(self.combo_category)
+
+    @pyqtSlot()
+    def on_select_server(self):
+        self.emit_change()
 
     def on_select_category(self, index: int):
         category = self.categories[index][0]

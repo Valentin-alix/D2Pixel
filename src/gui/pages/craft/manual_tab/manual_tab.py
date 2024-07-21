@@ -24,6 +24,7 @@ class ManualTab(QWidget):
         service: ServiceSession,
         bot: Bot,
         logger: Logger,
+        available_recipes: list[RecipeSchema],
         *args,
         **kwargs,
     ):
@@ -33,6 +34,7 @@ class ManualTab(QWidget):
         self.service = service
         self.character = bot.character_state.character
         self.app_signals = app_signals
+        self.available_recipes = available_recipes
         self.is_loading: bool = False
         self.bot = bot
         self.logger = logger
@@ -42,9 +44,7 @@ class ManualTab(QWidget):
         self.setLayout(self.main_layout)
 
         self.craft_table = RecipeTable()
-        self.craft_group = RecipeGroup(
-            RecipeService.get_available_recipes(self.service, self.character.id)
-        )
+        self.craft_group = RecipeGroup(available_recipes)
 
         self.craft_group.signals.added_recipe_queue.connect(self.on_added_recipe_queue)
         self.craft_table.signals.removed_recipe.connect(self.on_removed_recipe_queue)

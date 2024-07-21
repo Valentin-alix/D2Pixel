@@ -20,6 +20,7 @@ class AutomaticTab(QWidget):
         service: ServiceSession,
         character: CharacterSchema,
         logger: Logger,
+        available_recipes: list[RecipeSchema],
         *args,
         **kwargs,
     ):
@@ -34,7 +35,13 @@ class AutomaticTab(QWidget):
         self.setLayout(self.main_layout)
 
         self.craft_table = RecipeTable(self.character.recipes)
-        self.craft_group = RecipeGroup(self.get_not_in_queue_available_recipes())
+        self.craft_group = RecipeGroup(
+            [
+                _elem
+                for _elem in available_recipes
+                if _elem not in self.character.recipes
+            ]
+        )
 
         self.craft_group.signals.added_recipe_queue.connect(self.on_added_recipe_queue)
         self.craft_table.signals.removed_recipe.connect(self.on_removed_recipe_queue)

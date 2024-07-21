@@ -163,7 +163,6 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(object)
     def on_connected_bots(self, bots_by_id: dict[str, Bot]):
-        print(bots_by_id)
         self.sidebar.on_characters_connected(bots_by_id)
         untreated_character: list[CharacterSchema] = list(
             self.sub_header_by_character.keys()
@@ -177,7 +176,6 @@ class MainWindow(QMainWindow):
 
         for character in untreated_character:
             self.remove_character(character)
-
         self.app_signals.is_connecting.emit(False)
 
     def closeEvent(self, _: QCloseEvent):

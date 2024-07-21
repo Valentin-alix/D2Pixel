@@ -32,6 +32,7 @@ class SideBarMenuItem(QWidget):
         self.setLayout(HorizontalLayout(space=0, margins=(0, 0, 0, 0)))
 
         self.bot_log_dialog = BotLogDialog(self.bot)
+        self.bot_settings_dialog: BotSettingsModal | None = None
         self._setup_btns()
 
     def _setup_btns(self):
@@ -57,9 +58,10 @@ class SideBarMenuItem(QWidget):
 
     @pyqtSlot()
     def on_click_settings(self):
-        self.bot_settings_dialog = BotSettingsModal(
-            self.logger, self.service, self.bot.character_state.character
-        )
+        if self.bot_settings_dialog is None:
+            self.bot_settings_dialog = BotSettingsModal(
+                self.logger, self.service, self.bot.character_state.character
+            )
         self.bot_settings_dialog.open()
 
     @pyqtSlot()

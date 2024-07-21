@@ -7,7 +7,6 @@ from src.gui.components.organization import HorizontalLayout
 from src.gui.pages.craft.craft_page import CraftPage
 from src.gui.pages.farm.farm_page import FarmPage
 from src.gui.pages.fm.fm_page import FmPage
-from src.gui.pages.stats.stats_page import StatsPage
 from src.gui.signals.app_signals import AppSignals
 from src.services.session import ServiceSession
 
@@ -48,10 +47,5 @@ class SubHeader(QWidget):
             self.service, self.app_signals, bot=bot, logger=self.logger
         )
         self.tabs.addTab(self.fm_frame, "Forgemagie")
-
-        self.stats_frame = StatsPage(
-            self.service, character=bot.character_state.character
-        )
-        self.tabs.addTab(self.stats_frame, "Statistique")
 
         self.layout().addWidget(self.tabs)

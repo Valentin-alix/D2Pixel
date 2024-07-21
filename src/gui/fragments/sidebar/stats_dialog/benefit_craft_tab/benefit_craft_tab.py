@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import QWidget
 
 from src.gui.components.organization import VerticalLayout
-from src.gui.pages.stats.benefit_craft_tab.benefit_craft_filters import (
+from src.gui.fragments.sidebar.stats_dialog.benefit_craft_tab.benefit_craft_filters import (
     BenefitCraftFilters,
 )
-from src.gui.pages.stats.benefit_craft_tab.benefit_recipe_table import (
+from src.gui.fragments.sidebar.stats_dialog.benefit_craft_tab.benefit_recipe_table import (
     BenefitRecipeTable,
 )
 from src.services.session import ServiceSession
@@ -31,6 +31,7 @@ class BenefitCraftTab(QWidget):
         self.benefit_recipe_filters.emit_change()
 
     def on_changed_filters(self):
+        self.server_id = self.benefit_recipe_filters.combo_servers.currentData()
         category = self.benefit_recipe_filters.combo_category.currentData()
         type_item = self.benefit_recipe_filters.combo_type_item.currentData()
         self.benefit_recipe_table.get_benefit_recipe(

@@ -17,6 +17,7 @@ from src.gui.fragments.sidebar.settings.user_settings_modal import (
     UserSettingsModal,
 )
 from src.gui.fragments.sidebar.sidebar_menu_item import SideBarMenuItem
+from src.gui.fragments.sidebar.stats_dialog.stats_dialog import StatsDialog
 from src.gui.signals.app_signals import AppSignals
 from src.services.session import ServiceSession
 
@@ -61,6 +62,9 @@ class SideBarMenu(QWidget):
 
         main_layout.addStretch(1)
 
+        self.stat_dialog: StatsDialog | None = None
+        self.user_settings_dialog: UserSettingsModal | None = None
+
         self._setup_footer()
 
         self.app_signals.is_connecting.connect(self.on_connection_loading)
@@ -80,6 +84,10 @@ class SideBarMenu(QWidget):
         self.refresh_btn = PushButtonIcon("restart.svg", parent=self)
         self.refresh_btn.clicked.connect(self.signals.clicked_restart)
         footer.layout().addWidget(self.refresh_btn)
+
+        self.stats_btn = PushButtonIcon("stats.svg", parent=self)
+        self.stats_btn.clicked.connect(self.on_clicked_stats)
+        footer.layout().addWidget(self.stats_btn)
 
         self.settings_btn = PushButtonIcon("settings.svg", parent=self)
         self.settings_btn.clicked.connect(self.on_clicked_settings)
@@ -146,7 +154,14 @@ class SideBarMenu(QWidget):
 
     @pyqtSlot()
     def on_clicked_settings(self):
-        modal = UserSettingsModal(
-            self.logger, self.app_signals, self.user, self.service
-        )
-        modal.open()
+        if self.user_settings_dialog is None:
+            self.user_settings_dialog = UserSettingsModal(
+                self.logger, self.app_signals, self.user, self.service
+            )
+        self.user_settings_dialog.open()
+
+    @pyqtSlot()
+    def on_clicked_stats(self):
+        if self.stat_dialog is None:
+            self.stat_dialog = StatsDialog(self.service, 1)
+        self.stat_dialog.open()

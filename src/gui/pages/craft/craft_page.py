@@ -7,6 +7,7 @@ from src.gui.components.organization import VerticalLayout
 from src.gui.pages.craft.automatic_tab.automatic_tab import AutomaticTab
 from src.gui.pages.craft.manual_tab.manual_tab import ManualTab
 from src.gui.signals.app_signals import AppSignals
+from src.services.recipe import RecipeService
 from src.services.session import ServiceSession
 
 
@@ -31,13 +32,20 @@ class CraftPage(QWidget):
 
         self.tabs = QTabWidget()
 
+        available_recipes = RecipeService.get_available_recipes(
+            self.service, self.bot.character_state.character.id
+        )
+
         self.automatic_tab = AutomaticTab(
-            self.service, self.bot.character_state.character, self.logger
+            self.service,
+            self.bot.character_state.character,
+            self.logger,
+            available_recipes,
         )
         self.tabs.addTab(self.automatic_tab, "Automatique")
         self.layout().addWidget(self.tabs)
 
         self.manual_tab = ManualTab(
-            self.app_signals, self.service, self.bot, self.logger
+            self.app_signals, self.service, self.bot, self.logger, available_recipes
         )
         self.tabs.addTab(self.manual_tab, "Manuel")

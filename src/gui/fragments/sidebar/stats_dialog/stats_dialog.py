@@ -1,24 +1,25 @@
-from PyQt5.QtWidgets import QTabWidget, QWidget
+from PyQt5.QtWidgets import QTabWidget
 
-from D2Shared.shared.schemas.character import CharacterSchema
+from src.gui.components.dialog import Dialog
 from src.gui.components.organization import VerticalLayout
-from src.gui.pages.stats.benefit_craft_tab.benefit_craft_tab import (
+from src.gui.fragments.sidebar.stats_dialog.benefit_craft_tab.benefit_craft_tab import (
     BenefitCraftTab,
 )
 from src.services.session import ServiceSession
 
 
-class StatsPage(QWidget):
+class StatsDialog(Dialog):
     def __init__(
         self,
         service: ServiceSession,
-        character: CharacterSchema,
+        server_id: int,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        self.resize(800, 600)
         self.service = service
-        self.character = character
+        self.server_id = server_id
 
         self.v_layout = VerticalLayout()
         self.setLayout(self.v_layout)
@@ -26,7 +27,7 @@ class StatsPage(QWidget):
         self.tabs = QTabWidget()
         self.scrapping_craft_tab = BenefitCraftTab(
             self.service,
-            server_id=self.character.server_id,
+            server_id=self.server_id,
         )
         self.tabs.addTab(self.scrapping_craft_tab, "Craft")
         self.v_layout.addWidget(self.tabs)

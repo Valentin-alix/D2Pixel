@@ -5,6 +5,7 @@ from D2Shared.shared.schemas.character import CharacterSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from src.gui.components.combobox import CheckableComboBox
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
+from src.services.character import CharacterService
 from src.services.session import ServiceSession
 from src.services.sub_area import SubAreaService
 
@@ -18,9 +19,9 @@ class FarmTab(QWidget):
         self.service = service
         self.character = character
         self.combo_sub_areas: list[CheckableComboBox[SubAreaSchema]] = []
-        self.set_sub_area_farmable()
+        self._set_sub_area_farmable()
 
-    def set_sub_area_farmable(self) -> None:
+    def _set_sub_area_farmable(self) -> None:
         sub_area_widg = QWidget()
         self.layout().addWidget(sub_area_widg)
         sub_area_layout = VerticalLayout()
@@ -37,7 +38,6 @@ class FarmTab(QWidget):
         list_sub_areas.setLayout(h_layout)
 
         all_sub_areas = SubAreaService.get_sub_areas(self.service)
-        self.origin_sub_areas = self.character.sub_areas
         areas = sorted(
             set(elem.area for elem in all_sub_areas), key=lambda elem: elem.name
         )
@@ -59,11 +59,22 @@ class FarmTab(QWidget):
                 combo_sub = CheckableComboBox[SubAreaSchema](parent=self)
                 self.combo_sub_areas.append(combo_sub)
 
-                character_sub_areas = self.origin_sub_areas
                 for sub_area in sorted(
                     [elem for elem in all_sub_areas if elem.area_id == area.id],
                     key=lambda elem: elem.name,
                 ):
-                    checked = sub_area in character_sub_areas
+                    checked = sub_area in self.character.sub_areas
                     combo_sub.addItem(sub_area.name, sub_area, checked=checked)
                 form_l.addRow(area.name, combo_sub)
+
+    def on_save(self):
+        new_sub_areas: list[SubAreaSchema] = [
+            _elem for combo in self.combo_sub_areas for _elem in combo.currentData()
+        ]
+        if set(self.character.sub_areas) != set(new_sub_areas):
+            self.character.sub_areas = new_sub_areas
+            CharacterService.update_sub_areas(
+                self.service,
+                self.character.id,
+                [elem.id for elem in self.character.sub_areas],
+            )
