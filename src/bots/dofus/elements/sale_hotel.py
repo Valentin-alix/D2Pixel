@@ -1,4 +1,3 @@
-import traceback
 from logging import Logger
 from time import sleep
 
@@ -32,7 +31,6 @@ from src.bots.dofus.walker.entities_map.sale_hotel import (
     get_sales_hotels_by_category,
 )
 from src.common.randomizer import wait
-from src.exceptions import UnknowStateException
 from src.image_manager.ocr import (
     BASE_CONFIG,
     get_text_from_image,
@@ -204,7 +202,7 @@ class SaleHotel:
         )
         return int(quantity * price_average * 1.3), quantity
 
-    def sale_hotel_get_count_remaining_slot(self, img: numpy.ndarray) -> int:
+    def sale_hotel_get_count_remaining_slot(self, img: numpy.ndarray) -> int | None:
         """get count of remaining slot displayed in sale hotel
 
         Args:
@@ -221,8 +219,7 @@ class SaleHotel:
             curr_slot, max_slot = text.split("/")
             return int(max_slot) - int(curr_slot)
         except ValueError:
-            self.logger.error(traceback.format_exc())
-            raise UnknowStateException(img, "value_error_slot")
+            return None
 
 
 class SaleHotelSystem:
@@ -280,11 +277,10 @@ class SaleHotelSystem:
 
         while True:
             img = self.capturer.capture()
-            try:
-                count_remaining_slot: int = (
-                    self.sale_hotel.sale_hotel_get_count_remaining_slot(img)
-                )
-            except UnknowStateException:
+            count_remaining_slot: int | None = (
+                self.sale_hotel.sale_hotel_get_count_remaining_slot(img)
+            )
+            if count_remaining_slot is None:
                 sleep(1)
                 continue
             self.logger.info(f"Remaining Slots : {count_remaining_slot}")
