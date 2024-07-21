@@ -31,6 +31,7 @@ from src.bots.dofus.walker.entities_map.sale_hotel import (
     get_sales_hotels_by_category,
 )
 from src.common.randomizer import wait
+from src.exceptions import UnknowStateException
 from src.image_manager.ocr import (
     BASE_CONFIG,
     get_text_from_image,
@@ -275,16 +276,22 @@ class SaleHotelSystem:
         """
         self.controller.click(SALE_HOTEL_ALL_CATEGORY_POSITION)
 
-        while True:
+        MAX_TRY = 30
+        count_remaining_slot: int | None = None
+        for _ in range(MAX_TRY):
             img = self.capturer.capture()
-            count_remaining_slot: int | None = (
-                self.sale_hotel.sale_hotel_get_count_remaining_slot(img)
+            count_remaining_slot = self.sale_hotel.sale_hotel_get_count_remaining_slot(
+                img
             )
             if count_remaining_slot is None:
                 sleep(1)
                 continue
             self.logger.info(f"Remaining Slots : {count_remaining_slot}")
             break
+        if count_remaining_slot is None:
+            raise UnknowStateException(
+                self.capturer.capture(), "value_error_slot_max_try"
+            )
 
         if (
             self.object_searcher.get_position(img, ObjectConfigs.Check.medium_inventory)
