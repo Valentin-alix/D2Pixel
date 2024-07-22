@@ -4,7 +4,7 @@ from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 
 
 class WorkerSignals(QObject):
-    function_result = pyqtSignal()
+    function_result = pyqtSignal(object)
 
 
 class Worker(QObject):

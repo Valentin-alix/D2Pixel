@@ -27,17 +27,18 @@ class TestServiceCharacter(unittest.TestCase):
         return super().setUp()
 
     def test_icon(self):
-        # colls = CharacterService.get_possible_collectable(
-        #     self.service, self.character.id
-        # )
-        # CharacterService.add_bank_items(
-        #     self.service, self.character.id, [elem.item_id for elem in colls]
-        # )
+        colls = CharacterService.get_possible_collectable(
+            self.service, self.character.id
+        )
+        CharacterService.add_bank_items(
+            self.service, self.character.id, [elem.item_id for elem in colls]
+        )
         recipes = RecipeService.get_valid_ordered(
             self.service,
             [elem.id for elem in self.character.recipes],
             self.character.id,
         )
+        print(recipes)
         items = ItemService.get_default_sellable_items(
             self.service, self.character.id, [elem.id for elem in recipes]
         )
