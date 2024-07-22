@@ -31,11 +31,13 @@ class Hdv:
             return
 
         if recipes is None:
-            recipes = RecipeService.get_valid_ordered(
-                self.service,
-                [elem.id for elem in character.recipes],
-                self.character_state.character.id,
-            )
+            recipes = self.character_state.character.recipes
+
+        recipes = RecipeService.get_valid_ordered(
+            self.service,
+            [elem.id for elem in recipes],
+            self.character_state.character.id,
+        )
 
         if self.character_state.character.is_sub and len(recipes) > 0:
             self.logger.info(f"Gonna craft : {recipes}")
@@ -48,6 +50,7 @@ class Hdv:
             [_elem.id for _elem in recipes],
         )
         sell_items.extend([_elem.result_item for _elem in recipes])
+        sell_items.sort(key=lambda _elem: _elem.price.average, reverse=True)
         if len(sell_items) > 0:
             self.logger.info(f"Gonna sell : {sell_items}")
             self.seller.run_seller(sell_items)

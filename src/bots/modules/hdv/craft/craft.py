@@ -1,4 +1,5 @@
 from logging import Logger
+from time import sleep
 
 import win32con
 
@@ -86,7 +87,7 @@ class Crafter:
                 self.controller.click(SEARCH_RECEIPE_POSITION, count=3)
                 self.controller.key(win32con.VK_BACK)
             self.controller.send_text(recipe.result_item.name)
-
+            sleep(1)
             if (
                 self.object_searcher.get_position(
                     self.capturer.capture(), ObjectConfigs.Text.no_receipe
@@ -98,6 +99,7 @@ class Crafter:
                 wait()
                 self.controller.click(COUNT_CRAFT_RECEIP_POSITION)
                 self.controller.key(win32con.VK_RETURN)
+                sleep(0.3)
                 self.controller.click(MERGE_CRAFT_POSITION)
                 wait((0.6, 1))
                 CharacterService.add_bank_items(
