@@ -15,6 +15,7 @@ from D2Shared.shared.schemas.stat import BaseLineSchema, StatSchema
 from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
 from src.bots.modules.fm.fm_analyser import FmAnalyser
 from src.common.randomizer import wait
+from src.gui.signals.bot_signals import BotSignals
 from src.services.equipment import EquipmentService
 from src.services.line import LineService
 from src.services.session import ServiceSession
@@ -25,6 +26,7 @@ from src.window_manager.controller import Controller
 class Fm:
     def __init__(
         self,
+        bot_signals: BotSignals,
         controller: Controller,
         service: ServiceSession,
         fm_analyser: FmAnalyser,
@@ -32,6 +34,7 @@ class Fm:
         smithmagic_workshop: SmithMagicWorkshop,
         capturer: Capturer,
     ) -> None:
+        self.bot_signals = bot_signals
         self.controller = controller
         self.service = service
         self.fm_analyser = fm_analyser
@@ -98,6 +101,9 @@ class Fm:
         if self.equipment:
             self.equipment.exo_attempt += 1
             EquipmentService.increment_exo_attempt(self.service, self.equipment.id)
+            self.bot_signals.fm_new_line_value.emit(
+                (self.equipment.exo_attempt, exo_stat.id)
+            )
         return False
 
     def put_rune(
@@ -133,6 +139,9 @@ class Fm:
             related_line.spent_quantity += rune.stat_quantity
             LineService.add_spent_quantity(
                 self.service, related_line.id, rune.stat_quantity
+            )
+            self.bot_signals.fm_new_line_value.emit(
+                (related_line.spent_quantity, related_line.stat_id)
             )
 
         return False

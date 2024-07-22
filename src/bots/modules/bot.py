@@ -4,6 +4,7 @@ from threading import Event, RLock
 from time import sleep
 from typing import Callable
 
+from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
 from D2Shared.shared.schemas.recipe import RecipeSchema
 from D2Shared.shared.schemas.stat import BaseLineSchema, StatSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
@@ -364,6 +365,7 @@ class Bot:
             self.logger, self.service, self.smithmagic_workshop
         )
         self.fm = Fm(
+            self.bot_signals,
             self.controller,
             self.service,
             self.fm_analyser,
@@ -419,9 +421,14 @@ class Bot:
         self.logger.info("Starting crafter")
         self.run_action(lambda: self.crafter.run_crafter(recipes))
 
-    def run_fm(self, lines: list[BaseLineSchema], exo_stat: StatSchema | None):
+    def run_fm(
+        self,
+        lines: list[BaseLineSchema],
+        exo_stat: StatSchema | None,
+        equipment: ReadEquipmentSchema | None = None,
+    ):
         self.logger.info("Starting fm")
-        self.run_action(lambda: self.fm.run(lines, exo_stat))
+        self.run_action(lambda: self.fm.run(lines, exo_stat, equipment))
 
     def run_farming(self, farming_actions: list[str] | None = None):
         def _run_farming(_farming_actions: list[str] | None):

@@ -71,7 +71,7 @@ class FmPage(QWidget):
         content_widget_layout = VerticalLayout()
         content_widget.setLayout(content_widget_layout)
 
-        self.fm_item: FmItem = FmItem(self.logger, self.service)
+        self.fm_item: FmItem = FmItem(self.bot.bot_signals, self.logger, self.service)
         self.fm_item.hide()
         self.fm_item.signals.saved_item.connect(self._on_saved_equipment)
         self.fm_item.signals.created_item.connect(self._on_created_equipment)
@@ -133,6 +133,7 @@ class FmPage(QWidget):
             bot,
             self.fm_item.get_edited_lines(),
             self.fm_item.get_exo_stat(),
+            self.fm_item.equipment,
         )
         self.thread_run = QThread()
 

@@ -12,6 +12,7 @@ from src.gui.components.organization import (
     VerticalLayout,
 )
 from src.gui.pages.fm.fm_item.fm_item_table import FmItemTable
+from src.gui.signals.bot_signals import BotSignals
 from src.services.equipment import EquipmentService
 from src.services.session import ServiceSession
 
@@ -24,10 +25,16 @@ class FmItemSignals(QObject):
 
 class FmItem(QWidget):
     def __init__(
-        self, logger: Logger, service: ServiceSession, *args, **kwargs
+        self,
+        bot_signals: BotSignals,
+        logger: Logger,
+        service: ServiceSession,
+        *args,
+        **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.logger = logger
+        self.bot_signals = bot_signals
         self.signals = FmItemSignals()
         self.service = service
         self.equipment: ReadEquipmentSchema | None = None
@@ -77,7 +84,7 @@ class FmItem(QWidget):
         self.label_equip_layout.addRow("Label", self.label_edit)
         self.main_layout.addWidget(self.label_equip_widget)
 
-        self.fm_item_table: FmItemTable = FmItemTable(self.service)
+        self.fm_item_table: FmItemTable = FmItemTable(self.bot_signals, self.service)
         self.main_layout.addWidget(self.fm_item_table)
 
     def _setup_action_buttons(self):

@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtWidgets import QComboBox, QLabel, QLineEdit
 
 from D2Shared.shared.enums import ExoStatEnum
@@ -6,16 +6,22 @@ from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
 from D2Shared.shared.schemas.stat import BaseLineSchema, LineSchema, StatSchema
 from src.gui.components.organization import AlignDelegate
 from src.gui.components.table import BaseTableWidget
+from src.gui.signals.bot_signals import BotSignals
 from src.services.session import ServiceSession
 from src.services.stat import StatService
 
 
 class FmItemTable(BaseTableWidget):
-    def __init__(self, service: ServiceSession, *args, **kwargs) -> None:
+    def __init__(
+        self, bot_signals: BotSignals, service: ServiceSession, *args, **kwargs
+    ) -> None:
         super().__init__(*args, **kwargs)
+        self.bot_signals = bot_signals
         self.service = service
+        self.label_spent_by_stat_id: dict[int, QLabel] = {}
         self.edits_with_line: list[tuple[QLineEdit, BaseLineSchema]] = []
         self.stats = StatService.get_stats(self.service)
+        self.bot_signals.fm_new_line_value.connect(self.on_new_line_value)
 
     def set_table_from_equipment(self, equipment: ReadEquipmentSchema):
         self.clear_table()
@@ -80,6 +86,7 @@ class FmItemTable(BaseTableWidget):
         self.exo_combo.setCurrentIndex(exo_index)
 
         self.exo_attempt_label.setText(str(exo_attempt))
+        self.label_spent_by_stat_id[exo_stat.id] = self.exo_attempt_label
 
     def _add_base_line(self, table_index: int, base_line: BaseLineSchema):
         line_label = QLabel()
@@ -96,3 +103,10 @@ class FmItemTable(BaseTableWidget):
         line_spent = QLabel()
         line_spent.setText(str(line.spent_quantity))
         self.table.setCellWidget(table_index, 2, line_spent)
+        self.label_spent_by_stat_id[line.stat_id] = line_spent
+
+    @pyqtSlot(object)
+    def on_new_line_value(self, spent_with_stat_id: tuple[int, int]):
+        spent_quantity, stat_id = spent_with_stat_id
+        related_label_spent = self.label_spent_by_stat_id[stat_id]
+        related_label_spent.setText(str(spent_quantity))
