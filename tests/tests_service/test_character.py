@@ -18,7 +18,7 @@ class TestServiceCharacter(unittest.TestCase):
     def setUp(self) -> None:
         self.service = ServiceSession(Logger("Xeloreeuu"), AppSignals())
         self.character = CharacterService.get_or_create_character(
-            self.service, "Xeloreeuu"
+            self.service, "Tema-la-ratte"
         )
         # for job_id in HARVEST_JOBS_ID:
         #     CharacterService.update_job_info(
@@ -27,8 +27,21 @@ class TestServiceCharacter(unittest.TestCase):
         return super().setUp()
 
     def test_icon(self):
-        icon = ItemService.get_icon_img(self.service, 303)
-        print(icon)
+        # colls = CharacterService.get_possible_collectable(
+        #     self.service, self.character.id
+        # )
+        # CharacterService.add_bank_items(
+        #     self.service, self.character.id, [elem.item_id for elem in colls]
+        # )
+        recipes = RecipeService.get_valid_ordered(
+            self.service,
+            [elem.id for elem in self.character.recipes],
+            self.character.id,
+        )
+        items = ItemService.get_default_sellable_items(
+            self.service, self.character.id, [elem.id for elem in recipes]
+        )
+        print(items)
 
     def test_get_or_create(self):
         for job_info in self.character.character_job_info:

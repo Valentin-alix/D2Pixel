@@ -1,7 +1,7 @@
 import traceback
 from logging import Logger
 
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import QThread, pyqtSlot
 from PyQt5.QtWidgets import (
     QTabWidget,
 )
@@ -21,6 +21,7 @@ from src.gui.fragments.sidebar.settings.bot_settings_modal.tabs.gameplay_tab imp
 from src.gui.fragments.sidebar.settings.bot_settings_modal.tabs.general_tab import (
     GeneralTab,
 )
+from src.gui.workers.run_in_background import run_in_background
 from src.services.session import ServiceSession
 
 
@@ -37,6 +38,7 @@ class BotSettingsModal(Dialog):
         self.service = service
         self.logger = logger
         self.character = character
+        self.threads: list[QThread] = []
 
         self.setWindowTitle(self.character.id)
         self.setLayout(VerticalLayout(margins=(16, 16, 16, 16)))
@@ -63,12 +65,19 @@ class BotSettingsModal(Dialog):
         self.gameplay_tab = GameplayTab(self.service, self.character)
         self.tabs.addTab(self.gameplay_tab, "Gameplay")
 
+    def set_default_values(self):
+        self.general_tab.set_default_values()
+
     @pyqtSlot()
     def on_save(self) -> None:
         try:
-            self.general_tab.on_save()
-            self.farm_tab.on_save()
-            self.gameplay_tab.on_save()
+            self.threads.append(
+                run_in_background(lambda: self.general_tab.on_save())[0]
+            )
+            self.threads.append(run_in_background(lambda: self.farm_tab.on_save())[0])
+            self.threads.append(
+                run_in_background(lambda: self.gameplay_tab.on_save())[0]
+            )
         except Exception:
             self.logger.error(traceback.format_exc())
             return

@@ -313,7 +313,7 @@ class SaleHotelSystem:
                 self.logger.warning(f"Did not found icon for item {item_inv}")
                 continue
             self.controller.click(pos_item_inv)
-            wait()
+            wait((0.8, 1.5))
             img = self.sale_hotel_choose_biggest_quantity()
 
             price_average = self.sale_hotel.sale_hotel_get_price_average_item(img)

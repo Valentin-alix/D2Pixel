@@ -62,6 +62,7 @@ class SideBarMenuItem(QWidget):
             self.bot_settings_dialog = BotSettingsModal(
                 self.logger, self.service, self.bot.character_state.character
             )
+        self.bot_settings_dialog.set_default_values()
         self.bot_settings_dialog.open()
 
     @pyqtSlot()
