@@ -1,8 +1,8 @@
 import traceback
 from logging import Logger
 
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QFormLayout, QLineEdit, QWidget
+from PyQt5.QtCore import QObject, Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtWidgets import QFormLayout, QLabel, QLineEdit, QWidget
 
 from D2Shared.shared.schemas.equipment import ReadEquipmentSchema, UpdateEquipmentSchema
 from D2Shared.shared.schemas.stat import BaseLineSchema, StatSchema
@@ -42,6 +42,7 @@ class FmItem(QWidget):
         self.main_layout = VerticalLayout()
         self.setLayout(self.main_layout)
 
+        self._setup_count_achieved()
         self._setup_item_content()
         self._setup_action_buttons()
 
@@ -51,11 +52,16 @@ class FmItem(QWidget):
         self.fm_item_table.set_table_from_equipment(equipment)
         self.button_delete.show()
 
+        self.label_count_achieved.setText(str(equipment.count_lines_achieved))
+        self.bot_signals.fm_new_count_achieved.connect(self._on_new_count_achieved)
+        self.count_achieved_widget.show()
+
     def set_item_from_base_lines(self, base_lines: list[BaseLineSchema]):
         self.equipment = None
         self.label_edit.setText("")
         self.fm_item_table.set_table_from_base_lines(base_lines)
         self.button_delete.hide()
+        self.count_achieved_widget.hide()
 
     def get_exo_stat(self) -> StatSchema | None:
         stat_id: int | None = self.fm_item_table.exo_combo.currentData()
@@ -87,6 +93,22 @@ class FmItem(QWidget):
         self.fm_item_table: FmItemTable = FmItemTable(self.bot_signals, self.service)
         self.main_layout.addWidget(self.fm_item_table)
 
+    def _setup_count_achieved(self) -> None:
+        self.count_achieved_widget = QWidget()
+        count_layout = HorizontalLayout()
+        count_layout.setAlignment(Qt.AlignCenter)
+        self.count_achieved_widget.setLayout(count_layout)
+
+        title = QLabel()
+        title.setText("Nombre de passage aux lignes ciblés réussis : ")
+        self.count_achieved_widget.layout().addWidget(title)
+
+        self.label_count_achieved = QLabel()
+        self.count_achieved_widget.layout().addWidget(self.label_count_achieved)
+
+        self.count_achieved_widget.hide()
+        self.layout().addWidget(self.count_achieved_widget)
+
     def _setup_action_buttons(self):
         action_buttons = QWidget()
         self.main_layout.addWidget(action_buttons)
@@ -105,6 +127,10 @@ class FmItem(QWidget):
         self.button_delete.hide()
         self.button_delete.clicked.connect(self._on_delete)
         self.action_buttons_layout.addWidget(self.button_delete)
+
+    @pyqtSlot(int)
+    def _on_new_count_achieved(self, count_achieved: int):
+        self.label_count_achieved.setText(str(count_achieved))
 
     @pyqtSlot()
     def _on_delete(self):

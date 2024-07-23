@@ -34,12 +34,12 @@ class EquipmentService:
             return ReadEquipmentSchema(**resp.json())
 
     @staticmethod
-    def increment_exo_attempt(
+    def increment_count_achieved(
         service: ServiceSession,
         equipment_id: int,
     ) -> ReadEquipmentSchema:
         with service.logged_session() as session:
-            resp = session.put(f"{EQUIPMENT_URL}{equipment_id}/exo_attempt/")
+            resp = session.put(f"{EQUIPMENT_URL}{equipment_id}/count_lines_achieved/")
             return ReadEquipmentSchema(**resp.json())
 
     @staticmethod

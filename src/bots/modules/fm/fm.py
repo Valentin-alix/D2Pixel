@@ -41,7 +41,6 @@ class Fm:
         self.logger = logger
         self.smithmagic_workshop = smithmagic_workshop
         self.capturer = capturer
-        self.equipment: ReadEquipmentSchema | None = None
 
     def run(
         self,
@@ -49,7 +48,6 @@ class Fm:
         exo_stat: StatSchema | None = None,
         equipment: ReadEquipmentSchema | None = None,
     ):
-        self.equipment = equipment
         old_img: numpy.ndarray | None = None
         while True:
             wait((0.3, 1))
@@ -63,7 +61,7 @@ class Fm:
             if current_lines is None:
                 self.logger.info("Could not get stats of item")
                 return None
-            if self.put_rune(current_lines, target_lines, exo_stat) is True:
+            if self.put_rune(current_lines, target_lines, exo_stat, equipment) is True:
                 self.logger.info("Target item achieved")
                 return None
             old_img = img
@@ -78,32 +76,18 @@ class Fm:
     def put_exo(
         self,
         current_item_lines: list[BaseLineSchema],
-        exo_stat: StatSchema | None = None,
+        exo_stat: StatSchema,
     ) -> bool:
-        if exo_stat is None:
-            return True
-        if (
-            next(
-                (
-                    line
-                    for line in current_item_lines
-                    if line.stat.name == exo_stat.name
-                ),
-                None,
-            )
-            is not None
-        ):
+        related_curr_line = next(
+            (_line for _line in current_item_lines if _line.stat.id == exo_stat.id),
+            None,
+        )
+        if related_curr_line is not None:
             # found exo stat in current lines, success
             return True
         self.place_rune_by_name(exo_stat.runes[0].name)
         wait((0.6, 1))
         self.controller.click(MERGE_POSITION)
-        if self.equipment:
-            self.equipment.exo_attempt += 1
-            EquipmentService.increment_exo_attempt(self.service, self.equipment.id)
-            self.bot_signals.fm_new_line_value.emit(
-                (self.equipment.exo_attempt, exo_stat.id)
-            )
         return False
 
     def put_rune(
@@ -111,12 +95,22 @@ class Fm:
         current_item_lines: list[BaseLineSchema],
         target_item_lines: list[BaseLineSchema],
         exo_stat: StatSchema | None = None,
+        equipment: ReadEquipmentSchema | None = None,
     ) -> bool:
         line_prio = self.fm_analyser.get_highest_priority_line(
             current_item_lines, target_item_lines
         )
         if line_prio is None:
-            return self.put_exo(current_item_lines, exo_stat)
+            self.logger.info("Target lines achieved")
+            if equipment:
+                equipment.count_lines_achieved += 1
+                EquipmentService.increment_count_achieved(self.service, equipment.id)
+                self.bot_signals.fm_new_count_achieved.emit(
+                    equipment.count_lines_achieved
+                )
+            if exo_stat:
+                return self.put_exo(current_item_lines, exo_stat)
+            return True
 
         col_rune_info = self.fm_analyser.get_optimal_index_rune_for_target_line(
             line_prio.current_line, line_prio.target_line
@@ -130,18 +124,18 @@ class Fm:
 
         self.logger.info(f"clicked line {line_prio.index} column {col_index}")
 
-        if self.equipment:
-            related_line = next(
+        if equipment:
+            related_target_line = next(
                 _elem
-                for _elem in self.equipment.lines
+                for _elem in equipment.lines
                 if _elem.stat_id == line_prio.target_line.stat_id
             )
-            related_line.spent_quantity += rune.stat_quantity
+            related_target_line.spent_quantity += rune.stat_quantity
             LineService.add_spent_quantity(
-                self.service, related_line.id, rune.stat_quantity
+                self.service, related_target_line.id, rune.stat_quantity
             )
             self.bot_signals.fm_new_line_value.emit(
-                (related_line.spent_quantity, related_line.stat_id)
+                (related_target_line.spent_quantity, related_target_line.stat_id)
             )
 
         return False
