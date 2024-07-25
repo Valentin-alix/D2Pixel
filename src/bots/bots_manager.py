@@ -6,7 +6,7 @@ from src.bots.ankama.ankama_launcher import AnkamaLauncher
 from src.bots.dofus.chat.sentence import FakeSentence
 from src.bots.modules.bot import Bot
 from src.gui.signals.app_signals import AppSignals
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.window_manager.organizer import (
     WindowInfo,
 )
@@ -16,7 +16,7 @@ class BotsManager:
     def __init__(
         self,
         logger: Logger,
-        service: ServiceSession,
+        service: ClientService,
         app_signals: AppSignals,
         user: ReadUserSchema,
     ) -> None:

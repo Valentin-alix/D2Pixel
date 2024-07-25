@@ -10,7 +10,7 @@ from src.gui.components.buttons import PushButtonIcon
 from src.gui.components.organization import VerticalLayout
 from src.gui.components.table import TableWidget
 from src.services.character import CharacterService
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 
 
 class SpellInfoEdits(BaseModel):
@@ -34,7 +34,7 @@ class SpellInfoEdits(BaseModel):
 
 class GameplayTab(QWidget):
     def __init__(
-        self, service: ServiceSession, character: CharacterSchema, *args, **kwargs
+        self, service: ClientService, character: CharacterSchema, *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.spell_edits: dict[int, SpellInfoEdits] = {}
@@ -197,7 +197,7 @@ class GameplayTab(QWidget):
         self.spells_table.table.removeRow(index)
         self.update_delete_buttons()
 
-    def on_save(self):
+    async def on_save(self):
         spells: list[UpdateSpellSchema] = []
         for spell_info_edit in self.spell_edits.values():
             name = spell_info_edit.name_edit.text()
@@ -242,6 +242,6 @@ class GameplayTab(QWidget):
                     character_id=self.character.id,
                 )
             )
-        self.character.spells = CharacterService.update_spells(
+        self.character.spells = await CharacterService.update_spells(
             self.service, self.character.id, spells
         )

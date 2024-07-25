@@ -8,7 +8,7 @@ from D2Shared.shared.consts.maps import BONTA_SALE_HOTEL_CONSUMABLE_MAP_CN
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from src.gui.signals.app_signals import AppSignals
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from tests.utils import PATH_FIXTURES
 
 ZAAPIS_PATH = os.path.join(PATH_FIXTURES, "hud", "zaapis")
@@ -16,7 +16,7 @@ ZAAPIS_PATH = os.path.join(PATH_FIXTURES, "hud", "zaapis")
 
 class TestZaapi(unittest.TestCase):
     def setUp(self):
-        service_session = ServiceSession(Logger("root"), AppSignals())
+        service_session = ClientService(Logger("root"), AppSignals())
         self.object_searcher = ObjectSearcher(service_session)
 
     def test_zaapi_consu(self):

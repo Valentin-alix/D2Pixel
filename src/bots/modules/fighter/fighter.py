@@ -39,7 +39,7 @@ from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.image_manager.transformation import crop_image
 from src.services.character import CharacterService
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.services.sub_area import SubAreaService
 from src.states.character_state import CharacterState
 from src.window_manager.capturer import Capturer
@@ -73,7 +73,7 @@ fighter_choose_sub_area_lock = Lock()
 class Fighter:
     def __init__(
         self,
-        service: ServiceSession,
+        service: ClientService,
         character_state: CharacterState,
         sub_area_farming: SubAreaFarming,
         sub_area_farming_sys: SubAreaFarmingSystem,

@@ -3,7 +3,7 @@ from collections import defaultdict
 from D2Shared.shared.enums import CharacteristicEnum
 from D2Shared.shared.schemas.spell import CurrentBoostSchema, SpellSchema
 from src.bots.dofus.fight.grid.grid import Grid
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.states.character_state import CharacterState
 
 
@@ -11,7 +11,7 @@ class SpellManager:
     _max_range_spell: int
 
     def __init__(
-        self, grid: Grid, service: ServiceSession, character_state: CharacterState
+        self, grid: Grid, service: ClientService, character_state: CharacterState
     ) -> None:
         self.grid = grid
         self._pa: int = 6

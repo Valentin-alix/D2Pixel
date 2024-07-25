@@ -48,8 +48,8 @@ from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.character import CharacterService
+from src.services.client_service import ClientService
 from src.services.map import MapService
-from src.services.session import ServiceSession
 from src.services.world import WorldService
 from src.states.character_state import CharacterState
 from src.states.map_state import CurrentMapInfo, MapState
@@ -81,7 +81,7 @@ class CoreWalkerSystem:
         object_searcher: ObjectSearcher,
         animation_manager: AnimationManager,
         capturer: Capturer,
-        service: ServiceSession,
+        service: ClientService,
         user: ReadUserSchema,
     ) -> None:
         self.hud_sys = hud_sys
@@ -159,7 +159,7 @@ class CoreWalkerSystem:
 
         self.map_state.is_first_move = False
 
-        if not (self.character_state.character.is_sub and use_transport):
+        if not use_transport:
             self.get_curr_direction()
             return img
 
@@ -550,7 +550,6 @@ class CoreWalkerSystem:
 
         path_map = MapService.find_path(
             self.service,
-            self.character_state.character.is_sub,
             use_transport,
             self.get_curr_map_info().map.id,
             self.get_curr_direction(),

@@ -4,8 +4,8 @@ from logging import Logger
 
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt, QThread, pyqtSlot
-from PyQt5.QtGui import QCloseEvent
 from PyQt5.QtWidgets import QDialog, QMainWindow, QStackedWidget, QWidget
+from qasync import asyncClose
 
 from D2Shared.shared.schemas.character import CharacterSchema
 from src.bots.bots_manager import BotsManager
@@ -19,7 +19,7 @@ from src.gui.fragments.sub_header.sub_header import SubHeader
 from src.gui.pages.login.login_page import LoginModal
 from src.gui.signals.app_signals import AppSignals
 from src.gui.workers.worker_connect import WorkerConnect
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.services.user import UserService
 
 
@@ -27,11 +27,11 @@ class MainWindow(QMainWindow):
     BASE_WIDTH: int = 1600
     BASE_HEIGHT: int = 900
 
-    def __init__(
+    async def __init__(
         self,
         title: str,
         logger: Logger,
-        service: ServiceSession,
+        service: ClientService,
         app_signals: AppSignals,
         *args,
         **kwargs,
@@ -69,7 +69,7 @@ class MainWindow(QMainWindow):
         self.app_signals.login_failed.connect(self.on_login_failed)
         self.app_signals.log_info.connect(self.on_log_app)
 
-        self.user = UserService.get_current_user(self.service)
+        self.user = await UserService.get_current_user(self.service)
 
         # sidebar
         self.sidebar = SideBarMenu(
@@ -178,5 +178,6 @@ class MainWindow(QMainWindow):
             self.remove_character(character)
         self.app_signals.is_connecting.emit(False)
 
-    def closeEvent(self, _: QCloseEvent):
+    @asyncClose
+    async def closeEvent(self, _):
         self.app_signals.on_close.emit()

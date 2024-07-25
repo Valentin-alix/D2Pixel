@@ -12,14 +12,14 @@ from src.gui.pages.fm.fm_item.fm_item import FmItem
 from src.gui.signals.app_signals import AppSignals
 from src.gui.workers.worker_fm import WorkerFm
 from src.gui.workers.worker_stop import WorkerStop
+from src.services.client_service import ClientService
 from src.services.equipment import EquipmentService
-from src.services.session import ServiceSession
 
 
 class FmPage(QWidget):
     def __init__(
         self,
-        service: ServiceSession,
+        service: ClientService,
         app_signals: AppSignals,
         bot: Bot,
         logger: Logger,

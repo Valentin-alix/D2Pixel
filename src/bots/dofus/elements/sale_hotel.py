@@ -41,8 +41,8 @@ from src.image_manager.screen_objects.icon_searcher import IconSearcher
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.image_manager.transformation import crop_image
+from src.services.client_service import ClientService
 from src.services.price import PriceService
-from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
@@ -234,7 +234,7 @@ class SaleHotelSystem:
         icon_searcher: IconSearcher,
         logger: Logger,
         image_manager: ImageManager,
-        service: ServiceSession,
+        service: ClientService,
         character_state: CharacterState,
     ) -> None:
         self.capturer = capturer

@@ -1,4 +1,5 @@
 from logging import Logger
+
 from D2Shared.shared.consts.adaptative.positions import (
     BANK_ASTRUB_IN,
     BANK_ASTRUB_OUT,
@@ -6,12 +7,11 @@ from D2Shared.shared.consts.adaptative.positions import (
     BANK_BONTA_OUT,
 )
 from D2Shared.shared.consts.object_configs import ObjectConfigs
-
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.maps import get_astrub_bank_map, get_bonta_bank_map
 from src.entities.building_info import BuildingInfo
 from src.image_manager.screen_objects.image_manager import ImageManager
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.window_manager.controller import Controller
 
 
@@ -22,7 +22,7 @@ class BankBuilding:
         logger: Logger,
         controller: Controller,
         image_manager: ImageManager,
-        service: ServiceSession,
+        service: ClientService,
     ) -> None:
         self.core_walker_sys = core_walker_sys
         self.logger = logger

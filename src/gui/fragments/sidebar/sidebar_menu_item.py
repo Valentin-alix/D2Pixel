@@ -13,14 +13,14 @@ from src.gui.fragments.sidebar.bot_log_dialog import BotLogDialog
 from src.gui.fragments.sidebar.settings.bot_settings_modal.bot_settings_modal import (
     BotSettingsModal,
 )
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 
 
 class SideBarMenuItem(QWidget):
     def __init__(
         self,
         logger: Logger,
-        service: ServiceSession,
+        service: ClientService,
         bot: Bot,
         *args,
         **kwargs,

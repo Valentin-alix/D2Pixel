@@ -16,9 +16,9 @@ from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
 from src.bots.modules.fm.fm_analyser import FmAnalyser
 from src.common.randomizer import wait
 from src.gui.signals.bot_signals import BotSignals
+from src.services.client_service import ClientService
 from src.services.equipment import EquipmentService
 from src.services.line import LineService
-from src.services.session import ServiceSession
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
@@ -28,7 +28,7 @@ class Fm:
         self,
         bot_signals: BotSignals,
         controller: Controller,
-        service: ServiceSession,
+        service: ClientService,
         fm_analyser: FmAnalyser,
         logger: Logger,
         smithmagic_workshop: SmithMagicWorkshop,

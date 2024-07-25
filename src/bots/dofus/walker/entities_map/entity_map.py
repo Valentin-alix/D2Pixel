@@ -3,8 +3,8 @@ from cachetools.keys import hashkey
 from pydantic import BaseModel
 
 from D2Shared.shared.schemas.map import CoordinatesMapSchema, MapSchema
+from src.services.client_service import ClientService
 from src.services.map import MapService
-from src.services.session import ServiceSession
 
 
 class EntityMap(BaseModel):
@@ -12,7 +12,7 @@ class EntityMap(BaseModel):
 
 
 @cached(cache={}, key=lambda _: hashkey())
-def get_phenixs_entity_map(service: ServiceSession) -> list[EntityMap]:
+def get_phenixs_entity_map(service: ClientService) -> list[EntityMap]:
     maps_coordinates: list[CoordinatesMapSchema] = [
         CoordinatesMapSchema(x=2, y=-14, world_id=1),
         CoordinatesMapSchema(x=12, y=12, world_id=1),

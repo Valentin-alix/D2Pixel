@@ -8,7 +8,7 @@ from src.bots.dofus.fight.grid.path_grid import AstarGrid
 from src.bots.dofus.fight.ias.base import IaBaseFightSystem
 from src.bots.dofus.fight.spells.spell_manager import SpellManager
 from src.bots.dofus.fight.spells.spell_system import SpellSystem
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.services.spell import SpellService
 from src.states.character_state import CharacterState
 
@@ -22,7 +22,7 @@ class IaBruteFightSystem:
         astar_grid: AstarGrid,
         grid: Grid,
         logger: Logger,
-        service: ServiceSession,
+        service: ClientService,
         character_state: CharacterState,
     ) -> None:
         self.ia_base_fight_sys = ia_base_fight_sys

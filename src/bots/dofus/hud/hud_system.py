@@ -23,7 +23,7 @@ from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.image_manager.transformation import crop_image
 from src.services.character import CharacterService
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.states.character_state import CharacterState
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
@@ -59,27 +59,26 @@ class HudSystem(BaseModel):
     hud: Hud
     image_manager: ImageManager
     character_state: CharacterState
-    service: ServiceSession
+    service: ClientService
     controller: Controller
     object_searcher: ObjectSearcher
     capturer: Capturer
     logger: Logger
     job_parser: JobParser
 
-    def handle_level_up(
+    async def handle_level_up(
         self, img: numpy.ndarray, pos: Position, region: RegionSchema
     ) -> numpy.ndarray:
         new_level = self.hud.get_level_up_number(img, pos, region)
 
         character = self.character_state.character
         character.lvl = new_level
-        character = CharacterService.update_character(
+        character = await CharacterService.update_character(
             self.service,
             UpdateCharacterSchema(
                 id=character.id,
                 lvl=character.lvl,
                 po_bonus=character.po_bonus,
-                is_sub=character.is_sub,
                 time_spent=character.time_spent,
                 elem=character.elem,
                 server_id=character.server_id,
@@ -92,7 +91,7 @@ class HudSystem(BaseModel):
         self.controller.click(modal_ok_info[0])
         return self.image_manager.capturer.capture()
 
-    def handle_info_modal(
+    async def handle_info_modal(
         self, img: numpy.ndarray
     ) -> tuple[numpy.ndarray, set[EventInfoPopup]]:
         events_info_modal: set[EventInfoPopup] = set()
@@ -121,7 +120,7 @@ class HudSystem(BaseModel):
                     )
                 )
                 related_job_info.lvl = level
-                CharacterService.update_job_infos(
+                await CharacterService.update_job_infos(
                     self.service,
                     self.character_state.character.id,
                     self.character_state.character.character_job_info,
@@ -143,7 +142,7 @@ class HudSystem(BaseModel):
                 )
             )
             related_job_info.lvl = level
-            CharacterService.update_job_infos(
+            await CharacterService.update_job_infos(
                 self.service,
                 self.character_state.character.id,
                 self.character_state.character.character_job_info,

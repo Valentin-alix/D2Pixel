@@ -4,12 +4,12 @@ import cv2
 import numpy
 import tesserocr
 import unidecode
+
 from D2Shared.shared.consts.adaptative.regions import (
     MAP_POSITION_REGION,
     ZONE_TEXT_REGION,
 )
 from D2Shared.shared.schemas.map import MapSchema
-
 from src.exceptions import UnknowStateException
 from src.image_manager.ocr import (
     BASE_CONFIG,
@@ -17,12 +17,12 @@ from src.image_manager.ocr import (
     set_config_for_ocr_number,
 )
 from src.image_manager.transformation import crop_image, get_inverted_image
+from src.services.client_service import ClientService
 from src.services.map import MapService
-from src.services.session import ServiceSession
 
 
 def get_map(
-    service: ServiceSession, img: numpy.ndarray, from_map: MapSchema | None = None
+    service: ClientService, img: numpy.ndarray, from_map: MapSchema | None = None
 ) -> tuple[MapSchema, str]:
     img = get_inverted_image(img)
 

@@ -13,8 +13,8 @@ from src.gui.components.organization import (
 )
 from src.gui.pages.fm.fm_item.fm_item_table import FmItemTable
 from src.gui.signals.bot_signals import BotSignals
+from src.services.client_service import ClientService
 from src.services.equipment import EquipmentService
-from src.services.session import ServiceSession
 
 
 class FmItemSignals(QObject):
@@ -28,7 +28,7 @@ class FmItem(QWidget):
         self,
         bot_signals: BotSignals,
         logger: Logger,
-        service: ServiceSession,
+        service: ClientService,
         *args,
         **kwargs,
     ) -> None:

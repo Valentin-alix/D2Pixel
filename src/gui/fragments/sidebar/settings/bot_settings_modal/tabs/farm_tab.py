@@ -6,22 +6,22 @@ from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from src.gui.components.combobox import CheckableComboBox
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.services.character import CharacterService
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.services.sub_area import SubAreaService
 
 
 class FarmTab(QWidget):
-    def __init__(
-        self, service: ServiceSession, character: CharacterSchema, *args, **kwargs
+    async def __init__(
+        self, service: ClientService, character: CharacterSchema, *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.setLayout(VerticalLayout())
         self.service = service
         self.character = character
         self.combo_sub_areas: list[CheckableComboBox[SubAreaSchema]] = []
-        self._set_sub_area_farmable()
+        await self._set_sub_area_farmable()
 
-    def _set_sub_area_farmable(self) -> None:
+    async def _set_sub_area_farmable(self) -> None:
         sub_area_widg = QWidget()
         self.layout().addWidget(sub_area_widg)
         sub_area_layout = VerticalLayout()
@@ -37,7 +37,7 @@ class FarmTab(QWidget):
         h_layout = HorizontalLayout()
         list_sub_areas.setLayout(h_layout)
 
-        all_sub_areas = SubAreaService.get_sub_areas(self.service)
+        all_sub_areas = await SubAreaService.get_sub_areas(self.service)
         areas = sorted(
             set(elem.area for elem in all_sub_areas), key=lambda elem: elem.name
         )
@@ -67,13 +67,13 @@ class FarmTab(QWidget):
                     combo_sub.addItem(sub_area.name, sub_area, checked=checked)
                 form_l.addRow(area.name, combo_sub)
 
-    def on_save(self):
+    async def on_save(self):
         new_sub_areas: list[SubAreaSchema] = [
             _elem for combo in self.combo_sub_areas for _elem in combo.currentData()
         ]
         if set(self.character.sub_areas) != set(new_sub_areas):
             self.character.sub_areas = new_sub_areas
-            CharacterService.update_sub_areas(
+            await CharacterService.update_sub_areas(
                 self.service,
                 self.character.id,
                 [elem.id for elem in self.character.sub_areas],

@@ -4,8 +4,8 @@ from PyQt5.QtWidgets import QComboBox, QWidget
 from D2Shared.shared.enums import CategoryEnum
 from D2Shared.shared.schemas.server import ServerSchema
 from src.gui.components.organization import VerticalLayout
+from src.services.client_service import ClientService
 from src.services.server import ServerService
-from src.services.session import ServiceSession
 from src.services.type_item import TypeItemService
 
 
@@ -13,7 +13,7 @@ class BenefitCraftFilters(QWidget):
     class FilterSignals(QObject):
         changed_filters = pyqtSignal()
 
-    def __init__(self, service: ServiceSession):
+    def __init__(self, service: ClientService):
         super().__init__()
         self.service = service
         self.filter_signals = self.FilterSignals()

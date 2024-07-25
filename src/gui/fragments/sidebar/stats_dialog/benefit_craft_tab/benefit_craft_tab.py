@@ -7,11 +7,11 @@ from src.gui.fragments.sidebar.stats_dialog.benefit_craft_tab.benefit_craft_filt
 from src.gui.fragments.sidebar.stats_dialog.benefit_craft_tab.benefit_recipe_table import (
     BenefitRecipeTable,
 )
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 
 
 class BenefitCraftTab(QWidget):
-    def __init__(self, service: ServiceSession, server_id: int):
+    def __init__(self, service: ClientService, server_id: int):
         super().__init__()
         self.server_id = server_id
         self.service = service

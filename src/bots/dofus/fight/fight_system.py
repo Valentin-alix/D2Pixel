@@ -24,7 +24,7 @@ from src.common.retry import RetryTimeArgs
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
@@ -49,7 +49,7 @@ class FightSystem:
         controller: Controller,
         grid: Grid,
         is_dead: Event,
-        service: ServiceSession,
+        service: ClientService,
         not_in_fight: Event,
     ) -> None:
         self.capturer = capturer

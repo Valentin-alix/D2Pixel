@@ -10,14 +10,14 @@ from src.gui.components.organization import VerticalLayout
 from src.gui.pages.craft.recipe_group import RecipeGroup
 from src.gui.pages.craft.recipe_table import RecipeTable
 from src.services.character import CharacterService
+from src.services.client_service import ClientService
 from src.services.recipe import RecipeService
-from src.services.session import ServiceSession
 
 
 class AutomaticTab(QWidget):
     def __init__(
         self,
-        service: ServiceSession,
+        service: ClientService,
         character: CharacterSchema,
         logger: Logger,
         available_recipes: list[RecipeSchema],

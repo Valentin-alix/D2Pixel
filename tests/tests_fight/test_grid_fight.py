@@ -10,7 +10,7 @@ from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
 from src.bots.dofus.fight.grid.path_grid import AstarGrid
 from src.gui.signals.app_signals import AppSignals
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from tests.utils import PATH_FIXTURES
 
 PATH_FIXTURES_FIGHT = os.path.join(PATH_FIXTURES, "fight")
@@ -19,7 +19,7 @@ PATH_FIXTURES_FIGHT = os.path.join(PATH_FIXTURES, "fight")
 class TestGridFight(unittest.TestCase):
     def setUp(self) -> None:
         logger = Logger("root")
-        service = ServiceSession(Logger("root"), AppSignals())
+        service = ClientService(Logger("root"), AppSignals())
         object_searcher = ObjectSearcher(service)
         self.grid = Grid(object_searcher)
         self.astar_grid = AstarGrid(self.grid, logger)

@@ -18,7 +18,7 @@ from src.exceptions import UnknowStateException
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
@@ -26,7 +26,7 @@ from src.window_manager.controller import Controller
 class SpellSystem:
     def __init__(
         self,
-        service: ServiceSession,
+        service: ClientService,
         spell_manager: SpellManager,
         controller: Controller,
         capturer: Capturer,

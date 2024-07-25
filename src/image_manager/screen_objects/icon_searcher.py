@@ -18,8 +18,8 @@ from src.consts import ASSET_FOLDER_PATH
 from src.image_manager.analysis import get_position_template_in_image
 from src.image_manager.masks import get_not_brown_masked
 from src.image_manager.transformation import crop_image
+from src.services.client_service import ClientService
 from src.services.item import ItemService
-from src.services.session import ServiceSession
 
 PATH_ICONS = os.path.join(ASSET_FOLDER_PATH, "icons")
 
@@ -28,7 +28,7 @@ STORAGE_COUNT_CELL_Y = 10
 
 
 class IconSearcher:
-    def __init__(self, logger: Logger, service: ServiceSession) -> None:
+    def __init__(self, logger: Logger, service: ClientService) -> None:
         self.service = service
         self.logger = logger
 

@@ -1,15 +1,15 @@
 from logging import Logger
+
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.enums import CategoryEnum
 from D2Shared.shared.schemas.item import ItemSchema
-
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.elements.sale_hotel import SaleHotelSystem
 from src.bots.dofus.hud.hud_system import HudSystem
 from src.entities.item import ItemProcessedStatus
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.services.character import CharacterService
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.states.character_state import CharacterState
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
@@ -18,7 +18,7 @@ from src.window_manager.controller import Controller
 class Seller:
     def __init__(
         self,
-        service: ServiceSession,
+        service: ClientService,
         character_state: CharacterState,
         sale_hotel_sys: SaleHotelSystem,
         hud_sys: HudSystem,

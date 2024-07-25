@@ -14,7 +14,7 @@ from src.bots.dofus.fight.spells.spell_system import SpellSystem
 from src.common.retry import RetryTimeArgs
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.states.character_state import CharacterState
 from src.window_manager.controller import Controller
 
@@ -27,7 +27,7 @@ class IaBaseFightSystem:
         ldv_grid: LdvGrid,
         controller: Controller,
         animation_manager: AnimationManager,
-        service: ServiceSession,
+        service: ClientService,
         character_state: CharacterState,
         logger: Logger,
         spell_manager: SpellManager,

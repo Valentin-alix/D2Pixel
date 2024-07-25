@@ -1,22 +1,21 @@
 from D2Shared.shared.schemas.price import PriceSchema
 from src.consts import BACKEND_URL
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 
 PRICE_URL = BACKEND_URL + "/price/"
 
 
 class PriceService:
     @staticmethod
-    def update_or_create_price(
-        service: ServiceSession, item_id: int, server_id: int, average: float
+    async def update_or_create_price(
+        service: ClientService, item_id: int, server_id: int, average: float
     ) -> PriceSchema:
-        with service.logged_session() as session:
-            resp = session.post(
-                f"{PRICE_URL}update_or_create/",
-                params={
-                    "item_id": item_id,
-                    "server_id": server_id,
-                    "price_average": average,
-                },
-            )
-            return PriceSchema(**resp.json())
+        resp = await service.session.post(
+            f"{PRICE_URL}update_or_create/",
+            params={
+                "item_id": item_id,
+                "server_id": server_id,
+                "price_average": average,
+            },
+        )
+        return PriceSchema(**resp.json())

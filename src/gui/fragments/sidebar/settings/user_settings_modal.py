@@ -3,8 +3,9 @@ from datetime import time
 from functools import partial
 from logging import Logger
 
-from PyQt5.QtCore import Qt, QTime, pyqtSlot
+from PyQt5.QtCore import Qt, QTime
 from PyQt5.QtWidgets import QFormLayout, QLineEdit, QTimeEdit, QWidget
+from qasync import asyncSlot
 
 from D2Shared.shared.schemas.config_user import (
     ReadConfigUserSchema,
@@ -19,8 +20,8 @@ from src.gui.components.buttons import PushButton, PushButtonIcon
 from src.gui.components.dialog import Dialog
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.gui.signals.app_signals import AppSignals
+from src.services.client_service import ClientService
 from src.services.config_user import ConfigService
-from src.services.session import ServiceSession
 
 
 class UserSettingsModal(Dialog):
@@ -29,7 +30,7 @@ class UserSettingsModal(Dialog):
         logger: Logger,
         app_signals: AppSignals,
         user: ReadUserSchema,
-        service: ServiceSession,
+        service: ClientService,
         *args,
         **kwargs,
     ) -> None:
@@ -194,8 +195,8 @@ class UserSettingsModal(Dialog):
         self.save_btn.setShortcut("Return")
         self.main_layout.addWidget(self.save_btn)
 
-    @pyqtSlot()
-    def on_save(self):
+    @asyncSlot()
+    async def on_save(self):
         try:
             afk_time_value = self.afk_time_at_start_edit.time()
             afk_time_at_start = time(
@@ -260,7 +261,7 @@ class UserSettingsModal(Dialog):
                 range_new_map=range_new_map,
                 ranges_hour_playtime=ranges_hour_playtime,
             )
-            self.user.config_user = ConfigService.update_config_user(
+            self.user.config_user = await ConfigService.update_config_user(
                 self.service, self.user.config_user.id, update_config
             )
         except Exception:

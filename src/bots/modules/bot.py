@@ -49,7 +49,7 @@ from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.icon_searcher import IconSearcher
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
-from src.services.session import ServiceSession
+from src.services.client_service import ClientService
 from src.states.character_state import CharacterState
 from src.states.map_state import MapState
 from src.window_manager.capturer import Capturer
@@ -63,7 +63,7 @@ class Bot:
     def __init__(
         self,
         character_id: str,
-        service: ServiceSession,
+        service: ClientService,
         fake_sentence: FakeSentence,
         window_info: WindowInfo,
         user: ReadUserSchema,

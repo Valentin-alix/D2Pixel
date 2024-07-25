@@ -4,6 +4,7 @@ import unittest
 from logging import Logger
 from pathlib import Path
 
+from src.services.client_service import ClientService
 from src.services.item import ItemService
 
 sys.path.append(os.path.join(Path(__file__).parent.parent.parent))
@@ -11,12 +12,11 @@ from D2Shared.shared.enums import JobEnum
 from src.gui.signals.app_signals import AppSignals
 from src.services.character import CharacterService
 from src.services.recipe import RecipeService
-from src.services.session import ServiceSession
 
 
-class TestServiceCharacter(unittest.TestCase):
+class TestServiceCharacter(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.service = ServiceSession(Logger("Xeloreeuu"), AppSignals())
+        self.service = ClientService(Logger("Xeloreeuu"), AppSignals())
         self.character = CharacterService.get_or_create_character(
             self.service, "Tema-la-ratte"
         )
@@ -25,6 +25,10 @@ class TestServiceCharacter(unittest.TestCase):
         #         self.service, self.character.id, job_id, 80
         #     )
         return super().setUp()
+
+    async def test_async_req(self):
+        temp = ClientService(AppSignals(), Logger("root"))
+        await temp.example()
 
     def test_icon(self):
         colls = CharacterService.get_possible_collectable(
@@ -64,16 +68,3 @@ class TestServiceCharacter(unittest.TestCase):
         CharacterService.add_bank_items(
             self.service, self.character.id, [elem.item_id for elem in colls]
         )
-        items = RecipeService.get_default_recipes(self.service, self.character.id)
-        print(items)
-        # CharacterService.add_bank_items(
-        #     self.service, self.character.id, [elem.item_id for elem in items]
-        # )
-        # recipes = RecipeService.get_default_recipes(self.service, self.character.id)
-        # for recipe in recipes:
-        #     print(recipe.result_item.name)
-
-        # sell_items = ItemService.get_default_sellable_items(
-        #     self.service, self.character.id, [elem.id for elem in recipes]
-        # )
-        # print(sell_items)

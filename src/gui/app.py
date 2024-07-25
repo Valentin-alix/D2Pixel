@@ -4,9 +4,7 @@ import os
 from PyQt5.QtCore import (
     Qt,
 )
-from PyQt5.QtWidgets import (
-    QApplication,
-)
+from qasync import QApplication
 from qt_material import apply_stylesheet
 
 from src.consts import RESOURCE_FOLDER_PATH

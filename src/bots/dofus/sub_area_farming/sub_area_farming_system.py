@@ -1,26 +1,23 @@
-from logging import Logger
 import math
 import random
+from logging import Logger
 from time import perf_counter
 
 import numpy
+
 from D2Shared.shared.schemas.map import MapSchema
 from D2Shared.shared.schemas.map_direction import MapDirectionSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from D2Shared.shared.utils.debugger import log_caller, timeit
-
-
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
+from src.services.client_service import ClientService
 from src.services.map import MapService
-from src.services.session import ServiceSession
 from src.services.sub_area import SubAreaService
 from src.states.character_state import CharacterState
 
 
 class SubAreaFarming:
-    def __init__(
-        self, service: ServiceSession, character_state: CharacterState
-    ) -> None:
+    def __init__(self, service: ClientService, character_state: CharacterState) -> None:
         self.service = service
         self.character_state = character_state
 
@@ -36,14 +33,13 @@ class SubAreaFarming:
             sub_area_ids_farming,
             weights_by_map,
             [elem.id for elem in valid_sub_areas],
-            self.character_state.character.is_sub,
         )
 
 
 class SubAreaFarmingSystem:
     def __init__(
         self,
-        service: ServiceSession,
+        service: ClientService,
         core_walker_sys: CoreWalkerSystem,
         character_state: CharacterState,
         logger: Logger,
@@ -102,7 +98,5 @@ class SubAreaFarmingSystem:
                 [self.core_walker_sys.get_curr_map_info().map]
             )
 
-        limit_maps = MapService.get_limit_maps_sub_area(
-            self.service, sub_area_ids, self.character_state.character.is_sub
-        )
+        limit_maps = MapService.get_limit_maps_sub_area(self.service, sub_area_ids)
         return self.core_walker_sys.travel_to_map(limit_maps)
