@@ -60,12 +60,12 @@ class AnkamaLauncher:
         self.is_init_playtime_planner: bool = False
 
     def launch_dofus_game(self):
-        ank_window_info = self.get_window_info()
+        ank_window_info = self.get_or_launch_ankama_window()
         if self.window_info is None:
             self.window_info = ank_window_info
         else:
             self.window_info.hwnd = ank_window_info.hwnd
-        self.init_launcher(self.window_info)
+        self.init_launcher_by_window(self.window_info)
 
         """launch games by clicking play on ankama launcher & wait 12 seconds"""
         if not is_window_visible(self.window_info.hwnd):
@@ -239,7 +239,7 @@ class AnkamaLauncher:
         previous_window_info.hwnd = related_window.hwnd
         return True
 
-    def init_launcher(self, window_info: WindowInfo):
+    def init_launcher_by_window(self, window_info: WindowInfo):
         if self.is_init_launcher:
             self.logger.info("Le launcher est déjà initialisé.")
             return
@@ -266,7 +266,7 @@ class AnkamaLauncher:
         object_searcher = ObjectSearcher(self.logger, self.service)
         self.image_manager = ImageManager(capturer, object_searcher)
 
-    def get_window_info(self) -> WindowInfo:
+    def get_or_launch_ankama_window(self) -> WindowInfo:
         if not (window_info := get_ankama_window_info(self.logger)):
             self.logger.info("Launch launcher")
             self._launch_launcher()

@@ -404,8 +404,8 @@ class CoreWalkerSystem:
                 MapService.confirm_map_direction(
                     self.service, map_direction.id, self.get_curr_map_info().map.id
                 )
-            # else:
-            #     raise UnknowStateException(self.image_manager.capture(), "unexpected_map")
+            else:
+                raise UnknowStateException(self.capturer.capture(), "unexpected_map")
 
         return None, False
 
@@ -451,9 +451,12 @@ class CoreWalkerSystem:
                     )
                     <= 1
                 ):
+                    self.logger.error(
+                        f"{self.get_curr_map_info().map} should have atleast one map direction",
+                    )
                     raise UnknowStateException(
                         self.get_curr_map_info().img,
-                        f"{self.get_curr_map_info().map} should have atleast one map direction",
+                        "min_required_neighbors",
                     )
                 MapService.delete_map_direction(self.service, map_direction.id)
             else:
@@ -531,9 +534,9 @@ class CoreWalkerSystem:
     ) -> numpy.ndarray:
         if available_waypoints is None:
             available_waypoints = [
-                elem
-                for elem in self.character_state.character.waypoints
-                if elem.id not in BLACKLISTED_WAYPOINT_IDS
+                _elem
+                for _elem in self.character_state.character.waypoints
+                if _elem.id not in BLACKLISTED_WAYPOINT_IDS
             ]
 
         self.init_first_move(

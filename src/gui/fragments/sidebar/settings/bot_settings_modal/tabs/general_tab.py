@@ -175,7 +175,6 @@ class GeneralTab(QWidget):
                     id=self.character.id,
                     lvl=self.character.lvl,
                     po_bonus=self.character.po_bonus,
-                    time_spent=self.character.time_spent,
                     elem=self.character.elem,
                     server_id=self.character.server_id,
                 ),

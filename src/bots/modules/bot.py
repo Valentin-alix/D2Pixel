@@ -8,7 +8,6 @@ from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
 from D2Shared.shared.schemas.recipe import RecipeSchema
 from D2Shared.shared.schemas.stat import BaseLineSchema, StatSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
-from src.bots.dofus.antibot.afk_starter import AfkStarter
 from src.bots.dofus.antibot.humanizer import Humanizer
 from src.bots.dofus.chat.chat_system import ChatSystem
 from src.bots.dofus.chat.sentence import FakeSentence
@@ -275,16 +274,6 @@ class Bot:
             self.logger,
         )
         self.chat_sys = ChatSystem(self.controller, self.logger, self.fake_sentence)
-        self.afk_starter = AfkStarter(
-            self.connection_sys,
-            self.controller,
-            self.character_state,
-            self.service,
-            self.is_paused,
-            self.is_playing,
-            self.is_connected,
-            self.user,
-        )
         self.humanizer = Humanizer(
             self.chat_sys, self.is_connected, self.is_playing, self.user
         )
@@ -444,7 +433,6 @@ class Bot:
                 if name in _farming_actions
             ]
             shuffle(modules)
-            self.afk_starter.run_afk_in_game()
             self.humanizer.run_humanizer()
             self.hud_sys.clean_interface(self.capturer.capture())
             while not self.is_paused.is_set():
