@@ -159,7 +159,7 @@ class CoreWalkerSystem:
 
         self.map_state.is_first_move = False
 
-        if not (self.character_state.character.is_sub and use_transport):
+        if not use_transport:
             self.get_curr_direction()
             return img
 
@@ -550,7 +550,6 @@ class CoreWalkerSystem:
 
         path_map = MapService.find_path(
             self.service,
-            self.character_state.character.is_sub,
             use_transport,
             self.get_curr_map_info().map.id,
             self.get_curr_direction(),

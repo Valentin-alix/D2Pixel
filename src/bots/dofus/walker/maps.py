@@ -3,8 +3,6 @@ from cachetools.keys import hashkey
 
 from D2Shared.shared.consts.maps import (
     ASTRUB_BANK_MAP_CN,
-    ASTRUB_SALE_HOTEL_CONSUMABLE_MAP_CN,
-    ASTRUB_SALE_HOTEL_RESOURCE_MAP_CN,
     BONTA_BANK_MAP_CN,
     BONTA_SALE_HOTEL_CONSUMABLE_MAP_CN,
     BONTA_SALE_HOTEL_RESOURCE_MAP_CN,
@@ -49,16 +47,6 @@ def get_bonta_sale_hotel_resource_map(service: ServiceSession) -> MapSchema:
 @cached(cache={}, key=lambda _: hashkey())
 def get_bonta_sale_hotel_consumable_map(service: ServiceSession) -> MapSchema:
     return MapService.get_related_map(service, BONTA_SALE_HOTEL_CONSUMABLE_MAP_CN)
-
-
-@cached(cache={}, key=lambda _: hashkey())
-def get_astrub_sale_hotel_resource_map(service: ServiceSession) -> MapSchema:
-    return MapService.get_related_map(service, ASTRUB_SALE_HOTEL_RESOURCE_MAP_CN)
-
-
-@cached(cache={}, key=lambda _: hashkey())
-def get_astrub_sale_hotel_consumable_map(service: ServiceSession) -> MapSchema:
-    return MapService.get_related_map(service, ASTRUB_SALE_HOTEL_CONSUMABLE_MAP_CN)
 
 
 @cached(cache={}, key=lambda _: hashkey())

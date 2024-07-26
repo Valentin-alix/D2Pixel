@@ -15,7 +15,6 @@ class MapService:
     @staticmethod
     def find_path(
         service: ServiceSession,
-        is_sub: bool,
         use_transport: bool,
         map_id: int,
         from_direction: FromDirection,
@@ -26,7 +25,6 @@ class MapService:
             resp = session.get(
                 f"{MAP_URL}find_path/",
                 params={
-                    "is_sub": is_sub,
                     "use_transport": use_transport,
                     "map_id": map_id,
                     "from_direction": from_direction.value,
@@ -116,19 +114,13 @@ class MapService:
     @staticmethod
     @cached(
         cache={},
-        key=lambda _, sub_area_ids, is_sub: hashkey(tuple(sub_area_ids), is_sub),
+        key=lambda _, sub_area_ids: hashkey(tuple(sub_area_ids)),
     )
     def get_limit_maps_sub_area(
-        service: ServiceSession,
-        sub_area_ids: list[int],
-        is_sub: bool,
+        service: ServiceSession, sub_area_ids: list[int]
     ) -> list[MapSchema]:
         with service.logged_session() as session:
-            resp = session.get(
-                f"{MAP_URL}limit_maps_sub_area/",
-                params={"is_sub": is_sub},
-                json=sub_area_ids,
-            )
+            resp = session.get(f"{MAP_URL}limit_maps_sub_area/", json=sub_area_ids)
             return [MapSchema(**elem) for elem in resp.json()]
 
     @staticmethod

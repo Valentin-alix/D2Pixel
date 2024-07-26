@@ -1,7 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import (
-    QCheckBox,
     QComboBox,
     QFormLayout,
     QGroupBox,
@@ -63,10 +62,6 @@ class GeneralTab(QWidget):
         form = QFormLayout()
         form.setAlignment(Qt.AlignCenter)
         base_info_wid.setLayout(form)
-
-        self.sub_checkbox = QCheckBox()
-        self.sub_checkbox.setChecked(self.character.is_sub)
-        form.addRow("Est Abonné", self.sub_checkbox)
 
         self.server_combo = QComboBox()
         servers = ServerService.get_servers(self.service)
@@ -155,7 +150,6 @@ class GeneralTab(QWidget):
     def on_save(self):
         server_id: int = self.server_combo.currentData()
         lvl = int(self.bot_lvl_form.text())
-        is_sub = self.sub_checkbox.isChecked()
         elem: ElemEnum = self.elem_combo.currentData()
 
         waypoints = self.combo_waypoints.currentData()
@@ -170,12 +164,10 @@ class GeneralTab(QWidget):
         if (
             lvl != self.character.lvl
             or server_id != self.character.server_id
-            or is_sub != self.character.is_sub
             or elem != self.character.elem
         ):
             self.character.lvl = lvl
             self.character.server_id = server_id
-            self.character.is_sub = is_sub
             self.character.elem = elem
             CharacterService.update_character(
                 self.service,
@@ -183,7 +175,6 @@ class GeneralTab(QWidget):
                     id=self.character.id,
                     lvl=self.character.lvl,
                     po_bonus=self.character.po_bonus,
-                    is_sub=self.character.is_sub,
                     time_spent=self.character.time_spent,
                     elem=self.character.elem,
                     server_id=self.character.server_id,

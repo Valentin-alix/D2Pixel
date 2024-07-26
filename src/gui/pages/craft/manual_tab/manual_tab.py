@@ -66,11 +66,6 @@ class ManualTab(QWidget):
 
     @pyqtSlot(object)
     def on_play(self, bot: Bot):
-        if not bot.character_state.character.is_sub:
-            self.play_stop_widget.on_click_stop()
-            self.logger.warning("Votre personnage doit être abonné.")
-            return
-
         if self.thread_run is not None:
             self.thread_run.quit()
             self.thread_run.wait()

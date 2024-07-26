@@ -79,7 +79,6 @@ class HudSystem(BaseModel):
                 id=character.id,
                 lvl=character.lvl,
                 po_bonus=character.po_bonus,
-                is_sub=character.is_sub,
                 time_spent=character.time_spent,
                 elem=character.elem,
                 server_id=character.server_id,

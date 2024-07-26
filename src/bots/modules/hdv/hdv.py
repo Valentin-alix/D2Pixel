@@ -39,7 +39,7 @@ class Hdv:
             self.character_state.character.id,
         )
 
-        if self.character_state.character.is_sub and len(recipes) > 0:
+        if len(recipes) > 0:
             self.logger.info(f"Gonna craft : {recipes}")
             self.crafter.run_crafter(recipes)
 

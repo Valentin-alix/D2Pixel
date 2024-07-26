@@ -16,12 +16,10 @@ class SubAreaService:
         sub_area_ids_farming: list[int],
         weight_by_map: dict[int, float],
         valid_sub_area_ids: list[int],
-        is_sub: bool,
     ) -> list[SubAreaSchema]:
         with service.logged_session() as session:
             resp = session.get(
                 f"{SUBAREA_URL}random_grouped_sub_area/",
-                params={"is_sub": is_sub},
                 json={
                     "sub_area_ids_farming": sub_area_ids_farming,
                     "weight_by_map": weight_by_map,
