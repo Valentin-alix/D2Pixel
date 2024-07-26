@@ -19,7 +19,7 @@ from src.gui.fragments.sidebar.settings.user_settings_modal import (
 from src.gui.fragments.sidebar.sidebar_menu_item import SideBarMenuItem
 from src.gui.fragments.sidebar.stats_dialog.stats_dialog import StatsDialog
 from src.gui.signals.app_signals import AppSignals
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 
 
 class SideBarMenuSignals(QObject):
@@ -33,7 +33,7 @@ class SideBarMenu(QWidget):
     def __init__(
         self,
         logger: Logger,
-        service: ClientService,
+        service: ServiceSession,
         app_signals: AppSignals,
         user: ReadUserSchema,
         *args,

@@ -8,7 +8,7 @@ from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.connection.connection_system import ConnectionSystem
 from src.common.time import convert_time_to_seconds
 from src.services.character import CharacterService
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 from src.window_manager.controller import Controller
 
@@ -21,7 +21,7 @@ class AfkStarter:
         connection_sys: ConnectionSystem,
         controller: Controller,
         character_state: CharacterState,
-        service: ClientService,
+        service: ServiceSession,
         is_paused: Event,
         is_playing: Event,
         is_connected: Event,
@@ -36,18 +36,19 @@ class AfkStarter:
         self.is_connected = is_connected
         self.user = user
 
-    async def run_afk_in_game(self) -> None:
+    def run_afk_in_game(self) -> None:
         """Handle afk time to avoid antibot, afk the first 5 hour of the bot"""
 
-        async def update_character_time_spent(init_time: float):
+        def update_character_time_spent(init_time: float):
             character = self.character_state.character
             character.time_spent += perf_counter() - init_time
-            self.character_state.character = await CharacterService.update_character(
+            self.character_state.character = CharacterService.update_character(
                 self.service,
                 UpdateCharacterSchema(
                     id=character.id,
                     lvl=character.lvl,
                     po_bonus=character.po_bonus,
+                    is_sub=character.is_sub,
                     time_spent=character.time_spent,
                     elem=character.elem,
                     server_id=character.server_id,
@@ -65,7 +66,7 @@ class AfkStarter:
 
         time_since_click: float = 0
         init_time = perf_counter()
-        atexit.register(lambda: await update_character_time_spent(init_time))
+        atexit.register(lambda: update_character_time_spent(init_time))
 
         while (
             (

@@ -17,7 +17,7 @@ from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
 from src.exceptions import UnknowStateException
 from src.image_manager.ocr import BASE_CONFIG, get_text_from_image
 from src.image_manager.transformation import crop_image, img_to_gray
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 from src.services.stat import StatService
 
 
@@ -31,7 +31,7 @@ class FmAnalyser:
     def __init__(
         self,
         logger: Logger,
-        service: ClientService,
+        service: ServiceSession,
         smithmagic_workshop: SmithMagicWorkshop,
     ) -> None:
         self.logger = logger

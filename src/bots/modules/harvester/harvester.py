@@ -50,8 +50,8 @@ from src.exceptions import (
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.character import CharacterService
-from src.services.client_service import ClientService
 from src.services.collectable import CollectableService
+from src.services.session import ServiceSession
 from src.services.sub_area import SubAreaService
 from src.states.character_state import CharacterState
 from src.window_manager.capturer import Capturer
@@ -72,7 +72,7 @@ harvester_choose_sub_area_lock = Lock()
 class Harvester:
     def __init__(
         self,
-        service: ClientService,
+        service: ServiceSession,
         character_state: CharacterState,
         sub_area_farming_sys: SubAreaFarmingSystem,
         sub_area_farming: SubAreaFarming,

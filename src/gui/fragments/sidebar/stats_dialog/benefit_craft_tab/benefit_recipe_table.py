@@ -1,14 +1,14 @@
+from D2Shared.shared.enums import CategoryEnum
 from PyQt5.QtWidgets import QLabel, QTableWidgetItem, QWidget
 
-from D2Shared.shared.enums import CategoryEnum
 from src.gui.components.organization import VerticalLayout
 from src.gui.components.table import TableWidget
-from src.services.client_service import ClientService
 from src.services.recipe import RecipeService
+from src.services.session import ServiceSession
 
 
 class BenefitRecipeTable(QWidget):
-    def __init__(self, service: ClientService):
+    def __init__(self, service: ServiceSession):
         super().__init__()
         self.service = service
         v_layout = VerticalLayout(space=8)

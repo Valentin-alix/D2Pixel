@@ -25,7 +25,7 @@ from src.image_manager.transformation import (
     img_to_gray,
     img_to_hsv,
 )
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 from src.services.template import TemplateService
 
 TEMPLATE_FOLDER = os.path.join(ASSET_FOLDER_PATH, "templates")
@@ -73,7 +73,7 @@ def get_region_from_template(template: numpy.ndarray, pos: Position) -> RegionSc
 
 
 class ObjectSearcher:
-    def __init__(self, logger: Logger, service: ClientService) -> None:
+    def __init__(self, logger: Logger, service: ServiceSession) -> None:
         self.service = service
         self.logger = logger
 

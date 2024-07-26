@@ -3,16 +3,16 @@ from logging import Logger
 from D2Shared.shared.schemas.recipe import RecipeSchema
 from src.bots.modules.hdv.craft.craft import Crafter
 from src.bots.modules.hdv.sell import Seller
-from src.services.client_service import ClientService
 from src.services.item import ItemService
 from src.services.recipe import RecipeService
+from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 
 
 class Hdv:
     def __init__(
         self,
-        service: ClientService,
+        service: ServiceSession,
         character_state: CharacterState,
         crafter: Crafter,
         seller: Seller,
@@ -39,7 +39,7 @@ class Hdv:
             self.character_state.character.id,
         )
 
-        if len(recipes) > 0:
+        if self.character_state.character.is_sub and len(recipes) > 0:
             self.logger.info(f"Gonna craft : {recipes}")
             self.crafter.run_crafter(recipes)
 

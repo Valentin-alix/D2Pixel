@@ -1,7 +1,5 @@
 from logging import Logger
-
 import numpy
-
 from D2Shared.shared.consts.adaptative.positions import (
     WORKSHOP_ALCHEMIST_IN,
     WORKSHOP_ALCHEMIST_OUT,
@@ -15,6 +13,7 @@ from D2Shared.shared.consts.adaptative.positions import (
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.enums import JobEnum
+
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.maps import (
     get_bonta_workshop_alchemist_map,
@@ -26,7 +25,7 @@ from src.common.retry import retry_force_count
 from src.entities.building_info import BuildingInfo
 from src.exceptions import CharacterIsStuckException
 from src.image_manager.screen_objects.image_manager import ImageManager
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 from src.window_manager.controller import Controller
 
 
@@ -37,7 +36,7 @@ class WorkshopBuilding:
         logger: Logger,
         controller: Controller,
         image_manager: ImageManager,
-        service_session: ClientService,
+        service_session: ServiceSession,
     ) -> None:
         self.core_walker_sys = core_walker_sys
         self.logger = logger

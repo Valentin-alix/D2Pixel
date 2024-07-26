@@ -1,10 +1,10 @@
 from D2Shared.shared.schemas.character import CharacterSchema
 from src.services.character import CharacterService
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 
 
 class CharacterState:
-    def __init__(self, service: ClientService, character_id: str) -> None:
+    def __init__(self, service: ServiceSession, character_id: str) -> None:
         self._character: CharacterSchema | None = None
         self.service = service
         self.character_id = character_id

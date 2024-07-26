@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QFormLayout,
     QGroupBox,
@@ -8,7 +9,6 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QWidget,
 )
-from qasync import asyncSlot
 
 from D2Shared.shared.consts.jobs import HARVEST_JOBS_NAME
 from D2Shared.shared.enums import ElemEnum
@@ -21,14 +21,14 @@ from D2Shared.shared.schemas.waypoint import WaypointSchema
 from src.gui.components.combobox import CheckableComboBox
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.services.character import CharacterService
-from src.services.client_service import ClientService
 from src.services.server import ServerService
+from src.services.session import ServiceSession
 from src.services.world import WorldService
 
 
 class GeneralTab(QWidget):
-    async def __init__(
-        self, service: ClientService, character: CharacterSchema, *args, **kwargs
+    def __init__(
+        self, service: ServiceSession, character: CharacterSchema, *args, **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
         self.service = service
@@ -38,16 +38,16 @@ class GeneralTab(QWidget):
         self.valid_lvl = QIntValidator()
         self.valid_lvl.setRange(1, 200)
 
-        await self._set_base_infos()
+        self._set_base_infos()
         self._set_bot_job_infos()
 
-        await self.set_default_values()
+        self.set_default_values()
 
-    async def set_default_values(self) -> None:
+    def set_default_values(self) -> None:
         self.bot_lvl_form.setText(str(self.character.lvl))
         self.combo_waypoints.clear()
         for waypoint in sorted(
-            await WorldService.get_waypoints(self.service, 1),
+            WorldService.get_waypoints(self.service, 1),
             key=lambda elem: elem.map.sub_area.name,
         ):
             checked = waypoint in self.character.waypoints
@@ -57,15 +57,19 @@ class GeneralTab(QWidget):
         for char_job_info, job_lvl_edit, _ in self.job_info_edits:
             job_lvl_edit.setText(str(char_job_info.lvl))
 
-    async def _set_base_infos(self) -> None:
+    def _set_base_infos(self) -> None:
         base_info_wid = QWidget()
         self.layout().addWidget(base_info_wid)
         form = QFormLayout()
         form.setAlignment(Qt.AlignCenter)
         base_info_wid.setLayout(form)
 
+        self.sub_checkbox = QCheckBox()
+        self.sub_checkbox.setChecked(self.character.is_sub)
+        form.addRow("Est Abonné", self.sub_checkbox)
+
         self.server_combo = QComboBox()
-        servers = await ServerService.get_servers(self.service)
+        servers = ServerService.get_servers(self.service)
         for server in servers:
             self.server_combo.addItem(server.name, server.id)
         server_index = self.server_combo.findData(self.character.server_id)
@@ -148,16 +152,16 @@ class GeneralTab(QWidget):
 
                 v_layout.addWidget(job_info_widget)
 
-    @asyncSlot()
-    async def on_save(self):
+    def on_save(self):
         server_id: int = self.server_combo.currentData()
         lvl = int(self.bot_lvl_form.text())
+        is_sub = self.sub_checkbox.isChecked()
         elem: ElemEnum = self.elem_combo.currentData()
 
         waypoints = self.combo_waypoints.currentData()
         if set(self.character.waypoints) != set(waypoints):
             self.character.waypoints = waypoints
-            await CharacterService.update_waypoints(
+            CharacterService.update_waypoints(
                 self.service,
                 self.character.id,
                 [elem.id for elem in self.character.waypoints],
@@ -166,17 +170,20 @@ class GeneralTab(QWidget):
         if (
             lvl != self.character.lvl
             or server_id != self.character.server_id
+            or is_sub != self.character.is_sub
             or elem != self.character.elem
         ):
             self.character.lvl = lvl
             self.character.server_id = server_id
+            self.character.is_sub = is_sub
             self.character.elem = elem
-            await CharacterService.update_character(
+            CharacterService.update_character(
                 self.service,
                 UpdateCharacterSchema(
                     id=self.character.id,
                     lvl=self.character.lvl,
                     po_bonus=self.character.po_bonus,
+                    is_sub=self.character.is_sub,
                     time_spent=self.character.time_spent,
                     elem=self.character.elem,
                     server_id=self.character.server_id,
@@ -198,6 +205,4 @@ class GeneralTab(QWidget):
             job_info.weight = job_weight
             job_infos.append(job_info)
 
-        await CharacterService.update_job_infos(
-            self.service, self.character.id, job_infos
-        )
+        CharacterService.update_job_infos(self.service, self.character.id, job_infos)

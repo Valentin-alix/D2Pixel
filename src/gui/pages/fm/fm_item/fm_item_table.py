@@ -7,13 +7,13 @@ from D2Shared.shared.schemas.stat import BaseLineSchema, LineSchema, StatSchema
 from src.gui.components.organization import AlignDelegate
 from src.gui.components.table import BaseTableWidget
 from src.gui.signals.bot_signals import BotSignals
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 from src.services.stat import StatService
 
 
 class FmItemTable(BaseTableWidget):
     def __init__(
-        self, bot_signals: BotSignals, service: ClientService, *args, **kwargs
+        self, bot_signals: BotSignals, service: ServiceSession, *args, **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
         # self.setLayout(VerticalLayout())

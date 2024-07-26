@@ -13,15 +13,15 @@ from src.gui.pages.craft.recipe_table import RecipeTable
 from src.gui.signals.app_signals import AppSignals
 from src.gui.workers.worker_craft import WorkerCraft
 from src.gui.workers.worker_stop import WorkerStop
-from src.services.client_service import ClientService
 from src.services.recipe import RecipeService
+from src.services.session import ServiceSession
 
 
 class ManualTab(QWidget):
     def __init__(
         self,
         app_signals: AppSignals,
-        service: ClientService,
+        service: ServiceSession,
         bot: Bot,
         logger: Logger,
         available_recipes: list[RecipeSchema],
@@ -66,6 +66,11 @@ class ManualTab(QWidget):
 
     @pyqtSlot(object)
     def on_play(self, bot: Bot):
+        if not bot.character_state.character.is_sub:
+            self.play_stop_widget.on_click_stop()
+            self.logger.warning("Votre personnage doit être abonné.")
+            return
+
         if self.thread_run is not None:
             self.thread_run.quit()
             self.thread_run.wait()

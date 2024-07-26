@@ -22,14 +22,14 @@ from src.gui.fragments.sidebar.settings.bot_settings_modal.tabs.general_tab impo
     GeneralTab,
 )
 from src.gui.workers.run_in_background import run_in_background
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 
 
 class BotSettingsModal(Dialog):
     def __init__(
         self,
         logger: Logger,
-        service: ClientService,
+        service: ServiceSession,
         character: CharacterSchema,
         *args,
         **kwargs,
@@ -65,8 +65,8 @@ class BotSettingsModal(Dialog):
         self.gameplay_tab = GameplayTab(self.service, self.character)
         self.tabs.addTab(self.gameplay_tab, "Gameplay")
 
-    async def set_default_values(self):
-        await self.general_tab.set_default_values()
+    def set_default_values(self):
+        self.general_tab.set_default_values()
 
     @pyqtSlot()
     def on_save(self) -> None:

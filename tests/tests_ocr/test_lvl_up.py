@@ -1,13 +1,13 @@
+from logging import Logger
 import os
 import unittest
-from logging import Logger
 
 import cv2
 
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from src.bots.dofus.hud.hud_system import Hud
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 from tests.utils import PATH_FIXTURES
 
 PATH_FIXTURES_LVL_UP = os.path.join(PATH_FIXTURES, "hud", "lvl_up")
@@ -17,7 +17,7 @@ class TestLvlUp(unittest.TestCase):
     def setUp(self) -> None:
         logger = Logger("root")
         self.hud = Hud(logger)
-        service_session = ClientService(logger)
+        service_session = ServiceSession(logger)
         self.object_searcher = ObjectSearcher(service_session)
         return super().setUp()
 

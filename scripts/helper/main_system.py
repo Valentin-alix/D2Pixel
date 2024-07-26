@@ -1,11 +1,12 @@
+from logging import Logger
 import logging
 import os
 import sys
-from logging import Logger
 from threading import Event, RLock
 
+
 sys.path.append(os.path.dirname(os.path.dirname((os.path.dirname(__file__)))))
-from src.bots.dofus.elements.bank import BankSystem
+from src.services.recipe import RecipeService
 from src.bots.dofus.hud.hud_system import Hud, HudSystem
 from src.bots.dofus.hud.info_popup.job_level import JobParser
 from src.bots.dofus.walker.buildings.bank_buildings import BankBuilding
@@ -15,12 +16,14 @@ from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.icon_searcher import IconSearcher
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
-from src.services.client_service import ClientService
-from src.services.recipe import RecipeService
 from src.states.character_state import CharacterState
 from src.states.map_state import MapState
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
+
+
+from src.bots.dofus.elements.bank import BankSystem
+from src.services.session import ServiceSession
 from src.window_manager.organizer import Organizer, get_windows_by_process_and_name
 
 if __name__ == "__main__":
@@ -30,7 +33,7 @@ if __name__ == "__main__":
     console_handler.setLevel(logging.DEBUG)
     logger.addHandler(console_handler)
 
-    service = ClientService(logger)
+    service = ServiceSession(logger)
     for window in get_windows_by_process_and_name(target_process_name="Dofus.exe"):
         character_id = window.name.split(" - Dofus")[0]
         action_lock = RLock()

@@ -7,15 +7,15 @@ from src.gui.components.organization import VerticalLayout
 from src.gui.pages.craft.automatic_tab.automatic_tab import AutomaticTab
 from src.gui.pages.craft.manual_tab.manual_tab import ManualTab
 from src.gui.signals.app_signals import AppSignals
-from src.services.client_service import ClientService
 from src.services.recipe import RecipeService
+from src.services.session import ServiceSession
 
 
 class CraftPage(QWidget):
     def __init__(
         self,
         app_signals: AppSignals,
-        service: ClientService,
+        service: ServiceSession,
         bot: Bot,
         logger: Logger,
         *args,

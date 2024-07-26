@@ -5,13 +5,13 @@ from src.gui.components.organization import VerticalLayout
 from src.gui.fragments.sidebar.stats_dialog.benefit_craft_tab.benefit_craft_tab import (
     BenefitCraftTab,
 )
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 
 
 class StatsDialog(Dialog):
     def __init__(
         self,
-        service: ClientService,
+        service: ServiceSession,
         server_id: int,
         *args,
         **kwargs,

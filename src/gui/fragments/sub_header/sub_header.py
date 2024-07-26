@@ -8,13 +8,13 @@ from src.gui.pages.craft.craft_page import CraftPage
 from src.gui.pages.farm.farm_page import FarmPage
 from src.gui.pages.fm.fm_page import FmPage
 from src.gui.signals.app_signals import AppSignals
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 
 
 class SubHeader(QWidget):
     def __init__(
         self,
-        service: ClientService,
+        service: ServiceSession,
         app_signals: AppSignals,
         bot: Bot,
         logger: Logger,

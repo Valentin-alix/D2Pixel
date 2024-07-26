@@ -21,7 +21,7 @@ from src.entities.item import ItemProcessedStatus
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.character import CharacterService
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
@@ -38,7 +38,7 @@ class Crafter:
         capturer: Capturer,
         controller: Controller,
         workshop_building: WorkshopBuilding,
-        service: ClientService,
+        service: ServiceSession,
         character_state: CharacterState,
     ) -> None:
         self.hud_sys = hud_sys

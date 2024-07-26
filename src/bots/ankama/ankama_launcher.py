@@ -30,7 +30,7 @@ from src.consts import ANKAMA_WINDOW_SIZE, DOFUS_WINDOW_SIZE, ENV_PATH
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 from src.states.map_state import MapState
 from src.window_manager.capturer import Capturer
@@ -46,7 +46,7 @@ from src.window_manager.win32 import is_window_visible
 
 class AnkamaLauncher:
     def __init__(
-        self, logger: Logger, service: ClientService, user: ReadUserSchema
+        self, logger: Logger, service: ServiceSession, user: ReadUserSchema
     ) -> None:
         self.pause_threads: list[Thread] | None = None
 

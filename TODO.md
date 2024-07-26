@@ -1,5 +1,6 @@
-FIX HDV si on est sub go hdv bonta parce que astrub c limit au lvl 60,
-pour kralamore ca s'est mis à 1m => mettre une limit ? si prix trop différent de prix moyen alors skip ?
+Enlever bouton de delete, au moment de refresh, delete des character si ya pus
+
+lorsuq'on connecte un character, ca passe le status de rouge à vert
 
 Fiabiliser l'interface de FM au max (avant de fiabiliser la logique derrière)
 

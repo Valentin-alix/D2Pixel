@@ -3,9 +3,9 @@ from time import perf_counter, sleep
 from typing import override
 
 import numpy
-
 from D2Shared.shared.consts.adaptative.regions import INFO_MAP_REGION
 from D2Shared.shared.consts.object_configs import ObjectConfigs
+
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.fight.fight_system import FightSystem
 from src.bots.dofus.hud.hud_system import HudSystem
@@ -16,7 +16,7 @@ from src.bots.dofus.walker.core_walker_system import (
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 from src.states.map_state import MapState
 from src.window_manager.capturer import Capturer
@@ -36,7 +36,7 @@ class WalkerSystem(CoreWalkerSystem):
         object_searcher: ObjectSearcher,
         animation_manager: AnimationManager,
         capturer: Capturer,
-        service: ClientService,
+        service: ServiceSession,
         user: ReadUserSchema,
     ) -> None:
         self.fight_sys = fight_sys

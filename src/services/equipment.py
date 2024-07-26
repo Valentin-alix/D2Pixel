@@ -1,48 +1,49 @@
 from D2Shared.shared.schemas.equipment import ReadEquipmentSchema, UpdateEquipmentSchema
 from src.consts import BACKEND_URL
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 
 EQUIPMENT_URL = BACKEND_URL + "/equipment/"
 
 
 class EquipmentService:
     @staticmethod
-    async def get_equipments(service: ClientService) -> list[ReadEquipmentSchema]:
-        resp = await service.session.get(f"{EQUIPMENT_URL}")
-        return [ReadEquipmentSchema(**elem) for elem in resp.json()]
+    def get_equipments(service: ServiceSession) -> list[ReadEquipmentSchema]:
+        with service.logged_session() as session:
+            resp = session.get(f"{EQUIPMENT_URL}")
+            return [ReadEquipmentSchema(**elem) for elem in resp.json()]
 
     @staticmethod
-    async def create_equipment(
-        service: ClientService,
+    def create_equipment(
+        service: ServiceSession,
         equipment_datas: UpdateEquipmentSchema,
     ) -> ReadEquipmentSchema:
-        resp = await service.session.post(
-            f"{EQUIPMENT_URL}", json=equipment_datas.model_dump()
-        )
-        return ReadEquipmentSchema(**resp.json())
+        with service.logged_session() as session:
+            resp = session.post(f"{EQUIPMENT_URL}", json=equipment_datas.model_dump())
+            return ReadEquipmentSchema(**resp.json())
 
     @staticmethod
-    async def update_equipment(
-        service: ClientService,
+    def update_equipment(
+        service: ServiceSession,
         equipment_id: int,
         equipment_datas: UpdateEquipmentSchema,
     ) -> ReadEquipmentSchema:
-        resp = await service.session.put(
-            f"{EQUIPMENT_URL}{equipment_id}", json=equipment_datas.model_dump()
-        )
-        return ReadEquipmentSchema(**resp.json())
+        with service.logged_session() as session:
+            resp = session.put(
+                f"{EQUIPMENT_URL}{equipment_id}", json=equipment_datas.model_dump()
+            )
+            return ReadEquipmentSchema(**resp.json())
 
     @staticmethod
-    async def increment_count_achieved(
-        service: ClientService,
+    def increment_count_achieved(
+        service: ServiceSession,
         equipment_id: int,
     ) -> ReadEquipmentSchema:
-        resp = await service.session.put(
-            f"{EQUIPMENT_URL}{equipment_id}/count_lines_achieved/"
-        )
-        return ReadEquipmentSchema(**resp.json())
+        with service.logged_session() as session:
+            resp = session.put(f"{EQUIPMENT_URL}{equipment_id}/count_lines_achieved/")
+            return ReadEquipmentSchema(**resp.json())
 
     @staticmethod
-    async def delete_equipment(service: ClientService, equipment_id: int) -> None:
-        await service.session.delete(f"{EQUIPMENT_URL}{equipment_id}")
-        return None
+    def delete_equipment(service: ServiceSession, equipment_id: int) -> None:
+        with service.logged_session() as session:
+            session.delete(f"{EQUIPMENT_URL}{equipment_id}")
+            return None

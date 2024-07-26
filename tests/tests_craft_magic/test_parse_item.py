@@ -8,7 +8,7 @@ from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
 from src.bots.modules.fm.fm_analyser import FmAnalyser
 from src.common.loggers.app_logger import AppLogger
 from src.gui.signals.app_signals import AppSignals
-from src.services.client_service import ClientService
+from src.services.session import ServiceSession
 
 PATH_FIXTURES = os.path.join(Path(__file__).parent, "fixtures", "items")
 
@@ -17,7 +17,7 @@ class TestParseItem(unittest.TestCase):
     def setUp(self) -> None:
         signals = AppSignals()
         logger = AppLogger(signals)
-        service = ClientService(logger, signals)
+        service = ServiceSession(logger, signals)
         smithmagic_wp = SmithMagicWorkshop()
         self.fm = FmAnalyser(logger, service, smithmagic_wp)
         return super().setUp()
