@@ -292,6 +292,8 @@ class SaleHotelSystem:
             raise UnknowStateException(
                 self.capturer.capture(), "value_error_slot_max_try"
             )
+        if count_remaining_slot == 0:
+            return True, []
 
         if (
             self.object_searcher.get_position(img, ObjectConfigs.Check.medium_inventory)
@@ -365,7 +367,7 @@ class SaleHotelSystem:
                     img = self.capturer.capture()
 
                 count_remaining_slot -= 1
-                if count_remaining_slot == 0:
+                if count_remaining_slot <= 0:
                     return True, completed_items
             completed_items.append(item_inv.id)
         return False, completed_items
