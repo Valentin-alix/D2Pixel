@@ -54,17 +54,6 @@ class UserSettingsModal(Dialog):
         form.setAlignment(Qt.AlignCenter)
         self.form_widget.setLayout(form)
 
-        self.afk_time_at_start_edit = QTimeEdit()
-        if config_user.afk_time_at_start is not None:
-            self.afk_time_at_start_edit.setTime(
-                QTime(
-                    config_user.afk_time_at_start.hour,
-                    config_user.afk_time_at_start.minute,
-                    config_user.afk_time_at_start.second,
-                )
-            )
-        form.addRow("Temps d'absence au démarrage (HH-mm)", self.afk_time_at_start_edit)
-
         self.time_between_sentence_edit = QTimeEdit()
         self.time_between_sentence_edit.setTime(
             QTime(
@@ -197,11 +186,6 @@ class UserSettingsModal(Dialog):
     @pyqtSlot()
     def on_save(self):
         try:
-            afk_time_value = self.afk_time_at_start_edit.time()
-            afk_time_at_start = time(
-                afk_time_value.hour(), afk_time_value.minute(), afk_time_value.second()
-            )
-
             time_between_value = self.time_between_sentence_edit.time()
             time_between_sentence = time(
                 time_between_value.hour(),
@@ -252,7 +236,6 @@ class UserSettingsModal(Dialog):
                 )
 
             update_config = UpdateConfigUserSchema(
-                afk_time_at_start=afk_time_at_start,
                 time_between_sentence=time_between_sentence,
                 time_fighter=time_fighter,
                 time_harvester=time_harvester,
