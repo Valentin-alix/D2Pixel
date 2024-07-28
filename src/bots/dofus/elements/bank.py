@@ -249,7 +249,7 @@ class BankSystem:
                 f"Max craft possible in one round : {max_craft_round} for receipe : {recipe.result_item.name} with "
                 f"receipe pod cost : {receipe_pod_cost}"
             )
-            # sleep(1)
+
             self.controller.send_text("0" + str(max_craft_round))
             wait((0.6, 1))
             img = self.capturer.capture()

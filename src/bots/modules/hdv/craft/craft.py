@@ -53,15 +53,12 @@ class Crafter:
         self.service = service
         self.character_state = character_state
 
-    def craft_from_inventory(self, recipes: set[RecipeSchema]) -> set[RecipeSchema]:
+    def craft_from_inventory(self, recipes: set[RecipeSchema]) -> None:
         """craft item in order of receipes given
 
         Args:
-            recipes (set[Recipe]): ordered receipes
-        Return:
-            recipes_faileds (set[Recipe]): recipe that could not be crafted
-        """
-        recipes_faileds: set[RecipeSchema] = set()
+            recipes (set[Recipe]): ordered receipes"""
+
         current_job: JobSchema | None = None
         for recipe in recipes:
             self.logger.info(f"Gonna craft {recipe}")
@@ -107,11 +104,6 @@ class Crafter:
                     self.character_state.character.id,
                     [recipe.result_item_id],
                 )
-            else:
-                self.logger.info(
-                    f"Found no receipe possible in workshop for {recipe.result_item.name}"
-                )
-                recipes_faileds.add(recipe)
 
         img, _ = self.hud_sys.handle_info_modal(self.capturer.capture())
         if current_job is not None:
@@ -119,8 +111,6 @@ class Crafter:
                 img,
                 ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
             )
-
-        return recipes_faileds
 
     def run_crafter(self, recipes: list[RecipeSchema]):
         """craft all input items based on coherent order (based on prerequire, level)
@@ -146,11 +136,9 @@ class Crafter:
                     self.capturer.capture(),
                     ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
                 )
-                failed_recipes = self.craft_from_inventory(recipes_inventory)
+                self.craft_from_inventory(recipes_inventory)
                 self.bank_sys.bank_clear_inventory()
                 recipes_inventory.clear()
-                if recipe in failed_recipes:
-                    break
 
             CharacterService.remove_bank_items(
                 self.service,
