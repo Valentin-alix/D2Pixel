@@ -1,10 +1,8 @@
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.utils.algos.tsp import greedy_algorithm, solve_tsp_dynamic
-from D2Shared.shared.utils.debugger import timeit
 from D2Shared.shared.utils.randomizer import multiply_offset
 
 
-@timeit
 def find_optimal_path_positions(
     positions: list[Position],
     start_pos: Position | None = None,
@@ -36,7 +34,6 @@ def find_optimal_path_positions(
     return total_dist, optimal_path
 
 
-@timeit
 def find_dumby_optimal_path_positions(
     intermediate_pos: list[Position],
     start_pos: Position | None = None,

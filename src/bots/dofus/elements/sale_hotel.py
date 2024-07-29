@@ -251,6 +251,7 @@ class SaleHotelSystem:
     def sale_hotel_choose_biggest_quantity(self) -> numpy.ndarray:
         self.logger.info("Choosing biggest quantity")
         self.controller.click(HOTEL_OPEN_QUANTITY_PANEL_POSITION)
+        sleep(0.3)
         img = self.capturer.capture()
 
         hundred_info = self.object_searcher.get_position(
@@ -258,11 +259,13 @@ class SaleHotelSystem:
         )
         if hundred_info:
             self.controller.click(hundred_info[0])
+            sleep(0.3)
             img = self.capturer.capture()
         elif ten_info := self.object_searcher.get_position(
             img, ObjectConfigs.SaleHotel.ten_quantity
         ):
             self.controller.click(ten_info[0])
+            sleep(0.3)
             img = self.capturer.capture()
         return img
 

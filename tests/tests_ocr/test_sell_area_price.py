@@ -35,6 +35,7 @@ class TestGetAreaPriceItem(unittest.TestCase):
             assert quantity == QUANTITY_BY_FILENAME[filename[:-4]]
 
     def test_price_item(self):
+        # FIXME area price by quantity
         PRICE_BY_FILENAME: dict[str, int] = {
             "1": 799990,
             "2": 34866,
@@ -43,6 +44,7 @@ class TestGetAreaPriceItem(unittest.TestCase):
             "5": 1785,
             "6": 147,
             "7": 6575,
+            "8": 42884,
         }
 
         for index, filename in enumerate(os.listdir(SALE_HOTEL_PRICE_FOLDER)):

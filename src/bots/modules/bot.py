@@ -1,4 +1,5 @@
 import traceback
+from enum import StrEnum
 from random import shuffle
 from threading import Event, RLock
 from time import sleep
@@ -55,7 +56,17 @@ from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 from src.window_manager.organizer import Organizer, WindowInfo
 
-DEFAULT_MODULES: list[str] = ["Hdv", "Fighter", "Harvester"]
+
+class FarmingAction(StrEnum):
+    HDV = "Hdv"
+    FIGHTER = "Fighter"
+    HARVESTER = "Harvester"
+
+
+DEFAULT_FARMING_ACTIONS: list[FarmingAction] = [
+    FarmingAction.HDV,
+    FarmingAction.HARVESTER,
+]
 
 
 class Bot:
@@ -419,11 +430,8 @@ class Bot:
         self.logger.info("Starting fm")
         self.run_action(lambda: self.fm.run(lines, exo_stat, equipment))
 
-    def run_farming(self, farming_actions: list[str] | None = None):
-        def _run_farming(_farming_actions: list[str] | None):
-            if _farming_actions is None:
-                _farming_actions = DEFAULT_MODULES
-
+    def run_farming(self, farming_actions: list[str]):
+        def _run_farming(_farming_actions: list[str]):
             if len(_farming_actions) == 0:
                 return
 

@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from src.bots.modules.bot import DEFAULT_MODULES, Bot
+from src.bots.modules.bot import DEFAULT_FARMING_ACTIONS, Bot, FarmingAction
 from src.gui.components.combobox import CheckableComboBox
 from src.gui.components.organization import (
     VerticalLayout,
@@ -47,8 +47,10 @@ class FarmPage(QWidget):
 
     def _setup_module_combobox(self):
         self.combo_modules = CheckableComboBox[str](parent=self)
-        for module_name in DEFAULT_MODULES:
-            self.combo_modules.addItem(module_name, checked=True)
+        for action_name in FarmingAction:
+            self.combo_modules.addItem(
+                action_name, checked=action_name in DEFAULT_FARMING_ACTIONS
+            )
         self.layout().addWidget(self.combo_modules)
 
     def _setup_info_action(self):
