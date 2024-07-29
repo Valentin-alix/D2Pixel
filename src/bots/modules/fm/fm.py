@@ -50,7 +50,7 @@ class Fm:
     ):
         old_img: numpy.ndarray | None = None
         while True:
-            wait((0.3, 1))
+            wait((0.3, 0.5))
             img = self.capturer.capture()
             if not self.smithmagic_workshop.has_history_changed(old_img, img):
                 continue
