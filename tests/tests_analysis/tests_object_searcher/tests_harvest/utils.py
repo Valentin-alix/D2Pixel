@@ -1,12 +1,18 @@
 import os
 from collections import defaultdict
+from logging import Logger
 from pathlib import Path
 
 import cv2
 import numpy
 from tqdm import tqdm
 
+from D2Shared.shared.consts.object_configs import COLLECTABLE_CONFIG_BY_NAME
 from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.schemas.map import CoordinatesMapSchema, MapSchema
+from D2Shared.shared.schemas.region import RegionSchema
+from src.gui.signals.app_signals import AppSignals
 from src.image_manager.debug import (
     ColorBGR,
     draw_area,
@@ -16,6 +22,8 @@ from src.image_manager.debug import (
 from src.image_manager.screen_objects.object_searcher import (
     ObjectSearcher,
 )
+from src.services.map import MapService
+from src.services.session import ServiceSession
 
 PATH_FIXTURES = os.path.join(
     Path(__file__).parent.parent.parent.parent, "fixtures", "maps"
@@ -72,7 +80,9 @@ def parse_line_position(line: str) -> tuple[str, list[RegionSchema]]:
 def get_errors_resource(
     resource_names: list[str], debug: bool = False
 ) -> tuple[int, list[numpy.ndarray], list[numpy.ndarray], dict[str, int]]:
-    object_searcher = ObjectSearcher(log_header="temp")
+    logger = Logger("root")
+    service = ServiceSession(logger, AppSignals())
+    object_searcher = ObjectSearcher(logger=logger, service=service)
 
     def get_related_filename(map: tuple[int, int]) -> str | None:
         return next(
@@ -84,37 +94,14 @@ def get_errors_resource(
             None,
         )
 
-    def get_related_map_filename(filename: str) -> Map:
+    def get_related_map_filename(filename: str) -> MapSchema:
         x, y = filename[:-4].split("_")
-        return get_related_map(
-            SessionLocal(), MapSchema(x=int(x), y=int(y), world_id=1), force=True
+        return MapService.get_related_map(
+            service, CoordinatesMapSchema(x=int(x), y=int(y), world_id=1)
         )
 
     config = COLLECTABLE_CONFIG_BY_NAME[resource_names[0]]
     tests_maps_infos: dict[str, int] = defaultdict(lambda: 0)
-
-    collectables_by_map_with_count = (
-        SessionLocal.query(
-            Map,
-            Item.name,
-            CollectableMapInfo.count,
-        )
-        .select_from(CollectableMapInfo)
-        .join(Collectable, Collectable.id == CollectableMapInfo.collectable_id)
-        .join(Item, Item.id == Collectable.item_id)
-        .join(Map, Map.id == CollectableMapInfo.map_id)
-        .all()
-    )
-    for map, collectable_name, count in collectables_by_map_with_count:
-        if clean_item_name(collectable_name) not in resource_names:
-            continue
-        map: Map
-        collectable_name: str
-        count: int
-        filename = get_related_filename((map.x, map.y))
-        if filename is None:
-            continue
-        tests_maps_infos[filename] += count
 
     total = len(tests_maps_infos.keys())
 
@@ -125,6 +112,7 @@ def get_errors_resource(
 
     for filename, count in tqdm(tests_maps_infos.items(), total=total):
         map = get_related_map_filename(filename)
+        # TODO Collectable service get expected res count
         img = cv2.imread(os.path.join(PATH_FIXTURES, filename))
 
         positions, ref_utilities = get_collectables_with_refs(

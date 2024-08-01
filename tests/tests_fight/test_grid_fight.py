@@ -4,7 +4,6 @@ from logging import Logger
 
 import cv2
 
-from D2Shared.shared.utils.algos.bfs import bfs
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
 from src.bots.dofus.fight.grid.path_grid import AstarGrid
@@ -20,8 +19,8 @@ class TestGridFight(unittest.TestCase):
     def setUp(self) -> None:
         logger = Logger("root")
         service = ServiceSession(Logger("root"), AppSignals())
-        object_searcher = ObjectSearcher(service)
-        self.grid = Grid(object_searcher)
+        object_searcher = ObjectSearcher(logger, service)
+        self.grid = Grid(logger, object_searcher)
         self.astar_grid = AstarGrid(self.grid, logger)
         self.ldv_grid = LdvGrid(self.grid)
         return super().setUp()
@@ -31,8 +30,6 @@ class TestGridFight(unittest.TestCase):
         SELF_CELLS_FOLDER = os.path.join(PATH_FIXTURES_FIGHT, "turn")
 
         for filename in os.listdir(SELF_CELLS_FOLDER):
-            # if filename != "5.png":
-            #     continue
             img = cv2.imread(os.path.join(SELF_CELLS_FOLDER, filename))
 
             self.grid.init_grid(img)
@@ -47,15 +44,6 @@ class TestGridFight(unittest.TestCase):
             near_mv = self.ldv_grid.get_near_movable_for_ldv_enemy(5)
             print(near_mv)
 
-            print(bfs(self.grid.cells[(7, 31)], self.grid.cells[(8, 31)]))
-            print(bfs(self.grid.cells[(7, 31)], self.grid.cells[(8, 30)]))
-            print(bfs(self.grid.cells[(7, 31)], self.grid.cells[(9, 31)]))
-            print(bfs(self.grid.cells[(7, 30)], self.grid.cells[(8, 31)]))
-
-            cv2.imshow("i", img)
-            cv2.waitKey()
-            break
-
             self.grid.clear_grid()
 
     def test_grid_prep(self):
@@ -69,5 +57,3 @@ class TestGridFight(unittest.TestCase):
 
             path = self.astar_grid.get_near_movable_to_reach_enemy()
             print(path)
-
-            break

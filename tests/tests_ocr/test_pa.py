@@ -1,11 +1,13 @@
 import os
 import unittest
+from logging import Logger
 
 import cv2
 
 from src.bots.dofus.hud.pa import get_pa
-from src.data_layer.database import SessionLocal
+from src.gui.signals.app_signals import AppSignals
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
+from src.services.session import ServiceSession
 from tests.utils import PATH_FIXTURES
 
 PATH_FIXTURES_FIGHT = os.path.join(PATH_FIXTURES, "fight")
@@ -13,7 +15,10 @@ PATH_FIXTURES_FIGHT = os.path.join(PATH_FIXTURES, "fight")
 
 class TestInfoModal(unittest.TestCase):
     def setUp(self):
-        self.object_searcher = ObjectSearcher(SessionLocal())
+        logger = Logger("root")
+        app_signals = AppSignals()
+        self.service = ServiceSession(logger=logger, app_signals=app_signals)
+        self.object_searcher = ObjectSearcher(logger=logger, service=self.service)
 
     def test_get_pa(self):
         PA_FIXTURES = os.path.join(PATH_FIXTURES_FIGHT, "pa")

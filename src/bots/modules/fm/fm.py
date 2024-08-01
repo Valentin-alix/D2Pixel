@@ -41,6 +41,7 @@ class Fm:
         self.logger = logger
         self.smithmagic_workshop = smithmagic_workshop
         self.capturer = capturer
+        self.searched_rune_name: str | None = None
 
     def run(
         self,
@@ -48,6 +49,7 @@ class Fm:
         exo_stat: StatSchema | None = None,
         equipment: ReadEquipmentSchema | None = None,
     ):
+        self.searched_rune_name = None
         old_img: numpy.ndarray | None = None
         while True:
             wait((0.3, 0.5))
@@ -66,12 +68,19 @@ class Fm:
                 return None
             old_img = img
 
-    def place_rune_by_name(self, name: str):
+    def search_rune(self, name: str) -> None:
         self.controller.click(RESOURCES_INVENTORY_POSITION)
         self.controller.click(CLEAR_SEARCH_INVENTORY_POSITION)
         self.controller.send_text(name, pos=SEARCH_INVENTORY_POSITION)
         wait()
+        self.searched_rune_name = name
+
+    def merge_rune_by_name(self, name: str) -> None:
+        if self.searched_rune_name != name:
+            self.search_rune(name)
         self.controller.click(FIRST_OBJECT_INVENTORY_POSITION, count=2)
+        wait((0.6, 1))
+        self.controller.click(MERGE_POSITION)
 
     def put_exo(
         self,
@@ -85,9 +94,8 @@ class Fm:
         if related_curr_line is not None:
             # found exo stat in current lines, success
             return True
-        self.place_rune_by_name(exo_stat.runes[0].name)
-        wait((0.6, 1))
-        self.controller.click(MERGE_POSITION)
+        self.merge_rune_by_name(exo_stat.runes[0].name)
+
         return False
 
     def put_rune(
@@ -105,9 +113,7 @@ class Fm:
             if equipment:
                 equipment.count_lines_achieved += 1
                 EquipmentService.increment_count_achieved(self.service, equipment.id)
-                self.bot_signals.fm_new_count_achieved.emit(
-                    equipment.count_lines_achieved
-                )
+                self.bot_signals.fm_new_equipment_datas.emit(equipment)
             if exo_stat:
                 return self.put_exo(current_item_lines, exo_stat)
             return True
@@ -134,8 +140,6 @@ class Fm:
             LineService.add_spent_quantity(
                 self.service, related_target_line.id, rune.stat_quantity
             )
-            self.bot_signals.fm_new_line_value.emit(
-                (related_target_line.spent_quantity, related_target_line.stat_id)
-            )
+            self.bot_signals.fm_new_equipment_datas.emit(equipment)
 
         return False

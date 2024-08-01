@@ -1,6 +1,6 @@
-from logging import Logger
 import os
 import sys
+from logging import Logger
 from pathlib import Path
 from threading import Event
 from typing import Iterator
@@ -21,7 +21,6 @@ os.makedirs(os.path.join(Path(__file__).parent, "output", "captures"), exist_ok=
 def iter_img(
     target_window_size: tuple[int, int], target_process_name="Dofus.exe"
 ) -> Iterator[numpy.ndarray]:
-
     for window_info in get_windows_by_process_and_name(target_process_name):
         is_paused = Event()
         logger = Logger("root")
@@ -67,4 +66,4 @@ def get_sc_ankama():
 
 if __name__ == "__main__":
     # sleep(4)
-    get_sc_dofus()
+    get_sc_ankama()

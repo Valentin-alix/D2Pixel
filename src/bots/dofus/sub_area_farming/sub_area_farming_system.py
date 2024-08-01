@@ -1,15 +1,14 @@
-from logging import Logger
 import math
 import random
+from logging import Logger
 from time import perf_counter
 
 import numpy
+
 from D2Shared.shared.schemas.map import MapSchema
 from D2Shared.shared.schemas.map_direction import MapDirectionSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
-from D2Shared.shared.utils.debugger import log_caller, timeit
-
-
+from D2Shared.shared.utils.debugger import log_caller
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.services.map import MapService
 from src.services.session import ServiceSession
@@ -24,7 +23,6 @@ class SubAreaFarming:
         self.service = service
         self.character_state = character_state
 
-    @timeit
     def get_random_grouped_sub_area(
         self,
         sub_area_ids_farming: list[int],

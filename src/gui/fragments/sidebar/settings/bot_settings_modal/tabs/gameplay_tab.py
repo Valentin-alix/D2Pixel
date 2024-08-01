@@ -197,7 +197,7 @@ class GameplayTab(QWidget):
         self.spells_table.table.removeRow(index)
         self.update_delete_buttons()
 
-    def on_save(self):
+    def on_save(self) -> None:
         spells: list[UpdateSpellSchema] = []
         for spell_info_edit in self.spell_edits.values():
             name = spell_info_edit.name_edit.text()

@@ -1,15 +1,17 @@
 import os
 import unittest
+from logging import Logger
 
 import cv2
-from backend.src.database import SessionLocal
+
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.entities.position import Position
-from D2Shared.shared.schemas.template_found import TemplateFoundPlacementSchema
-
+from D2Shared.shared.schemas.template_found import InfoTemplateFoundPlacementSchema
+from src.gui.signals.app_signals import AppSignals
 from src.image_manager.screen_objects.object_searcher import (
     ObjectSearcher,
 )
+from src.services.session import ServiceSession
 from tests.utils import PATH_FIXTURES
 
 PATH_FIXTURES_HUD = os.path.join(PATH_FIXTURES, "hud")
@@ -17,7 +19,9 @@ PATH_FIXTURES_HUD = os.path.join(PATH_FIXTURES, "hud")
 
 class TestHud(unittest.TestCase):
     def setUp(self):
-        self.object_searcher = ObjectSearcher(SessionLocal())
+        logger = Logger("root")
+        service = ServiceSession(logger, AppSignals())
+        self.object_searcher = ObjectSearcher(logger=logger, service=service)
 
     def test_quit_ok_modal(self):
         img = cv2.imread(os.path.join(PATH_FIXTURES_HUD, "modal_ok.png"))
@@ -35,7 +39,7 @@ class TestHud(unittest.TestCase):
 
     def test_cross(self):
         img = cv2.imread(os.path.join(PATH_FIXTURES_HUD, "cross_ok.png"))
-        positions: list[tuple[Position, TemplateFoundPlacementSchema]] = []
+        positions: list[tuple[Position, InfoTemplateFoundPlacementSchema]] = []
         for config in [
             ObjectConfigs.Cross.inverted,
             ObjectConfigs.Cross.map,

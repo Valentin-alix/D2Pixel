@@ -64,16 +64,3 @@ class TestServiceCharacter(unittest.TestCase):
         CharacterService.add_bank_items(
             self.service, self.character.id, [elem.item_id for elem in colls]
         )
-        items = RecipeService.get_default_recipes(self.service, self.character.id)
-        print(items)
-        # CharacterService.add_bank_items(
-        #     self.service, self.character.id, [elem.item_id for elem in items]
-        # )
-        # recipes = RecipeService.get_default_recipes(self.service, self.character.id)
-        # for recipe in recipes:
-        #     print(recipe.result_item.name)
-
-        # sell_items = ItemService.get_default_sellable_items(
-        #     self.service, self.character.id, [elem.id for elem in recipes]
-        # )
-        # print(sell_items)

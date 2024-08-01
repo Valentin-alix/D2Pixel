@@ -1,11 +1,13 @@
 import os
 import unittest
+from logging import Logger
 
 import cv2
-from backend.src.database import SessionLocal
-from D2Shared.shared.consts.object_configs import ObjectConfigs
 
+from D2Shared.shared.consts.object_configs import ObjectConfigs
+from src.gui.signals.app_signals import AppSignals
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
+from src.services.session import ServiceSession
 from tests.utils import PATH_FIXTURES
 
 PATH_FIXTURES_FIGHT_ENEMY = os.path.join(PATH_FIXTURES, "fight")
@@ -13,7 +15,9 @@ PATH_FIXTURES_FIGHT_ENEMY = os.path.join(PATH_FIXTURES, "fight")
 
 class TestSearchEnemy(unittest.TestCase):
     def setUp(self):
-        self.object_searcher = ObjectSearcher(SessionLocal())
+        logger = Logger("root")
+        service = ServiceSession(logger, AppSignals())
+        self.object_searcher = ObjectSearcher(logger=logger, service=service)
 
     def test_back(self):
         DIRECTORY_ENEMY_BACK = os.path.join(PATH_FIXTURES_FIGHT_ENEMY, "enemy", "back")

@@ -47,9 +47,9 @@ class SpellManager:
 
         max_range_prefered_spell = sorted(
             (
-                elem
-                for elem in character.spells
-                if elem.level <= self.character_state.character.lvl
+                _elem
+                for _elem in character.spells
+                if _elem.level <= self.character_state.character.lvl
             ),
             key=lambda _spell: (
                 _spell.elem == character.elem,

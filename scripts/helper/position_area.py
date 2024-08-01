@@ -1,17 +1,21 @@
 import os
 import sys
-from threading import RLock
+from logging import Logger
+from threading import Event, RLock
 
 import cv2
 
+from D2Shared.shared.consts.adaptative.positions import CHAT_TEXT_POSITION
+from D2Shared.shared.consts.adaptative.regions import MAP_POSITION_REGION
+from src.consts import DOFUS_WINDOW_SIZE
+
 sys.path.append(os.path.dirname(os.path.dirname((os.path.dirname(__file__)))))
-from src.data_layer.consts.adaptative.positions import CHAT_TEXT_POSITION
-from src.data_layer.consts.adaptative.regions import MAP_POSITION_REGION
-from src.data_layer.entities.position import Position
-from src.data_layer.schemas.region import RegionSchema
+
+from D2Shared.shared.entities.position import Position
+from D2Shared.shared.schemas.region import RegionSchema
 from src.image_manager.debug import ColorBGR, draw_area, draw_position
 from src.window_manager.capturer import Capturer
-from src.window_manager.organizer import get_windows_by_process_and_name
+from src.window_manager.organizer import Organizer, get_windows_by_process_and_name
 
 COLOR_REGION = ColorBGR.GREEN
 
@@ -19,9 +23,22 @@ COLOR_REGION = ColorBGR.GREEN
 def show_position_area(areas: list[RegionSchema] = [], positions: list[Position] = []):
     """Used for get the position of the area needed, after img has been saved, go to paint and get position"""
     for window_info in get_windows_by_process_and_name(target_process_name="Dofus.exe"):
-        img = Capturer(
-            window_info=window_info, focus_lock=RLock(), is_paused=False
-        ).capture()
+        is_paused = Event()
+        logger = Logger("root")
+        organizer = Organizer(
+            window_info=window_info,
+            is_paused=is_paused,
+            target_window_size=DOFUS_WINDOW_SIZE,
+            logger=logger,
+        )
+        capturer = Capturer(
+            action_lock=RLock(),
+            organizer=organizer,
+            is_paused=is_paused,
+            window_info=window_info,
+            logger=logger,
+        )
+        img = capturer.capture()
         for area in areas:
             draw_area(img, area, COLOR_REGION)
         for position in positions:

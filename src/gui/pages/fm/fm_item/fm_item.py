@@ -12,7 +12,6 @@ from src.gui.components.organization import (
     VerticalLayout,
 )
 from src.gui.pages.fm.fm_item.fm_item_table import FmItemTable
-from src.gui.signals.bot_signals import BotSignals
 from src.services.equipment import EquipmentService
 from src.services.session import ServiceSession
 
@@ -26,7 +25,6 @@ class FmItemSignals(QObject):
 class FmItem(QWidget):
     def __init__(
         self,
-        bot_signals: BotSignals,
         logger: Logger,
         service: ServiceSession,
         *args,
@@ -34,7 +32,6 @@ class FmItem(QWidget):
     ) -> None:
         super().__init__(*args, **kwargs)
         self.logger = logger
-        self.bot_signals = bot_signals
         self.signals = FmItemSignals()
         self.service = service
         self.equipment: ReadEquipmentSchema | None = None
@@ -53,7 +50,6 @@ class FmItem(QWidget):
         self.button_delete.show()
 
         self.label_count_achieved.setText(str(equipment.count_lines_achieved))
-        self.bot_signals.fm_new_count_achieved.connect(self._on_new_count_achieved)
         self.count_achieved_widget.show()
 
     def set_item_from_base_lines(self, base_lines: list[BaseLineSchema]):
@@ -90,7 +86,7 @@ class FmItem(QWidget):
         self.label_equip_layout.addRow("Label", self.label_edit)
         self.main_layout.addWidget(self.label_equip_widget)
 
-        self.fm_item_table: FmItemTable = FmItemTable(self.bot_signals, self.service)
+        self.fm_item_table: FmItemTable = FmItemTable(self.service)
         self.main_layout.addWidget(self.fm_item_table)
 
     def _setup_count_achieved(self) -> None:
@@ -128,9 +124,9 @@ class FmItem(QWidget):
         self.button_delete.clicked.connect(self._on_delete)
         self.action_buttons_layout.addWidget(self.button_delete)
 
-    @pyqtSlot(int)
-    def _on_new_count_achieved(self, count_achieved: int):
-        self.label_count_achieved.setText(str(count_achieved))
+    def _on_new_equipment_datas(self, equipment: ReadEquipmentSchema):
+        self.label_count_achieved.setText(str(equipment.count_lines_achieved))
+        self.fm_item_table._on_new_equipment_datas(equipment)
 
     @pyqtSlot()
     def _on_delete(self):

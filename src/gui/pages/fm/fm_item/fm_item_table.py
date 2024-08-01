@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QComboBox, QLabel, QLineEdit
 
 from D2Shared.shared.enums import ExoStatEnum
@@ -6,27 +6,23 @@ from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
 from D2Shared.shared.schemas.stat import BaseLineSchema, LineSchema, StatSchema
 from src.gui.components.organization import AlignDelegate
 from src.gui.components.table import BaseTableWidget
-from src.gui.signals.bot_signals import BotSignals
 from src.services.session import ServiceSession
 from src.services.stat import StatService
 
 
 class FmItemTable(BaseTableWidget):
-    def __init__(
-        self, bot_signals: BotSignals, service: ServiceSession, *args, **kwargs
-    ) -> None:
+    def __init__(self, service: ServiceSession, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        # self.setLayout(VerticalLayout())
-        self.bot_signals = bot_signals
         self.service = service
-        self.label_spent_by_stat_id: dict[int, QLabel] = {}
+        self.labels_spent_by_stat_id: dict[int, tuple[QLabel, QLabel]] = {}
         self.edits_with_line: list[tuple[QLineEdit, BaseLineSchema]] = []
         self.stats = StatService.get_stats(self.service)
-        self.bot_signals.fm_new_line_value.connect(self._on_new_line_value)
+        self.count_lines_achieved: int | None = None
 
     def set_table_from_equipment(self, equipment: ReadEquipmentSchema):
+        self.count_lines_achieved = equipment.count_lines_achieved
         self.clear_table()
-        columns = ["Stat", "Valeur", "Tentative"]
+        columns = ["Stat", "Valeur", "Tentatives", "Tentatives Moyenne"]
         self.set_columns(columns)
 
         for line in equipment.lines:
@@ -101,10 +97,24 @@ class FmItemTable(BaseTableWidget):
         line_spent = QLabel()
         line_spent.setText(str(line.spent_quantity))
         self.table.setCellWidget(table_index, 2, line_spent)
-        self.label_spent_by_stat_id[line.stat_id] = line_spent
 
-    @pyqtSlot(object)
-    def _on_new_line_value(self, spent_with_stat_id: tuple[int, int]):
-        spent_quantity, stat_id = spent_with_stat_id
-        related_label_spent = self.label_spent_by_stat_id[stat_id]
-        related_label_spent.setText(str(spent_quantity))
+        assert self.count_lines_achieved is not None
+        line_spent_coeff = QLabel()
+        if self.count_lines_achieved != 0:
+            line_spent_coeff.setText(
+                str(line.spent_quantity / self.count_lines_achieved)
+            )
+        self.table.setCellWidget(table_index, 3, line_spent_coeff)
+        self.labels_spent_by_stat_id[line.stat_id] = (line_spent, line_spent_coeff)
+
+    def _on_new_equipment_datas(self, equipment: ReadEquipmentSchema):
+        self.count_lines_achieved = equipment.count_lines_achieved
+        for line in equipment.lines:
+            related_label_spent, label_coeff = self.labels_spent_by_stat_id[
+                line.stat_id
+            ]
+            related_label_spent.setText(str(line.spent_quantity))
+            if self.count_lines_achieved != 0:
+                label_coeff.setText(
+                    str(line.spent_quantity / self.count_lines_achieved)
+                )

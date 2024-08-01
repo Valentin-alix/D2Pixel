@@ -4,10 +4,10 @@ from typing import TypedDict
 
 import numpy
 
+from D2Shared.shared.entities.position import Position
 from src.bots.modules.harvester.path_positions import (
     find_optimal_path_positions,
 )
-from src.data_layer.entities.position import Position
 from src.image_manager.debug import ColorBGR, draw_line, draw_position
 
 

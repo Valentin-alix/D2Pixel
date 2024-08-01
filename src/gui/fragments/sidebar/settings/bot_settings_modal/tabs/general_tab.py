@@ -147,7 +147,7 @@ class GeneralTab(QWidget):
 
                 v_layout.addWidget(job_info_widget)
 
-    def on_save(self):
+    def on_save(self) -> None:
         server_id: int = self.server_combo.currentData()
         lvl = int(self.bot_lvl_form.text())
         elem: ElemEnum = self.elem_combo.currentData()

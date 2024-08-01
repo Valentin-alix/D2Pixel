@@ -71,8 +71,8 @@ class AnkamaLauncher:
         if not is_window_visible(self.window_info.hwnd):
             self.logger.info("Launch launcher for visible window")
             self._launch_launcher()  # to have window visible
-
-        self.controller.click(EMPTY_POSITION)  # to defocus play button
+        else:
+            self.controller.click(EMPTY_POSITION)  # to defocus play button
         pos, _, config, _ = self.image_manager.wait_multiple_or_template(
             [ObjectConfigs.Ankama.play, ObjectConfigs.Ankama.empty_play],
             force=True,
