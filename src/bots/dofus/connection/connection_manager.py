@@ -59,9 +59,7 @@ class ConnectionManager:
     def pause_bots(self) -> None:
         self.pause_threads = []
         for bot in self.bots_by_id.values():
-            pause_thread = Thread(
-                target=lambda: bot.connection_sys.pause_bot(), daemon=True
-            )
+            pause_thread = Thread(target=bot.connection_sys.pause_bot, daemon=True)
             pause_thread.start()
             self.pause_threads.append(pause_thread)
 
@@ -90,7 +88,7 @@ class ConnectionManager:
         for window_info in dofus_windows_info:
             threads_connect_dofus.append(
                 Thread(
-                    target=lambda: self.connect_dofus_account(window_info), daemon=True
+                    target=self.connect_dofus_account, args=(window_info,), daemon=True
                 )
             )
         for _thread in threads_connect_dofus:
