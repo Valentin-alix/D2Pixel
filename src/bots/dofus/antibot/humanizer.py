@@ -4,7 +4,7 @@ from typing import Callable
 
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.chat.chat_system import ChatSystem
-from src.common.time import convert_time_to_seconds
+from src.utils.time import convert_time_to_seconds
 
 
 class Humanizer:

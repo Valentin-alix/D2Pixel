@@ -8,7 +8,7 @@ from D2Shared.shared.entities.position import Position
 from src.bots.modules.harvester.path_positions import (
     find_optimal_path_positions,
 )
-from src.image_manager.debug import ColorBGR, draw_line, draw_position
+from src.image_manager.drawer import ColorBGR, draw_line, draw_position
 
 
 def draw_paths(

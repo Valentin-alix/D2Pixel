@@ -1,7 +1,7 @@
 import traceback
 from enum import StrEnum
 from random import shuffle
-from threading import Event, RLock
+from threading import Event, Lock, RLock
 from time import sleep
 from typing import Callable
 
@@ -41,7 +41,6 @@ from src.bots.modules.harvester.harvester import Harvester
 from src.bots.modules.hdv.craft.craft import Crafter
 from src.bots.modules.hdv.hdv import Hdv
 from src.bots.modules.hdv.sell import Seller
-from src.common.loggers.bot_logger import BotLogger
 from src.consts import DOFUS_WINDOW_SIZE
 from src.exceptions import StoppedException
 from src.gui.signals.app_signals import AppSignals
@@ -50,12 +49,14 @@ from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.icon_searcher import IconSearcher
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
+from src.loggers.bot_logger import BotLogger
 from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 from src.states.map_state import MapState
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
-from src.window_manager.organizer import Organizer, WindowInfo
+from src.window_manager.organizer import Organizer
+from src.window_manager.window_info import WindowInfo
 
 
 class FarmingAction(StrEnum):
@@ -83,6 +84,7 @@ class Bot:
         harvest_sub_areas_farming_ids: list[int],
         harvest_map_time: dict[int, float],
         app_signals: AppSignals,
+        dc_lock: Lock,
     ) -> None:
         self.fighter_maps_time = fighter_maps_time
         self.fighter_sub_areas_farming_ids = fighter_sub_areas_farming_ids
@@ -102,6 +104,8 @@ class Bot:
         self.is_in_fight_event = Event()
 
         self.action_lock = RLock()
+        self.dc_lock = dc_lock
+
         self.app_signals = app_signals
         self.logger = BotLogger(character_id, self.bot_signals)
         self.character_state = CharacterState(self.service, character_id)
@@ -109,7 +113,7 @@ class Bot:
         self.organizer = Organizer(
             window_info=self.window_info,
             is_paused_event=self.is_paused_event,
-            target_window_size=DOFUS_WINDOW_SIZE,
+            target_window_width_height=DOFUS_WINDOW_SIZE,
             logger=self.logger,
         )
         self.capturer = Capturer(
@@ -118,13 +122,16 @@ class Bot:
             is_paused_event=self.is_paused_event,
             window_info=self.window_info,
             logger=self.logger,
+            dc_lock=self.dc_lock,
         )
         self.icon_searcher = IconSearcher(logger=self.logger, service=self.service)
         self.animation_manager = AnimationManager(
             logger=self.logger, capturer=self.capturer
         )
         self.object_searcher = ObjectSearcher(logger=self.logger, service=self.service)
-        self.image_manager = ImageManager(self.capturer, self.object_searcher)
+        self.image_manager = ImageManager(
+            self.capturer, self.object_searcher, self.dc_lock
+        )
         grid = Grid(self.logger, self.object_searcher)
 
         self.character_state = CharacterState(self.service, self.character_id)
@@ -401,7 +408,7 @@ class Bot:
         self.is_playing_event.set()
         self.bot_signals.is_stopping_bot.emit(False)
 
-        self.map_state.reset_map_state()
+        self.map_state.reset_state()
 
         try:
             func()
@@ -432,6 +439,7 @@ class Bot:
     def run_farming(self, farming_actions: list[str]):
         def _run_farming(_farming_actions: list[str]):
             if len(_farming_actions) == 0:
+                self.logger.warning("Sélectionner au moins une action.")
                 return
 
             modules: list[tuple[str, Callable[..., None]]] = [

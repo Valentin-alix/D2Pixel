@@ -2,7 +2,7 @@ import schedule
 
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.connection.connection_manager import ConnectionManager
-from src.common.scheduler import run_continuously
+from src.utils.scheduler import run_continuously
 
 
 class PlayTimeManager:

@@ -10,7 +10,7 @@ from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
 
 # sys.path.append(os.path.dirname(os.path.dirname((os.path.dirname(__file__)))))
 from src.gui.signals.app_signals import AppSignals
-from src.image_manager.debug import ColorBGR, draw_line
+from src.image_manager.drawer import ColorBGR, draw_line
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.session import ServiceSession
 from tests.utils import PATH_FIXTURES

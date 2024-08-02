@@ -6,18 +6,16 @@ from time import sleep
 import win32api
 import win32con
 import win32gui
+from pynput.keyboard import Controller as KeyBoardController
+from pynput.keyboard import Key as PyKey
 from win32api import VkKeyScan
 
 from D2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
 from D2Shared.shared.entities.position import Position
 from src.consts import PAUSE
 from src.exceptions import StoppedException
-from src.window_manager.organizer import Organizer, WindowInfo
-from src.window_manager.win32 import (
-    get_foreground_window,
-    kill_window,
-    set_foreground_window,
-)
+from src.window_manager.organizer import Organizer
+from src.window_manager.window_info import WindowInfo
 
 type Key = str | int
 
@@ -52,7 +50,7 @@ class Controller:
 
     def kill_window(self):
         with self.action_lock:
-            kill_window(self.window_info.hwnd)
+            win32gui.PostMessage(self.window_info.hwnd, win32con.WM_CLOSE, 0, 0)
 
     @contextmanager
     def set_focus(self):
@@ -60,8 +58,11 @@ class Controller:
             raise StoppedException()
         try:
             focus_lock.acquire()
-            if get_foreground_window() != self.window_info.hwnd:
-                set_foreground_window(self.window_info.hwnd)
+            if win32gui.GetForegroundWindow() != self.window_info.hwnd:
+                KeyBoardController().press(PyKey.alt)
+                win32gui.SetForegroundWindow(self.window_info.hwnd)
+                KeyBoardController().release(PyKey.alt)
+                sleep(0.5)
             yield None
         finally:
             focus_lock.release()

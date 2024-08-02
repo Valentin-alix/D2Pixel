@@ -1,7 +1,7 @@
 from time import perf_counter, sleep
 from typing import Callable, NamedTuple, Type, TypeVar
 
-from src.common.randomizer import wait
+from D2Shared.shared.utils.randomizer import wait
 
 T = TypeVar("T")
 

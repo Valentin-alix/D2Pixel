@@ -1,5 +1,5 @@
 import threading
-import time
+from time import sleep
 
 import schedule
 
@@ -12,7 +12,7 @@ def run_continuously(interval=1):
         def run(cls):
             while not cease_continuous_run.is_set():
                 schedule.run_pending()
-                time.sleep(interval)
+                sleep(interval)
 
     continuous_thread = ScheduleThread()
     continuous_thread.start()

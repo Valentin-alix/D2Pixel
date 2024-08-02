@@ -13,10 +13,10 @@ from D2Shared.shared.consts.adaptative.positions import (
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.schemas.job import JobSchema
 from D2Shared.shared.schemas.recipe import RecipeSchema
+from D2Shared.shared.utils.randomizer import wait
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.hud.hud_system import HudSystem
 from src.bots.dofus.walker.buildings.workshop_building import WorkshopBuilding
-from src.common.randomizer import wait
 from src.entities.item import ItemProcessedStatus
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher

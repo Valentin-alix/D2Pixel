@@ -1,6 +1,6 @@
 import traceback
 from logging import Logger
-from threading import Event, RLock, Thread
+from threading import Event, Lock, RLock, Thread
 from time import sleep
 
 from D2Shared.shared.consts.object_configs import ObjectConfigs
@@ -19,7 +19,6 @@ from src.bots.dofus.hud.hud_system import Hud, HudSystem
 from src.bots.dofus.hud.info_popup.job_level import JobParser
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.modules.bot import Bot
-from src.common.retry import RetryTimeArgs
 from src.consts import DOFUS_WINDOW_SIZE
 from src.gui.signals.app_signals import AppSignals
 from src.image_manager.animation import AnimationManager
@@ -28,14 +27,15 @@ from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 from src.states.map_state import MapState
+from src.utils.retry import RetryTimeArgs
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 from src.window_manager.organizer import (
     Organizer,
-    WindowInfo,
-    get_dofus_window_infos,
     relink_windows_hwnd,
 )
+from src.window_manager.window_info import WindowInfo
+from src.window_manager.window_searcher import get_dofus_window_infos
 
 
 class ConnectionManager:
@@ -47,6 +47,7 @@ class ConnectionManager:
         ankama_launcher: AnkamaLauncher,
         bots_by_id: dict[str, Bot],
         app_signals: AppSignals,
+        dc_lock: Lock,
     ) -> None:
         self.logger = logger
 
@@ -54,6 +55,7 @@ class ConnectionManager:
         self.user = user
         self.ankama_launcher = ankama_launcher
         self.bots_by_id = bots_by_id
+        self.dc_lock = dc_lock
         self.app_signals = app_signals
 
     def pause_bots(self) -> None:
@@ -113,7 +115,7 @@ class ConnectionManager:
         organizer = Organizer(
             window_info=window_info,
             is_paused_event=is_paused_event,
-            target_window_size=DOFUS_WINDOW_SIZE,
+            target_window_width_height=DOFUS_WINDOW_SIZE,
             logger=self.logger,
         )
         action_lock = RLock()
@@ -123,10 +125,11 @@ class ConnectionManager:
             is_paused_event=is_paused_event,
             window_info=window_info,
             logger=self.logger,
+            dc_lock=self.dc_lock,
         )
         animation_manager = AnimationManager(logger=self.logger, capturer=capturer)
         object_searcher = ObjectSearcher(self.logger, self.service)
-        image_manager = ImageManager(capturer, object_searcher)
+        image_manager = ImageManager(capturer, object_searcher, self.dc_lock)
         grid = Grid(self.logger, object_searcher)
 
         character_state = CharacterState(self.service, character_id)

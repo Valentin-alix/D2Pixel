@@ -22,12 +22,12 @@ from D2Shared.shared.entities.position import Position
 from D2Shared.shared.schemas.item import ItemSchema
 from D2Shared.shared.schemas.recipe import RecipeSchema
 from D2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.utils.randomizer import wait
 from D2Shared.shared.utils.text_similarity import are_similar_text
 from src.bots.dofus.hud.small_bar import get_percentage_inventory_bar_normal
 from src.bots.dofus.walker.buildings.bank_buildings import BankBuilding
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.maps import get_astrub_bank_map
-from src.common.randomizer import wait
 from src.entities.item import ItemProcessedStatus
 from src.image_manager.ocr import get_text_from_image
 from src.image_manager.screen_objects.icon_searcher import IconSearcher

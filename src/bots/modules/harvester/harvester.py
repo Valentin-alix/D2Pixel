@@ -41,7 +41,6 @@ from src.bots.modules.harvester.path_positions import (
     find_dumby_optimal_path_positions,
     find_optimal_path_positions,
 )
-from src.common.time import convert_time_to_seconds
 from src.exceptions import (
     CharacterIsStuckException,
     StoppedException,
@@ -54,6 +53,7 @@ from src.services.collectable import CollectableService
 from src.services.session import ServiceSession
 from src.services.sub_area import SubAreaService
 from src.states.character_state import CharacterState
+from src.utils.time import convert_time_to_seconds
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 

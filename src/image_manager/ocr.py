@@ -37,7 +37,3 @@ def get_text_from_image(
             return get_text_img(api)
     else:
         return get_text_img(tes_api)
-
-
-def clean_text_line(text: str) -> str:
-    return "".join([char for char in text if char.isalnum()]).lower()

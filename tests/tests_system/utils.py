@@ -1,7 +1,7 @@
-from src.window_manager.organizer import (
+from src.window_manager.window_info import (
     WindowInfo,
-    get_windows_by_process_and_name,
 )
+from src.window_manager.window_searcher import get_windows_by_process_and_name
 
 
 def get_first_window_dofus() -> WindowInfo | None:

@@ -1,11 +1,10 @@
-from logging import Logger
 import logging
 import os
 import sys
-
+from logging import Logger
 
 sys.path.append(os.path.dirname(os.path.dirname((os.path.dirname(__file__)))))
-from src.window_manager.organizer import get_windows_by_process_and_name
+from src.window_manager.window_searcher import get_windows_by_process_and_name
 
 if __name__ == "__main__":
     logger = Logger("root")

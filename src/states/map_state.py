@@ -27,7 +27,7 @@ class MapState:
         self.building: BuildingInfo | None = None
         self.is_first_move: bool = True
 
-    def reset_map_state(self):
+    def reset_state(self):
         self.curr_map_info = None
         self.curr_direction = None
         self.building = None

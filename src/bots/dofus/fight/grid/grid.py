@@ -16,7 +16,7 @@ from D2Shared.shared.enums import TypeCellEnum
 from D2Shared.shared.schemas.cell import CellSchema
 from D2Shared.shared.utils.debugger import timeit
 from src.image_manager.analysis import is_color_in_range
-from src.image_manager.debug import ColorBGR, draw_form, draw_text
+from src.image_manager.drawer import ColorBGR, draw_form, draw_text
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.image_manager.transformation import crop_image
 

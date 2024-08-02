@@ -11,11 +11,11 @@ from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
 from src.bots.dofus.fight.spells.spell_manager import SpellManager
 from src.bots.dofus.fight.spells.spell_system import SpellSystem
-from src.common.retry import RetryTimeArgs
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
+from src.utils.retry import RetryTimeArgs
 from src.window_manager.controller import Controller
 
 

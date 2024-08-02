@@ -12,9 +12,9 @@ from D2Shared.shared.consts.adaptative.positions import (
 )
 from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
 from D2Shared.shared.schemas.stat import BaseLineSchema, StatSchema
+from D2Shared.shared.utils.randomizer import wait
 from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
 from src.bots.modules.fm.fm_analyser import FmAnalyser
-from src.common.randomizer import wait
 from src.gui.signals.bot_signals import BotSignals
 from src.services.equipment import EquipmentService
 from src.services.line import LineService

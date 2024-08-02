@@ -26,11 +26,11 @@ from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.enums import CategoryEnum
 from D2Shared.shared.schemas.item import ItemSchema
 from D2Shared.shared.schemas.region import RegionSchema
+from D2Shared.shared.utils.randomizer import wait
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.entities_map.sale_hotel import (
     get_sales_hotels_by_category,
 )
-from src.common.randomizer import wait
 from src.exceptions import UnknowStateException
 from src.image_manager.ocr import (
     BASE_CONFIG,

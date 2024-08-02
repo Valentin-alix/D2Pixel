@@ -1,33 +1,40 @@
+import os
 import subprocess
 from logging import Logger
-from threading import Event, RLock, Thread
+from threading import Event, Lock, RLock, Thread
 from time import sleep
 
+import win32gui
 from dotenv import get_key, set_key
 
 from D2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
 from D2Shared.shared.consts.object_configs import ObjectConfigs
-from src.common.retry import RetryTimeArgs
-from src.common.searcher import search_for_file
 from src.consts import ANKAMA_WINDOW_SIZE, ENV_PATH
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.session import ServiceSession
+from src.utils.retry import RetryTimeArgs
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 from src.window_manager.organizer import (
     Organizer,
-    WindowInfo,
-    get_ankama_window_info,
 )
-from src.window_manager.win32 import is_window_visible
+from src.window_manager.window_info import WindowInfo
+from src.window_manager.window_searcher import get_ankama_window_info
 
 
 def get_path_ankama_launcher() -> str:
     path = get_key(ENV_PATH, "PATH_ANKAMA_LAUNCHER")
     if path is not None:
         return path
-    path = search_for_file("Ankama Launcher.exe")
+    ankama_exe_filename = "Ankama Launcher.exe"
+    for root, _, files in os.walk("C:\\"):
+        if ankama_exe_filename in files:
+            path = os.path.join(root, ankama_exe_filename)
+            break
+    else:
+        raise FileNotFoundError(f"Did not found {ankama_exe_filename}")
+
     set_key(ENV_PATH, "PATH_ANKAMA_LAUNCHER", path)
     return path
 
@@ -58,19 +65,24 @@ def get_or_launch_ankama_window(logger: Logger) -> WindowInfo:
 
 class AnkamaLauncher:
     def __init__(
-        self, window_info: WindowInfo, logger: Logger, service: ServiceSession
+        self,
+        window_info: WindowInfo,
+        logger: Logger,
+        service: ServiceSession,
+        dc_lock: Lock,
     ) -> None:
         self.pause_threads: list[Thread] | None = None
 
         self.service = service
         self.action_lock = RLock()
+        self.dc_lock = dc_lock
         self.logger = logger
         self.is_paused_event = Event()
         self.window_info: WindowInfo = window_info
         self.organizer = Organizer(
             window_info=window_info,
             is_paused_event=self.is_paused_event,
-            target_window_size=ANKAMA_WINDOW_SIZE,
+            target_window_width_height=ANKAMA_WINDOW_SIZE,
             logger=self.logger,
         )
         self.controller = Controller(
@@ -86,16 +98,17 @@ class AnkamaLauncher:
             is_paused_event=self.is_paused_event,
             window_info=window_info,
             logger=self.logger,
+            dc_lock=dc_lock,
         )
         object_searcher = ObjectSearcher(self.logger, self.service)
-        self.image_manager = ImageManager(capturer, object_searcher)
+        self.image_manager = ImageManager(capturer, object_searcher, self.dc_lock)
 
     def launch_dofus_games(self):
         ank_window_info = get_or_launch_ankama_window(self.logger)
         self.window_info.hwnd = ank_window_info.hwnd
 
         """launch games by clicking play on ankama launcher & wait 12 seconds"""
-        if not is_window_visible(self.window_info.hwnd):
+        if not win32gui.IsWindowVisible(self.window_info.hwnd):
             self.logger.info("Launch launcher for visible window")
             launch_launcher()  # to have window visible
         else:

@@ -13,7 +13,7 @@ from D2Shared.shared.entities.position import Position
 from D2Shared.shared.schemas.map import CoordinatesMapSchema, MapSchema
 from D2Shared.shared.schemas.region import RegionSchema
 from src.gui.signals.app_signals import AppSignals
-from src.image_manager.debug import (
+from src.image_manager.drawer import (
     ColorBGR,
     draw_area,
     draw_position,

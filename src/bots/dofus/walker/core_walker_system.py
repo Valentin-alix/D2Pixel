@@ -24,6 +24,7 @@ from D2Shared.shared.schemas.map_direction import MapDirectionSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
 from D2Shared.shared.schemas.waypoint import WaypointSchema
 from D2Shared.shared.schemas.zaapi import ZaapiSchema
+from D2Shared.shared.utils.randomizer import wait
 from src.bots.dofus.hud.hud_system import HudSystem
 from src.bots.dofus.hud.map import get_map
 from src.bots.dofus.walker.directions import (
@@ -32,13 +33,6 @@ from src.bots.dofus.walker.directions import (
 from src.bots.dofus.walker.entities_map.entity_map import EntityMap
 from src.bots.dofus.walker.maps import get_portal_map_id_by_world
 from src.bots.dofus.walker.zaapis import get_position_by_zaapi_category
-from src.common.randomizer import wait
-from src.common.retry import (
-    MAX_RETRY,
-    RetryTimeArgs,
-    retry_count,
-    retry_force_count,
-)
 from src.entities.building_info import BuildingInfo
 from src.exceptions import (
     CharacterIsStuckException,
@@ -53,6 +47,12 @@ from src.services.session import ServiceSession
 from src.services.world import WorldService
 from src.states.character_state import CharacterState
 from src.states.map_state import CurrentMapInfo, MapState
+from src.utils.retry import (
+    MAX_RETRY,
+    RetryTimeArgs,
+    retry_count,
+    retry_force_count,
+)
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 

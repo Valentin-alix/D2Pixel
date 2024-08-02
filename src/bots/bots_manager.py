@@ -1,5 +1,6 @@
 from collections import defaultdict
 from logging import Logger
+from threading import Lock
 
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.ankama.ankama_launcher import AnkamaLauncher, get_or_launch_ankama_window
@@ -10,9 +11,9 @@ from src.bots.modules.bot import Bot
 from src.gui.signals.app_signals import AppSignals
 from src.services.session import ServiceSession
 from src.window_manager.organizer import (
-    WindowInfo,
     relink_windows_hwnd,
 )
+from src.window_manager.window_info import WindowInfo
 
 
 class BotsManager:
@@ -29,6 +30,7 @@ class BotsManager:
         self.logger = logger
         self.user = user
         self.bots_by_id: dict[str, Bot] = {}
+        self.dc_lock = Lock()
 
         self.ankama_launcher: AnkamaLauncher | None = None
         self.connection_manager: ConnectionManager | None = None
@@ -42,14 +44,11 @@ class BotsManager:
 
         self.app_signals.need_restart.connect(self._on_need_restart)
 
-    def _on_need_restart(self) -> None:
-        self.connect_all()
-
     def connect_all(self):
         if self.ankama_launcher is None:
             ankama_window = get_or_launch_ankama_window(self.logger)
             self.ankama_launcher = AnkamaLauncher(
-                ankama_window, self.logger, self.service
+                ankama_window, self.logger, self.service, self.dc_lock
             )
         if self.connection_manager is None:
             self.connection_manager = ConnectionManager(
@@ -59,6 +58,7 @@ class BotsManager:
                 self.ankama_launcher,
                 self.bots_by_id,
                 self.app_signals,
+                self.dc_lock,
             )
         if self.playtime_manager is None:
             self.playtime_manager = PlayTimeManager(self.user, self.connection_manager)
@@ -66,6 +66,9 @@ class BotsManager:
         self.ankama_launcher.launch_dofus_games()
         dofus_windows = self.connection_manager.connect_all_dofus_account()
         self._setup_bots(dofus_windows)
+
+    def _on_need_restart(self) -> None:
+        self.connect_all()
 
     def _setup_bots(self, dofus_windows: list[WindowInfo]):
         untreated_ids: list[str] = list(self.bots_by_id.keys())
@@ -85,6 +88,7 @@ class BotsManager:
                     self.harvest_sub_area_farming_ids,
                     self.harvest_map_time,
                     self.app_signals,
+                    self.dc_lock,
                 )
             else:
                 relink_windows_hwnd(bot.window_info, dofus_windows)

@@ -27,7 +27,6 @@ from src.bots.dofus.sub_area_farming.sub_area_farming_system import (
     SubAreaFarmingSystem,
 )
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
-from src.common.time import convert_time_to_seconds
 from src.exceptions import (
     CharacterIsStuckException,
     StoppedException,
@@ -42,6 +41,7 @@ from src.services.character import CharacterService
 from src.services.session import ServiceSession
 from src.services.sub_area import SubAreaService
 from src.states.character_state import CharacterState
+from src.utils.time import convert_time_to_seconds
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 

@@ -6,10 +6,10 @@ import numpy
 from pydantic import BaseModel, ConfigDict
 
 from D2Shared.shared.schemas.region import RegionSchema
-from src.common.retry import RetryTimeArgs, retry_time
 from src.exceptions import UnknowStateException
 from src.image_manager.analysis import are_image_similar
 from src.image_manager.transformation import crop_image, img_to_gray
+from src.utils.retry import RetryTimeArgs, retry_time
 from src.window_manager.capturer import Capturer
 
 

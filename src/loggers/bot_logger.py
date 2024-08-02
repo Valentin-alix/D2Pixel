@@ -4,8 +4,8 @@ from typing import Any
 
 import coloredlogs
 
-from src.common.loggers.utils import get_file_handler
 from src.gui.signals.bot_signals import BotSignals
+from src.loggers.handlers import get_file_handler
 
 
 class BotLogger(logging.Logger):

@@ -35,7 +35,7 @@ class TestHudSystem(unittest.TestCase):
         organizer = Organizer(
             window_info=window,
             is_paused_event=is_paused,
-            target_window_size=DOFUS_WINDOW_SIZE,
+            target_window_width_height=DOFUS_WINDOW_SIZE,
             logger=logger,
         )
         action_lock = RLock()

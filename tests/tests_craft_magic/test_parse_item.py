@@ -6,9 +6,9 @@ import cv2
 
 from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
 from src.bots.modules.fm.fm_analyser import FmAnalyser
-from src.common.loggers.app_logger import AppLogger
 from src.gui.signals.app_signals import AppSignals
 from src.services.session import ServiceSession
+from src.utils.loggers.app_logger import AppLogger
 
 PATH_FIXTURES = os.path.join(Path(__file__).parent, "fixtures", "items")
 
