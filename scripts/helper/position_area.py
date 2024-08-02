@@ -27,14 +27,14 @@ def show_position_area(areas: list[RegionSchema] = [], positions: list[Position]
         logger = Logger("root")
         organizer = Organizer(
             window_info=window_info,
-            is_paused=is_paused,
+            is_paused_event=is_paused,
             target_window_size=DOFUS_WINDOW_SIZE,
             logger=logger,
         )
         capturer = Capturer(
             action_lock=RLock(),
             organizer=organizer,
-            is_paused=is_paused,
+            is_paused_event=is_paused,
             window_info=window_info,
             logger=logger,
         )

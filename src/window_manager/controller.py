@@ -6,11 +6,11 @@ from time import sleep
 import win32api
 import win32con
 import win32gui
+from win32api import VkKeyScan
+
 from D2Shared.shared.consts.adaptative.positions import EMPTY_POSITION
 from D2Shared.shared.entities.position import Position
 from src.consts import PAUSE
-from win32api import VkKeyScan
-
 from src.exceptions import StoppedException
 from src.window_manager.organizer import Organizer, WindowInfo
 from src.window_manager.win32 import (
@@ -40,13 +40,13 @@ class Controller:
         self,
         logger: Logger,
         window_info: WindowInfo,
-        is_paused: Event,
+        is_paused_event: Event,
         organizer: Organizer,
         action_lock: RLock,
     ) -> None:
         self.logger = logger
         self.window_info = window_info
-        self.is_paused = is_paused
+        self.is_paused = is_paused_event
         self.organizer = organizer
         self.action_lock = action_lock
 

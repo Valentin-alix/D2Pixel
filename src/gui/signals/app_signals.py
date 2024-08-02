@@ -8,3 +8,4 @@ class AppSignals(QObject):
     log_info = pyqtSignal(object)
     login_failed = pyqtSignal()
     login_success = pyqtSignal()
+    need_restart = pyqtSignal()

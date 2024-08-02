@@ -40,7 +40,7 @@ class TestFighterSystem(unittest.TestCase):
         is_paused = Event()
         organizer = Organizer(
             window_info=window,
-            is_paused=is_paused,
+            is_paused_event=is_paused,
             target_window_size=DOFUS_WINDOW_SIZE,
             logger=logger,
         )
@@ -48,14 +48,14 @@ class TestFighterSystem(unittest.TestCase):
         controller = Controller(
             logger=logger,
             window_info=window,
-            is_paused=is_paused,
+            is_paused_event=is_paused,
             organizer=organizer,
             action_lock=action_lock,
         )
         self.capturer = Capturer(
             action_lock=action_lock,
             organizer=organizer,
-            is_paused=is_paused,
+            is_paused_event=is_paused,
             window_info=window,
             logger=logger,
         )
@@ -144,9 +144,9 @@ class TestFighterSystem(unittest.TestCase):
             image_manager=image_manager,
             controller=controller,
             grid=grid,
-            is_dead=Event(),
+            is_dead_event=Event(),
             service=service,
-            not_in_fight=Event(),
+            is_in_fight_event=Event(),
         )
 
     def test_fighter(self):

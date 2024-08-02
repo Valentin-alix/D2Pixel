@@ -1,5 +1,6 @@
 from logging import Logger
 from threading import Event
+
 import psutil
 import win32gui
 import win32process
@@ -21,12 +22,12 @@ class Organizer(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     window_info: WindowInfo
-    is_paused: Event
+    is_paused_event: Event
     target_window_size: tuple[int, int]
     logger: Logger
 
     def adjust_window_size(self):
-        if self.is_paused.is_set():
+        if self.is_paused_event.is_set():
             raise StoppedException()
         if self.target_window_size is not None:
             adjust_window_size(
@@ -82,3 +83,20 @@ def get_ankama_window_info(logger: Logger) -> WindowInfo | None:
     if len(windows_ankama) == 0:
         return None
     return windows_ankama[0]
+
+
+def relink_windows_hwnd(
+    previous_window_info: WindowInfo, new_windows_info: list[WindowInfo]
+) -> bool:
+    related_window = next(
+        (
+            window
+            for window in new_windows_info
+            if window.name == previous_window_info.name
+        ),
+        None,
+    )
+    if related_window is None:
+        return False
+    previous_window_info.hwnd = related_window.hwnd
+    return True

@@ -11,13 +11,13 @@ class Humanizer:
     def __init__(
         self,
         chat_system: ChatSystem,
-        is_connected: threading.Event,
-        is_playing: threading.Event,
+        is_connected_event: threading.Event,
+        is_playing_event: threading.Event,
         user: ReadUserSchema,
     ) -> None:
         self.chat_system = chat_system
-        self.is_connected = is_connected
-        self.is_playing = is_playing
+        self.is_connected = is_connected_event
+        self.is_playing = is_playing_event
         self.user = user
         self.timers: list[threading.Timer] = []
 

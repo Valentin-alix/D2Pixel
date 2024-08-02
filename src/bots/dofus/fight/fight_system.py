@@ -48,13 +48,13 @@ class FightSystem:
         image_manager: ImageManager,
         controller: Controller,
         grid: Grid,
-        is_dead: Event,
+        is_dead_event: Event,
         service: ServiceSession,
-        not_in_fight: Event,
+        is_in_fight_event: Event,
     ) -> None:
         self.capturer = capturer
         self.object_searcher = object_searcher
-        self.is_dead = is_dead
+        self.is_dead = is_dead_event
         self.animation_manager = animation_manager
         self.ia_brute_sys = ia_brute_sys
         self.core_walker_system = core_walker_system
@@ -66,11 +66,11 @@ class FightSystem:
         self.controller = controller
         self.grid = grid
         self.service = service
-        self.not_in_fight = not_in_fight
+        self.is_in_fight_event = is_in_fight_event
 
     def play_fight(self) -> tuple[numpy.ndarray, bool]:
         """Return True if was teleported"""
-        self.not_in_fight.clear()
+        self.is_in_fight_event.set()
         wait((0.1, 3))
 
         self.logger.info("Playing fight")
@@ -92,7 +92,7 @@ class FightSystem:
 
         img, was_teleported = self.handle_post_fight()
 
-        self.not_in_fight.set()
+        self.is_in_fight_event.clear()
 
         return img, was_teleported
 
@@ -194,7 +194,7 @@ class FightSystem:
             self.is_dead.set()
             self.logger.warning("Character is dead.")
             img = self.on_dead_character(img)
-            self.not_in_fight.set()
+            self.is_in_fight_event.clear()
             return img, True
 
         if config == ObjectConfigs.Cross.info_lose_fight:

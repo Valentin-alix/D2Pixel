@@ -26,14 +26,14 @@ def iter_img(
         logger = Logger("root")
         organizer = Organizer(
             window_info=window_info,
-            is_paused=is_paused,
+            is_paused_event=is_paused,
             target_window_size=target_window_size,
             logger=logger,
         )
         capturer = Capturer(
             action_lock=RLock(),
             organizer=organizer,
-            is_paused=is_paused,
+            is_paused_event=is_paused,
             window_info=window_info,
             logger=logger,
         )

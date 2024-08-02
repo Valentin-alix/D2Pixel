@@ -19,4 +19,4 @@ class WorkerConnect(QObject):
     @pyqtSlot()
     def run(self) -> None:
         self.bots_manager.connect_all()
-        self.app_signals.connected_bots.emit(self.bots_manager.bots)
+        self.app_signals.connected_bots.emit(self.bots_manager.bots_by_id)

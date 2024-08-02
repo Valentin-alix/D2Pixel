@@ -34,7 +34,7 @@ class TestHudSystem(unittest.TestCase):
         is_paused = Event()
         organizer = Organizer(
             window_info=window,
-            is_paused=is_paused,
+            is_paused_event=is_paused,
             target_window_size=DOFUS_WINDOW_SIZE,
             logger=logger,
         )
@@ -42,14 +42,14 @@ class TestHudSystem(unittest.TestCase):
         controller = Controller(
             logger=logger,
             window_info=window,
-            is_paused=is_paused,
+            is_paused_event=is_paused,
             organizer=organizer,
             action_lock=action_lock,
         )
         self.capturer = Capturer(
             action_lock=action_lock,
             organizer=organizer,
-            is_paused=is_paused,
+            is_paused_event=is_paused,
             window_info=window,
             logger=logger,
         )

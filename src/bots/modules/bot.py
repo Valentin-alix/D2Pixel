@@ -44,6 +44,7 @@ from src.bots.modules.hdv.sell import Seller
 from src.common.loggers.bot_logger import BotLogger
 from src.consts import DOFUS_WINDOW_SIZE
 from src.exceptions import StoppedException
+from src.gui.signals.app_signals import AppSignals
 from src.gui.signals.bot_signals import BotSignals
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.icon_searcher import IconSearcher
@@ -81,6 +82,7 @@ class Bot:
         fighter_sub_areas_farming_ids: list[int],
         harvest_sub_areas_farming_ids: list[int],
         harvest_map_time: dict[int, float],
+        app_signals: AppSignals,
     ) -> None:
         self.fighter_maps_time = fighter_maps_time
         self.fighter_sub_areas_farming_ids = fighter_sub_areas_farming_ids
@@ -92,34 +94,34 @@ class Bot:
         self.fake_sentence = fake_sentence
         self.user = user
         self.bot_signals = BotSignals()
-        self.is_paused = Event()
-        self.internal_pause = Event()
-        self.is_playing = Event()
-        self.is_connected = Event()
-        self.is_dead = Event()
-        self.not_in_fight = Event()
-        self.not_in_fight.set()
+        self.is_paused_event = Event()
+        self.is_paused_internal_event = Event()
+        self.is_playing_event = Event()
+        self.is_connected_event = Event()
+        self.is_dead_event = Event()
+        self.is_in_fight_event = Event()
         self.action_lock = RLock()
+        self.app_signals = app_signals
         self.logger = BotLogger(character_id, self.bot_signals)
         self.character_state = CharacterState(self.service, character_id)
 
-        self.is_init_bot: bool = False
+        self._is_init_bot: bool = False
 
-    def init_bot(self):
-        if self.is_init_bot:
+    def _init_bot(self):
+        if self._is_init_bot:
             self.logger.info("already initialized bot")
             return
-        self.is_init_bot = True
+        self._is_init_bot = True
         self.organizer = Organizer(
             window_info=self.window_info,
-            is_paused=self.is_paused,
+            is_paused_event=self.is_paused_event,
             target_window_size=DOFUS_WINDOW_SIZE,
             logger=self.logger,
         )
         self.capturer = Capturer(
             action_lock=self.action_lock,
             organizer=self.organizer,
-            is_paused=self.is_paused,
+            is_paused_event=self.is_paused_event,
             window_info=self.window_info,
             logger=self.logger,
         )
@@ -137,7 +139,7 @@ class Bot:
         self.controller = Controller(
             self.logger,
             self.window_info,
-            self.is_paused,
+            self.is_paused_event,
             self.organizer,
             self.action_lock,
         )
@@ -216,9 +218,9 @@ class Bot:
             self.image_manager,
             self.controller,
             grid,
-            self.is_dead,
+            self.is_dead_event,
             self.service,
-            self.not_in_fight,
+            self.is_in_fight_event,
         )
         walker_sys = WalkerSystem(
             fight_sys,
@@ -243,7 +245,13 @@ class Bot:
             self.capturer,
             self.image_manager,
             self.logger,
-            self.is_connected,
+            self.app_signals,
+            self.is_connected_event,
+            self.is_paused_internal_event,
+            self.is_playing_event,
+            self.is_paused_event,
+            self.is_in_fight_event,
+            self.action_lock,
         )
         bank_building = BankBuilding(
             core_walker_sys,
@@ -286,7 +294,7 @@ class Bot:
         )
         self.chat_sys = ChatSystem(self.controller, self.logger, self.fake_sentence)
         self.humanizer = Humanizer(
-            self.chat_sys, self.is_connected, self.is_playing, self.user
+            self.chat_sys, self.is_connected_event, self.is_playing_event, self.user
         )
 
         self.crafter = Crafter(
@@ -381,12 +389,12 @@ class Bot:
         }
 
     def _stop_bot(self):
-        if self.is_playing.is_set():
-            self.is_paused.set()
-            while self.is_playing.is_set():
+        if self.is_playing_event.is_set():
+            self.is_paused_event.set()
+            while self.is_playing_event.is_set():
                 self.logger.info("Waiting for stopped bot")
                 sleep(0.3)
-            self.is_paused.clear()
+            self.is_paused_event.clear()
 
     def stop_bot(self):
         self.bot_signals.is_stopping_bot.emit(True)
@@ -394,12 +402,12 @@ class Bot:
         self.bot_signals.is_stopping_bot.emit(False)
 
     def run_action(self, func: Callable) -> None:
-        self.init_bot()
+        self._init_bot()
 
         self.bot_signals.is_stopping_bot.emit(True)
         self._stop_bot()
-        self.is_paused.clear()
-        self.is_playing.set()
+        self.is_paused_event.clear()
+        self.is_playing_event.set()
         self.bot_signals.is_stopping_bot.emit(False)
 
         self.map_state.reset_map_state()
@@ -412,7 +420,7 @@ class Bot:
             self.logger.error(traceback.format_exc())
         finally:
             self.logger.info("Bot terminated.")
-            self.is_playing.clear()
+            self.is_playing_event.clear()
             self.humanizer.stop_timers()
             self.bot_signals.terminated_bot.emit()
             self.bot_signals.is_stopping_bot.emit(False)
@@ -443,7 +451,7 @@ class Bot:
             shuffle(modules)
             self.humanizer.run_humanizer()
             self.hud_sys.clean_interface(self.capturer.capture())
-            while not self.is_paused.is_set():
+            while not self.is_paused_event.is_set():
                 for name, action in modules:
                     self.bot_signals.playing_action.emit(name)
                     try:
