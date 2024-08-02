@@ -143,7 +143,6 @@ class TestConnectionSystem(unittest.TestCase):
             image_manager=image_manager,
             controller=controller,
             grid=grid,
-            is_dead_event=Event(),
             service=service,
             is_in_fight_event=Event(),
         )

@@ -94,24 +94,18 @@ class Bot:
         self.fake_sentence = fake_sentence
         self.user = user
         self.bot_signals = BotSignals()
+
         self.is_paused_event = Event()
         self.is_paused_internal_event = Event()
         self.is_playing_event = Event()
         self.is_connected_event = Event()
-        self.is_dead_event = Event()
         self.is_in_fight_event = Event()
+
         self.action_lock = RLock()
         self.app_signals = app_signals
         self.logger = BotLogger(character_id, self.bot_signals)
         self.character_state = CharacterState(self.service, character_id)
 
-        self._is_init_bot: bool = False
-
-    def _init_bot(self):
-        if self._is_init_bot:
-            self.logger.info("already initialized bot")
-            return
-        self._is_init_bot = True
         self.organizer = Organizer(
             window_info=self.window_info,
             is_paused_event=self.is_paused_event,
@@ -218,7 +212,6 @@ class Bot:
             self.image_manager,
             self.controller,
             grid,
-            self.is_dead_event,
             self.service,
             self.is_in_fight_event,
         )
@@ -402,8 +395,6 @@ class Bot:
         self.bot_signals.is_stopping_bot.emit(False)
 
     def run_action(self, func: Callable) -> None:
-        self._init_bot()
-
         self.bot_signals.is_stopping_bot.emit(True)
         self._stop_bot()
         self.is_paused_event.clear()
@@ -451,6 +442,7 @@ class Bot:
             shuffle(modules)
             self.humanizer.run_humanizer()
             self.hud_sys.clean_interface(self.capturer.capture())
+
             while not self.is_paused_event.is_set():
                 for name, action in modules:
                     self.bot_signals.playing_action.emit(name)

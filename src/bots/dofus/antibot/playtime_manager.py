@@ -16,10 +16,10 @@ class PlayTimeManager:
     def run(self) -> None:
         for range_hour_playtime in self.user.config_user.ranges_hour_playtime:
             schedule.every().day.at(range_hour_playtime.end_time.strftime("%H:%M")).do(
-                lambda: self.connection_manager.pause_bots()
+                self.connection_manager.pause_bots
             )
             schedule.every().day.at(
                 range_hour_playtime.start_time.strftime("%H:%M")
-            ).do(lambda: self.connection_manager.resume_bots())
+            ).do(self.connection_manager.resume_bots)
 
         run_continuously()

@@ -2,7 +2,7 @@ from collections import defaultdict
 from logging import Logger
 
 from D2Shared.shared.schemas.user import ReadUserSchema
-from src.bots.ankama.ankama_launcher import AnkamaLauncher
+from src.bots.ankama.ankama_launcher import AnkamaLauncher, get_or_launch_ankama_window
 from src.bots.dofus.antibot.playtime_manager import PlayTimeManager
 from src.bots.dofus.chat.sentence import FakeSentence
 from src.bots.dofus.connection.connection_manager import ConnectionManager
@@ -29,25 +29,43 @@ class BotsManager:
         self.logger = logger
         self.user = user
         self.bots_by_id: dict[str, Bot] = {}
-        self.ankama_launcher = AnkamaLauncher(logger, service)
-        self.connection_manager = ConnectionManager(
-            logger, service, user, self.ankama_launcher, self.bots_by_id, app_signals
-        )
-        self.playtime_manager = PlayTimeManager(user, self.connection_manager)
+
+        self.ankama_launcher: AnkamaLauncher | None = None
+        self.connection_manager: ConnectionManager | None = None
+        self.playtime_manager: PlayTimeManager | None = None
+
         self.fighter_map_time: dict[int, float] = defaultdict(lambda: 0)
         self.fighter_sub_area_farming_ids: list[int] = []
 
         self.harvest_map_time: dict[int, float] = defaultdict(lambda: 0)
         self.harvest_sub_area_farming_ids: list[int] = []
-        self.app_signals.need_restart.connect(self._on_need_restart)
 
-    def connect_all(self):
-        self.ankama_launcher.launch_dofus_games()
-        dofus_windows = self.connection_manager.connect_all_dofus_account()
-        self._setup_bots(dofus_windows)
+        self.app_signals.need_restart.connect(self._on_need_restart)
 
     def _on_need_restart(self) -> None:
         self.connect_all()
+
+    def connect_all(self):
+        if self.ankama_launcher is None:
+            ankama_window = get_or_launch_ankama_window(self.logger)
+            self.ankama_launcher = AnkamaLauncher(
+                ankama_window, self.logger, self.service
+            )
+        if self.connection_manager is None:
+            self.connection_manager = ConnectionManager(
+                self.logger,
+                self.service,
+                self.user,
+                self.ankama_launcher,
+                self.bots_by_id,
+                self.app_signals,
+            )
+        if self.playtime_manager is None:
+            self.playtime_manager = PlayTimeManager(self.user, self.connection_manager)
+
+        self.ankama_launcher.launch_dofus_games()
+        dofus_windows = self.connection_manager.connect_all_dofus_account()
+        self._setup_bots(dofus_windows)
 
     def _setup_bots(self, dofus_windows: list[WindowInfo]):
         untreated_ids: list[str] = list(self.bots_by_id.keys())

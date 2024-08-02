@@ -48,13 +48,11 @@ class FightSystem:
         image_manager: ImageManager,
         controller: Controller,
         grid: Grid,
-        is_dead_event: Event,
         service: ServiceSession,
         is_in_fight_event: Event,
     ) -> None:
         self.capturer = capturer
         self.object_searcher = object_searcher
-        self.is_dead = is_dead_event
         self.animation_manager = animation_manager
         self.ia_brute_sys = ia_brute_sys
         self.core_walker_system = core_walker_system
@@ -168,7 +166,6 @@ class FightSystem:
         )
         self.controller.click(phenix_pos_info[0])
         self.image_manager.wait_on_screen(ObjectConfigs.Fight.ressuscite_text)
-        self.is_dead.clear()
         return img
 
     def handle_post_fight(self) -> tuple[numpy.ndarray, bool]:
@@ -191,7 +188,6 @@ class FightSystem:
             self.object_searcher.get_position(img, ObjectConfigs.Fight.grave)
             is not None
         ):
-            self.is_dead.set()
             self.logger.warning("Character is dead.")
             img = self.on_dead_character(img)
             self.is_in_fight_event.clear()

@@ -23,21 +23,50 @@ from src.window_manager.organizer import (
 from src.window_manager.win32 import is_window_visible
 
 
+def get_path_ankama_launcher() -> str:
+    path = get_key(ENV_PATH, "PATH_ANKAMA_LAUNCHER")
+    if path is not None:
+        return path
+    path = search_for_file("Ankama Launcher.exe")
+    set_key(ENV_PATH, "PATH_ANKAMA_LAUNCHER", path)
+    return path
+
+
+def launch_launcher():
+    subprocess.Popen(
+        [get_path_ankama_launcher()],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+
+
+def get_or_launch_ankama_window(logger: Logger) -> WindowInfo:
+    if not (window_info := get_ankama_window_info(logger)):
+        logger.info("Launch launcher")
+        launch_launcher()
+        while True:
+            window_info = get_ankama_window_info(logger)
+            if window_info is not None:
+                break
+            logger.info(
+                "N'a pas trouvé de fenêtre correspondant à l'Ankama Launcher..."
+            )
+            sleep(0.5)
+    return window_info
+
+
 class AnkamaLauncher:
-    def __init__(self, logger: Logger, service: ServiceSession) -> None:
+    def __init__(
+        self, window_info: WindowInfo, logger: Logger, service: ServiceSession
+    ) -> None:
         self.pause_threads: list[Thread] | None = None
 
         self.service = service
         self.action_lock = RLock()
         self.logger = logger
         self.is_paused_event = Event()
-        self.window_info: WindowInfo | None = None
-        self._is_init_launcher: bool = False
-
-    def _init_launcher_by_window(self, window_info: WindowInfo):
-        if self._is_init_launcher:
-            self.logger.info("Le launcher est déjà initialisé.")
-            return
+        self.window_info: WindowInfo = window_info
         self.organizer = Organizer(
             window_info=window_info,
             is_paused_event=self.is_paused_event,
@@ -62,17 +91,13 @@ class AnkamaLauncher:
         self.image_manager = ImageManager(capturer, object_searcher)
 
     def launch_dofus_games(self):
-        ank_window_info = self.get_or_launch_ankama_window()
-        if self.window_info is None:
-            self.window_info = ank_window_info
-        else:
-            self.window_info.hwnd = ank_window_info.hwnd
-        self._init_launcher_by_window(self.window_info)
+        ank_window_info = get_or_launch_ankama_window(self.logger)
+        self.window_info.hwnd = ank_window_info.hwnd
 
         """launch games by clicking play on ankama launcher & wait 12 seconds"""
         if not is_window_visible(self.window_info.hwnd):
             self.logger.info("Launch launcher for visible window")
-            self._launch_launcher()  # to have window visible
+            launch_launcher()  # to have window visible
         else:
             self.controller.click(EMPTY_POSITION)  # to defocus play button
         pos, _, config, _ = self.image_manager.wait_multiple_or_template(
@@ -83,33 +108,3 @@ class AnkamaLauncher:
         if config == ObjectConfigs.Ankama.play:
             self.controller.click(pos)
             sleep(15)
-
-    def get_or_launch_ankama_window(self) -> WindowInfo:
-        if not (window_info := get_ankama_window_info(self.logger)):
-            self.logger.info("Launch launcher")
-            self._launch_launcher()
-            while True:
-                window_info = get_ankama_window_info(self.logger)
-                if window_info is not None:
-                    break
-                self.logger.info(
-                    "N'a pas trouvé de fenêtre correspondant à l'Ankama Launcher..."
-                )
-                sleep(0.5)
-        return window_info
-
-    def _launch_launcher(self):
-        subprocess.Popen(
-            [self._get_path_ankama_launcher()],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True,
-        )
-
-    def _get_path_ankama_launcher(self) -> str:
-        path = get_key(ENV_PATH, "PATH_ANKAMA_LAUNCHER")
-        if path is not None:
-            return path
-        path = search_for_file("Ankama Launcher.exe")
-        set_key(ENV_PATH, "PATH_ANKAMA_LAUNCHER", path)
-        return path

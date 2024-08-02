@@ -86,15 +86,19 @@ class ConnectionManager:
 
     def connect_all_dofus_account(self) -> list[WindowInfo]:
         dofus_windows_info = get_dofus_window_infos()
+        threads_connect_dofus: list[Thread] = []
         for window_info in dofus_windows_info:
-            while True:
-                try:
-                    self.connect_dofus_account(window_info)
-                except Exception:
-                    self.logger.error(traceback.format_exc())
-                    sleep(1)
-                    continue
-                break
+            threads_connect_dofus.append(
+                Thread(
+                    target=lambda: self.connect_dofus_account(window_info), daemon=True
+                )
+            )
+        for _thread in threads_connect_dofus:
+            _thread.start()
+
+        for _thread in threads_connect_dofus:
+            _thread.join()
+
         return get_dofus_window_infos()
 
     def connect_dofus_account(
@@ -103,7 +107,6 @@ class ConnectionManager:
         character_id = window_info.name.split(" - Dofus")[0]
 
         is_connected_event = Event()
-        is_dead_event = Event()
         is_in_fight_event = Event()
         is_paused_internal_event = Event()
         is_playing_event = Event()
@@ -209,7 +212,6 @@ class ConnectionManager:
             image_manager,
             controller,
             grid,
-            is_dead_event,
             self.service,
             is_in_fight_event,
         )
@@ -229,12 +231,19 @@ class ConnectionManager:
             is_in_fight_event,
             action_lock,
         )
-        if wait_play:
-            image_manager.wait_on_screen(
-                ObjectConfigs.Connection.play,
-                force=True,
-                retry_time_args=RetryTimeArgs(offset_start=3, timeout=30),
-            )
-        while not connecter.connect_character(capturer.capture())[1]:
-            sleep(0.3)
-        self.logger.info(f"{character_state.character} est connecté.")
+        while True:
+            try:
+                if wait_play:
+                    image_manager.wait_on_screen(
+                        ObjectConfigs.Connection.play,
+                        force=True,
+                        retry_time_args=RetryTimeArgs(offset_start=3, timeout=30),
+                    )
+                while not connecter.connect_character(capturer.capture())[1]:
+                    sleep(1)
+                self.logger.info(f"{character_state.character} est connecté.")
+            except Exception:
+                self.logger.error(traceback.format_exc())
+                sleep(1)
+                continue
+            break

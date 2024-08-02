@@ -1,5 +1,5 @@
 import random
-import threading
+from threading import Event, Timer
 from typing import Callable
 
 from D2Shared.shared.schemas.user import ReadUserSchema
@@ -11,30 +11,30 @@ class Humanizer:
     def __init__(
         self,
         chat_system: ChatSystem,
-        is_connected_event: threading.Event,
-        is_playing_event: threading.Event,
+        is_connected_event: Event,
+        is_playing_event: Event,
         user: ReadUserSchema,
     ) -> None:
         self.chat_system = chat_system
-        self.is_connected = is_connected_event
-        self.is_playing = is_playing_event
+        self.is_connected_event = is_connected_event
+        self.is_playing_event = is_playing_event
         self.user = user
-        self.timers: list[threading.Timer] = []
+        self.timers: list[Timer] = []
 
     def run_random_action(self, func: Callable, time: float):
         """run funct in interval based on time randomized"""
 
         def run_func_regularly():
-            if self.is_connected.is_set() and self.is_playing.is_set():
+            if self.is_connected_event.is_set() and self.is_playing_event.is_set():
                 func()
-            timer = threading.Timer(
+            timer = Timer(
                 random.uniform(time * 0.2, time * 1.8),
                 run_func_regularly,
             )
             self.timers.append(timer)
             timer.start()
 
-        timer = threading.Timer(
+        timer = Timer(
             random.uniform(time * 0.2, time * 1.8),
             run_func_regularly,
         )
