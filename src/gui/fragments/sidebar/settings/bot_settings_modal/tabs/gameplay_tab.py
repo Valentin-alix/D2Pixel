@@ -1,6 +1,6 @@
+from dataclasses import dataclass
 from functools import partial
 
-from pydantic import BaseModel, ConfigDict
 from PyQt5.QtWidgets import QCheckBox, QComboBox, QLineEdit, QWidget
 
 from D2Shared.shared.enums import CharacteristicEnum, ElemEnum
@@ -13,9 +13,8 @@ from src.services.character import CharacterService
 from src.services.session import ServiceSession
 
 
-class SpellInfoEdits(BaseModel):
-    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
-
+@dataclass
+class SpellInfoEdits:
     name_edit: QLineEdit
     index_edit: QLineEdit
     elem_combo: QComboBox

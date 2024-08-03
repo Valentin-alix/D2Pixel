@@ -1,4 +1,5 @@
 from contextlib import nullcontext
+from dataclasses import dataclass
 from logging import Logger
 from typing import Any, Callable, Literal, NamedTuple, Sequence, TypeVar, overload
 
@@ -25,6 +26,7 @@ from D2Shared.shared.schemas.user import ReadUserSchema
 from D2Shared.shared.schemas.waypoint import WaypointSchema
 from D2Shared.shared.schemas.zaapi import ZaapiSchema
 from D2Shared.shared.utils.randomizer import wait
+from src.bots.dofus.deblocker.deblock_system import DeblockSystem
 from src.bots.dofus.hud.hud_system import HudSystem
 from src.bots.dofus.hud.map import get_map
 from src.bots.dofus.walker.directions import (
@@ -66,38 +68,32 @@ class WaitForNewMapWalking(NamedTuple):
         offset_start=1, timeout=15, repeat_time=0.5
     )
     extra_func: Callable[[numpy.ndarray], numpy.ndarray] | None = None
-    check_fight: bool = False
 
 
+@dataclass
 class CoreWalkerSystem:
-    def __init__(
-        self,
-        hud_sys: HudSystem,
-        logger: Logger,
-        map_state: MapState,
-        character_state: CharacterState,
-        controller: Controller,
-        image_manager: ImageManager,
-        object_searcher: ObjectSearcher,
-        animation_manager: AnimationManager,
-        capturer: Capturer,
-        service: ServiceSession,
-        user: ReadUserSchema,
-    ) -> None:
-        self.hud_sys = hud_sys
-        self.user = user
-        self.object_searcher = object_searcher
-        self.animation_manager = animation_manager
-        self.capturer = capturer
-        self.logger = logger
-        self.map_state = map_state
-        self.character_state = character_state
-        self.controller = controller
-        self.image_manager = image_manager
-        self.service = service
+    hud_sys: HudSystem
+    logger: Logger
+    map_state: MapState
+    character_state: CharacterState
+    controller: Controller
+    image_manager: ImageManager
+    object_searcher: ObjectSearcher
+    animation_manager: AnimationManager
+    capturer: Capturer
+    service: ServiceSession
+    user: ReadUserSchema
+    deblock_system: DeblockSystem
 
-    def on_new_map(self, pause: bool = True) -> tuple[bool, numpy.ndarray]:
-        if pause:
+    def on_new_map(self, do_pause: bool = True) -> tuple[bool, numpy.ndarray]:
+        """
+        Args:
+            do_pause (bool, optional): if set to True, wait before capturing. Defaults to True.
+
+        Returns:
+            tuple[bool, numpy.ndarray]: it's a new map, the new img
+        """
+        if do_pause:
             wait(
                 (
                     self.user.config_user.range_new_map.start,
@@ -206,12 +202,15 @@ class CoreWalkerSystem:
             is None
         ):
             new_img: numpy.ndarray | None = None
-            for _ in range(2):
+            for _ in range(3):
                 self.controller.key("h")
                 if (new_img := self.wait_for_new_map()) is not None:
                     break
             if new_img is None:
-                raise UnknowStateException(self.capturer.capture(), "no_havre_sac")
+                MapService.update_not_allow_teleport_from(
+                    self.service, self.get_curr_map_info().map.id
+                )
+                return self.use_zaap(waypoint)
             img = new_img
 
         self.controller.click(ZAAP_HAVRE_SAC_POSITION)
@@ -324,10 +323,7 @@ class CoreWalkerSystem:
         force: bool = False,
     ) -> numpy.ndarray | None:
         img: numpy.ndarray | None = self.animation_manager.wait_animation(
-            self.get_curr_map_info().img,
-            INFO_MAP_REGION,
-            retry_args,
-            force,  # type: ignore
+            self.get_curr_map_info().img, INFO_MAP_REGION, retry_args, force
         )
         if img is not None:
             is_new_map, img = self.on_new_map()
@@ -389,7 +385,7 @@ class CoreWalkerSystem:
         self.logger.info(f"New curr direction : {self.get_curr_direction()}")
         if map_direction.to_map_id == self.get_curr_map_info().map.id:
             # success
-            if do_trust and not map_direction.was_checked:
+            if do_trust:
                 MapService.confirm_map_direction(
                     self.service, map_direction.id, map_direction.to_map_id
                 )
@@ -400,12 +396,12 @@ class CoreWalkerSystem:
             f"Map : {self.get_curr_map_info().map} != {map_direction.to_map_id}"
         )
         if do_trust:
-            if not map_direction.was_checked:
-                MapService.confirm_map_direction(
-                    self.service, map_direction.id, self.get_curr_map_info().map.id
-                )
-            else:
-                raise UnknowStateException(self.capturer.capture(), "unexpected_map")
+            if self.deblock_system.is_blocked_character():
+                raise Exception("Character is blocked")
+
+            MapService.confirm_map_direction(
+                self.service, map_direction.id, self.get_curr_map_info().map.id
+            )
 
         return None, False
 
@@ -440,6 +436,8 @@ class CoreWalkerSystem:
             f"No new map : {self.get_curr_map_info().map} != {map_direction.to_map_id}"
         )
         if do_trust:
+            if self.deblock_system.is_blocked_character():
+                raise Exception("Character is blocked")
             if not map_direction.was_checked:
                 if (
                     len(

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from logging import Logger
 
 import numpy
@@ -13,26 +14,16 @@ from src.services.spell import SpellService
 from src.states.character_state import CharacterState
 
 
+@dataclass
 class IaBruteFightSystem:
-    def __init__(
-        self,
-        ia_base_fight_sys: IaBaseFightSystem,
-        spell_system: SpellSystem,
-        spell_manager: SpellManager,
-        astar_grid: AstarGrid,
-        grid: Grid,
-        logger: Logger,
-        service: ServiceSession,
-        character_state: CharacterState,
-    ) -> None:
-        self.ia_base_fight_sys = ia_base_fight_sys
-        self.spell_system = spell_system
-        self.spell_manager = spell_manager
-        self.astar_grid = astar_grid
-        self.grid = grid
-        self.logger = logger
-        self.service = service
-        self.character_state = character_state
+    ia_base_fight_sys: IaBaseFightSystem
+    spell_system: SpellSystem
+    spell_manager: SpellManager
+    astar_grid: AstarGrid
+    grid: Grid
+    logger: Logger
+    service: ServiceSession
+    character_state: CharacterState
 
     def play_turn(self, img: numpy.ndarray) -> bool:
         while True:

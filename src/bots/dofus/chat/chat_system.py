@@ -1,17 +1,16 @@
+from dataclasses import dataclass
 from logging import Logger
-from D2Shared.shared.consts.adaptative.positions import CHAT_TEXT_POSITION
 
+from D2Shared.shared.consts.adaptative.positions import CHAT_TEXT_POSITION
 from src.bots.dofus.chat.sentence import FakeSentence
 from src.window_manager.controller import Controller
 
 
+@dataclass
 class ChatSystem:
-    def __init__(
-        self, controller: Controller, logger: Logger, fake_sentence: FakeSentence
-    ) -> None:
-        self.controller = controller
-        self.logger = logger
-        self.fake_sentence = fake_sentence
+    controller: Controller
+    logger: Logger
+    fake_sentence: FakeSentence
 
     def type_random_sentence(self):
         random_sentence = self.fake_sentence.get_random_sentence()

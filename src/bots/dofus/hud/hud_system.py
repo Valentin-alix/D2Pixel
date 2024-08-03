@@ -1,9 +1,9 @@
+from dataclasses import dataclass, field
 from logging import Logger
 from time import sleep
 
 import numpy
 import tesserocr
-from pydantic import BaseModel, ConfigDict
 
 from D2Shared.shared.consts.adaptative.consts import MODAL_LVLUP_OFFSET_RIGHT
 from D2Shared.shared.consts.object_configs import ObjectConfigs
@@ -29,10 +29,25 @@ from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
 
-class Hud(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
+@dataclass
+class Hud:
     logger: Logger
+
+    close_interface_configs: list[ObjectSearchConfig] = field(
+        default_factory=lambda: [
+            ObjectConfigs.Cross.popup_info,
+            ObjectConfigs.Cross.inverted,
+            ObjectConfigs.Cross.map,
+            ObjectConfigs.Cross.bank_inventory_right,
+            ObjectConfigs.Cross.sale_hotel_inventory_right,
+            ObjectConfigs.Cross.info_win_fight,
+            ObjectConfigs.Cross.info_lose_fight,
+            ObjectConfigs.Cross.connection_warning,
+            ObjectConfigs.Button.ok,
+            ObjectConfigs.Button.yes,
+        ],
+        init=False,
+    )
 
     def get_level_up_number(
         self, img: numpy.ndarray, level_up_text_position: Position, region: RegionSchema
@@ -53,9 +68,8 @@ class Hud(BaseModel):
                 raise UnknowStateException(img, "lvl_up_number")
 
 
-class HudSystem(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
+@dataclass
+class HudSystem:
     hud: Hud
     image_manager: ImageManager
     character_state: CharacterState
@@ -204,17 +218,6 @@ class HudSystem(BaseModel):
     ) -> numpy.ndarray:
         return self.close_modals(
             img,
-            ordered_configs_to_check=[
-                ObjectConfigs.Cross.popup_info,
-                ObjectConfigs.Cross.inverted,
-                ObjectConfigs.Cross.map,
-                ObjectConfigs.Cross.bank_inventory_right,
-                ObjectConfigs.Cross.sale_hotel_inventory_right,
-                ObjectConfigs.Cross.info_win_fight,
-                ObjectConfigs.Cross.info_lose_fight,
-                ObjectConfigs.Cross.connection_warning,
-                ObjectConfigs.Button.ok,
-                ObjectConfigs.Button.yes,
-            ],
+            ordered_configs_to_check=self.hud.close_interface_configs,
             from_cache=from_cache,
         )

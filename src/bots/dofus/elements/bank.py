@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from logging import Logger
 from time import sleep
 
@@ -70,30 +71,18 @@ def get_slot_area_item(img: numpy.ndarray, item_name: str) -> RegionSchema | Non
     return None
 
 
+@dataclass
 class BankSystem:
-    def __init__(
-        self,
-        bank_building: BankBuilding,
-        object_searcher: ObjectSearcher,
-        capturer: Capturer,
-        image_manager: ImageManager,
-        icon_searcher: IconSearcher,
-        controller: Controller,
-        service: ServiceSession,
-        core_walker_sys: CoreWalkerSystem,
-        character_state: CharacterState,
-        logger: Logger,
-    ) -> None:
-        self.bank_building = bank_building
-        self.capturer = capturer
-        self.icon_searcher = icon_searcher
-        self.object_searcher = object_searcher
-        self.core_walker_sys = core_walker_sys
-        self.image_manager = image_manager
-        self.controller = controller
-        self.service = service
-        self.character_state = character_state
-        self.logger = logger
+    bank_building: BankBuilding
+    object_searcher: ObjectSearcher
+    capturer: Capturer
+    image_manager: ImageManager
+    icon_searcher: IconSearcher
+    controller: Controller
+    service: ServiceSession
+    core_walker_sys: CoreWalkerSystem
+    character_state: CharacterState
+    logger: Logger
 
     def _bank_open_chest(self):
         consult_chest_info = self.image_manager.wait_on_screen(

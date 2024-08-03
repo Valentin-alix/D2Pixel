@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 from logging import Logger
 
 import numpy
@@ -27,16 +28,11 @@ class LinePriority(BaseModel):
     target_line: BaseLineSchema
 
 
+@dataclass
 class FmAnalyser:
-    def __init__(
-        self,
-        logger: Logger,
-        service: ServiceSession,
-        smithmagic_workshop: SmithMagicWorkshop,
-    ) -> None:
-        self.logger = logger
-        self.service = service
-        self.smithmagic_workshop = smithmagic_workshop
+    logger: Logger
+    service: ServiceSession
+    smithmagic_workshop: SmithMagicWorkshop
 
     def get_stats_item_selected(
         self, img: numpy.ndarray

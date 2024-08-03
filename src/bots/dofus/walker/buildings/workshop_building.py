@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from logging import Logger
 
 import numpy
@@ -30,20 +31,13 @@ from src.utils.retry import retry_force_count
 from src.window_manager.controller import Controller
 
 
+@dataclass
 class WorkshopBuilding:
-    def __init__(
-        self,
-        core_walker_sys: CoreWalkerSystem,
-        logger: Logger,
-        controller: Controller,
-        image_manager: ImageManager,
-        service_session: ServiceSession,
-    ) -> None:
-        self.core_walker_sys = core_walker_sys
-        self.logger = logger
-        self.controller = controller
-        self.image_manager = image_manager
-        self.service_session = service_session
+    core_walker_sys: CoreWalkerSystem
+    logger: Logger
+    controller: Controller
+    image_manager: ImageManager
+    service_session: ServiceSession
 
     def go_workshop_for_job(self, job_name: str) -> Position:
         match job_name:

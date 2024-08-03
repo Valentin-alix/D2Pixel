@@ -1,13 +1,15 @@
+from dataclasses import dataclass
+
 from cachetools import cached
 from cachetools.keys import hashkey
-from pydantic import BaseModel
 
 from D2Shared.shared.schemas.map import CoordinatesMapSchema, MapSchema
 from src.services.map import MapService
 from src.services.session import ServiceSession
 
 
-class EntityMap(BaseModel):
+@dataclass
+class EntityMap:
     map_info: MapSchema
 
 

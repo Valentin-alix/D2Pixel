@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from logging import Logger
 
 import numpy
@@ -23,25 +24,16 @@ from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
 
+@dataclass
 class Fm:
-    def __init__(
-        self,
-        bot_signals: BotSignals,
-        controller: Controller,
-        service: ServiceSession,
-        fm_analyser: FmAnalyser,
-        logger: Logger,
-        smithmagic_workshop: SmithMagicWorkshop,
-        capturer: Capturer,
-    ) -> None:
-        self.bot_signals = bot_signals
-        self.controller = controller
-        self.service = service
-        self.fm_analyser = fm_analyser
-        self.logger = logger
-        self.smithmagic_workshop = smithmagic_workshop
-        self.capturer = capturer
-        self.searched_rune_name: str | None = None
+    bot_signals: BotSignals
+    controller: Controller
+    service: ServiceSession
+    fm_analyser: FmAnalyser
+    logger: Logger
+    smithmagic_workshop: SmithMagicWorkshop
+    capturer: Capturer
+    _searched_rune_name: str | None = field(default=None, init=False)
 
     def run(
         self,
@@ -49,7 +41,7 @@ class Fm:
         exo_stat: StatSchema | None = None,
         equipment: ReadEquipmentSchema | None = None,
     ):
-        self.searched_rune_name = None
+        self._searched_rune_name = None
         old_img: numpy.ndarray | None = None
         while True:
             wait((0.3, 0.5))
@@ -73,10 +65,10 @@ class Fm:
         self.controller.click(CLEAR_SEARCH_INVENTORY_POSITION)
         self.controller.send_text(name, pos=SEARCH_INVENTORY_POSITION)
         wait()
-        self.searched_rune_name = name
+        self._searched_rune_name = name
 
     def merge_rune_by_name(self, name: str) -> None:
-        if self.searched_rune_name != name:
+        if self._searched_rune_name != name:
             self.search_rune(name)
         self.controller.click(FIRST_OBJECT_INVENTORY_POSITION, count=2)
         wait((0.6, 1))

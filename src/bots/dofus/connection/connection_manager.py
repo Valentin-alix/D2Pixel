@@ -1,4 +1,5 @@
 import traceback
+from dataclasses import dataclass
 from logging import Logger
 from threading import Event, Lock, RLock, Thread
 from time import sleep
@@ -38,25 +39,15 @@ from src.window_manager.window_info import WindowInfo
 from src.window_manager.window_searcher import get_dofus_window_infos
 
 
+@dataclass
 class ConnectionManager:
-    def __init__(
-        self,
-        logger: Logger,
-        service: ServiceSession,
-        user: ReadUserSchema,
-        ankama_launcher: AnkamaLauncher,
-        bots_by_id: dict[str, Bot],
-        app_signals: AppSignals,
-        dc_lock: Lock,
-    ) -> None:
-        self.logger = logger
-
-        self.service = service
-        self.user = user
-        self.ankama_launcher = ankama_launcher
-        self.bots_by_id = bots_by_id
-        self.dc_lock = dc_lock
-        self.app_signals = app_signals
+    logger: Logger
+    service: ServiceSession
+    user: ReadUserSchema
+    ankama_launcher: AnkamaLauncher
+    bots_by_id: dict[str, Bot]
+    app_signals: AppSignals
+    dc_lock: Lock
 
     def pause_bots(self) -> None:
         self.pause_threads = []
@@ -217,20 +208,20 @@ class ConnectionManager:
             is_in_fight_event,
         )
         connecter = ConnectionSystem(
-            fight_sys,
-            hud_sys,
-            controller,
-            object_searcher,
-            capturer,
-            image_manager,
-            self.logger,
-            self.app_signals,
-            is_connected_event,
-            is_paused_internal_event,
-            is_playing_event,
-            is_paused_event,
-            is_in_fight_event,
-            action_lock,
+            fight_system=fight_sys,
+            hud_system=hud_sys,
+            controller=controller,
+            object_searcher=object_searcher,
+            capturer=capturer,
+            image_manager=image_manager,
+            logger=self.logger,
+            app_signals=self.app_signals,
+            is_connected_event=is_connected_event,
+            is_paused_internal_event=is_paused_internal_event,
+            is_playing_event=is_playing_event,
+            is_paused_event=is_paused_event,
+            is_in_fight_event=is_in_fight_event,
+            action_lock=action_lock,
         )
         while True:
             try:

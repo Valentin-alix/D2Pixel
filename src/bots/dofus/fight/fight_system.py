@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from logging import Logger
 from threading import Event
 from time import sleep
@@ -33,38 +34,22 @@ def is_ur_turn(img: numpy.ndarray) -> bool:
     return get_percentage_info_bar_fight(img) > 0
 
 
+@dataclass
 class FightSystem:
-    def __init__(
-        self,
-        ia_brute_sys: IaBruteFightSystem,
-        core_walker_system: CoreWalkerSystem,
-        animation_manager: AnimationManager,
-        hud_sys: HudSystem,
-        astar_grid: AstarGrid,
-        spell_manager: SpellManager,
-        logger: Logger,
-        capturer: Capturer,
-        object_searcher: ObjectSearcher,
-        image_manager: ImageManager,
-        controller: Controller,
-        grid: Grid,
-        service: ServiceSession,
-        is_in_fight_event: Event,
-    ) -> None:
-        self.capturer = capturer
-        self.object_searcher = object_searcher
-        self.animation_manager = animation_manager
-        self.ia_brute_sys = ia_brute_sys
-        self.core_walker_system = core_walker_system
-        self.hud_sys = hud_sys
-        self.astar_grid = astar_grid
-        self.spell_manager = spell_manager
-        self.logger = logger
-        self.image_manager = image_manager
-        self.controller = controller
-        self.grid = grid
-        self.service = service
-        self.is_in_fight_event = is_in_fight_event
+    ia_brute_sys: IaBruteFightSystem
+    core_walker_system: CoreWalkerSystem
+    animation_manager: AnimationManager
+    hud_sys: HudSystem
+    astar_grid: AstarGrid
+    spell_manager: SpellManager
+    logger: Logger
+    capturer: Capturer
+    object_searcher: ObjectSearcher
+    image_manager: ImageManager
+    controller: Controller
+    grid: Grid
+    service: ServiceSession
+    is_in_fight_event: Event
 
     def play_fight(self) -> tuple[numpy.ndarray, bool]:
         """Return True if was teleported"""

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from logging import Logger
 from time import sleep
 
@@ -19,30 +20,18 @@ from src.utils.retry import RetryTimeArgs
 from src.window_manager.controller import Controller
 
 
+@dataclass
 class IaBaseFightSystem:
-    def __init__(
-        self,
-        spell_sys: SpellSystem,
-        grid: Grid,
-        ldv_grid: LdvGrid,
-        controller: Controller,
-        animation_manager: AnimationManager,
-        service: ServiceSession,
-        character_state: CharacterState,
-        logger: Logger,
-        spell_manager: SpellManager,
-        object_searcher: ObjectSearcher,
-    ) -> None:
-        self.spell_sys = spell_sys
-        self.grid = grid
-        self.ldv_grid = ldv_grid
-        self.service = service
-        self.controller = controller
-        self.animation_manager = animation_manager
-        self.character_state = character_state
-        self.logger = logger
-        self.spell_manager = spell_manager
-        self.object_searcher = object_searcher
+    spell_sys: SpellSystem
+    grid: Grid
+    ldv_grid: LdvGrid
+    controller: Controller
+    animation_manager: AnimationManager
+    service: ServiceSession
+    character_state: CharacterState
+    logger: Logger
+    spell_manager: SpellManager
+    object_searcher: ObjectSearcher
 
     def reach_attackable_enemy(
         self, img: numpy.ndarray

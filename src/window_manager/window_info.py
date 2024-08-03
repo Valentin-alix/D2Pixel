@@ -1,7 +1,8 @@
-from pydantic import BaseModel
+from dataclasses import dataclass
 
 
-class WindowInfo(BaseModel):
+@dataclass
+class WindowInfo:
     hwnd: int
     name: str
 

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from logging import Logger
 from time import sleep
 
@@ -23,28 +24,17 @@ from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
 
+@dataclass
 class SpellSystem:
-    def __init__(
-        self,
-        service: ServiceSession,
-        spell_manager: SpellManager,
-        controller: Controller,
-        capturer: Capturer,
-        object_searcher: ObjectSearcher,
-        image_manager: ImageManager,
-        animation_manager: AnimationManager,
-        grid: Grid,
-        logger: Logger,
-    ) -> None:
-        self.service = service
-        self.capturer = capturer
-        self.animation_manager = animation_manager
-        self.object_searcher = object_searcher
-        self.spell_manager = spell_manager
-        self.controller = controller
-        self.image_manager = image_manager
-        self.grid = grid
-        self.logger = logger
+    service: ServiceSession
+    spell_manager: SpellManager
+    controller: Controller
+    capturer: Capturer
+    object_searcher: ObjectSearcher
+    image_manager: ImageManager
+    animation_manager: AnimationManager
+    grid: Grid
+    logger: Logger
 
     def on_launched_spell(self, spell: SpellSchema) -> numpy.ndarray:
         sleep(0.3)

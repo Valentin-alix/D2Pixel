@@ -1,12 +1,12 @@
 import ctypes
 from ctypes.wintypes import DWORD, HWND, RECT
+from dataclasses import dataclass
 from logging import Logger
 from threading import Event
 from time import sleep
 
 import win32con
 import win32gui
-from pydantic import BaseModel, ConfigDict
 
 from src.exceptions import StoppedException
 from src.window_manager.window_info import WindowInfo
@@ -18,9 +18,8 @@ dwmapi = ctypes.WinDLL("dwmapi")
 OFFSET_BY_PROCESS_NAME: dict[str, tuple[int, int]] = {}
 
 
-class Organizer(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
+@dataclass
+class Organizer:
     window_info: WindowInfo
     is_paused_event: Event
     target_window_width_height: tuple[int, int] | None

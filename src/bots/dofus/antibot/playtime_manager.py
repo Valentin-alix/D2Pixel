@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import schedule
 
 from D2Shared.shared.schemas.user import ReadUserSchema
@@ -5,12 +7,12 @@ from src.bots.dofus.connection.connection_manager import ConnectionManager
 from src.utils.scheduler import run_continuously
 
 
+@dataclass
 class PlayTimeManager:
-    def __init__(
-        self, user: ReadUserSchema, connection_manager: ConnectionManager
-    ) -> None:
-        self.user = user
-        self.connection_manager = connection_manager
+    user: ReadUserSchema
+    connection_manager: ConnectionManager
+
+    def __post_init__(self):
         self.run()
 
     def run(self) -> None:

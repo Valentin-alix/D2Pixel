@@ -13,6 +13,7 @@ from src.bots.dofus.antibot.humanizer import Humanizer
 from src.bots.dofus.chat.chat_system import ChatSystem
 from src.bots.dofus.chat.sentence import FakeSentence
 from src.bots.dofus.connection.connection_system import ConnectionSystem
+from src.bots.dofus.deblocker.deblock_system import DeblockSystem
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.elements.sale_hotel import SaleHotel, SaleHotelSystem
 from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
@@ -38,7 +39,7 @@ from src.bots.modules.fighter.fighter import Fighter
 from src.bots.modules.fm.fm import Fm
 from src.bots.modules.fm.fm_analyser import FmAnalyser
 from src.bots.modules.harvester.harvester import Harvester
-from src.bots.modules.hdv.craft.craft import Crafter
+from src.bots.modules.hdv.craft import Crafter
 from src.bots.modules.hdv.hdv import Hdv
 from src.bots.modules.hdv.sell import Seller
 from src.consts import DOFUS_WINDOW_SIZE
@@ -223,7 +224,6 @@ class Bot:
             self.is_in_fight_event,
         )
         walker_sys = WalkerSystem(
-            fight_sys,
             self.hud_sys,
             self.logger,
             self.map_state,
@@ -235,23 +235,35 @@ class Bot:
             self.capturer,
             self.service,
             self.user,
+            fight_sys,
         )
 
         self.connection_sys = ConnectionSystem(
-            fight_sys,
-            self.hud_sys,
-            self.controller,
-            self.object_searcher,
-            self.capturer,
-            self.image_manager,
-            self.logger,
-            self.app_signals,
-            self.is_connected_event,
-            self.is_paused_internal_event,
-            self.is_playing_event,
-            self.is_paused_event,
-            self.is_in_fight_event,
-            self.action_lock,
+            fight_system=fight_sys,
+            hud_system=self.hud_sys,
+            controller=self.controller,
+            object_searcher=self.object_searcher,
+            capturer=self.capturer,
+            image_manager=self.image_manager,
+            logger=self.logger,
+            app_signals=self.app_signals,
+            is_connected_event=self.is_connected_event,
+            is_paused_internal_event=self.is_paused_internal_event,
+            is_playing_event=self.is_playing_event,
+            is_paused_event=self.is_paused_event,
+            is_in_fight_event=self.is_in_fight_event,
+            action_lock=self.action_lock,
+        )
+        self.deblock_sys = DeblockSystem(
+            logger=self.logger,
+            app_signals=app_signals,
+            is_paused_internal_event=self.is_paused_internal_event,
+            is_connected_event=self.is_connected_event,
+            capturer=self.capturer,
+            hud_system=self.hud_sys,
+            object_searcher=self.object_searcher,
+            connection_system=self.connection_sys,
+            fight_system=fight_sys,
         )
         bank_building = BankBuilding(
             core_walker_sys,
@@ -292,9 +304,16 @@ class Bot:
             self.character_state,
             self.logger,
         )
-        self.chat_sys = ChatSystem(self.controller, self.logger, self.fake_sentence)
+        self.chat_sys = ChatSystem(
+            controller=self.controller,
+            logger=self.logger,
+            fake_sentence=self.fake_sentence,
+        )
         self.humanizer = Humanizer(
-            self.chat_sys, self.is_connected_event, self.is_playing_event, self.user
+            chat_system=self.chat_sys,
+            is_connected_event=self.is_connected_event,
+            is_playing_event=self.is_playing_event,
+            user=self.user,
         )
 
         self.crafter = Crafter(
@@ -338,7 +357,7 @@ class Bot:
             self.hud_sys,
             fight_sys,
             bank_sys,
-            self.connection_sys,
+            self.deblock_sys,
             self.controller,
             self.object_searcher,
             self.capturer,
@@ -354,7 +373,7 @@ class Bot:
             self.character_state,
             sub_area_farming_sys,
             sub_area_farming,
-            self.connection_sys,
+            self.deblock_sys,
             walker_sys,
             self.hud_sys,
             bank_sys,
@@ -460,7 +479,7 @@ class Bot:
                         raise
                     except Exception:
                         self.logger.error(traceback.format_exc())
-                        self.connection_sys.deblock_character()
+                        self.deblock_sys.deblock_character()
                 sleep(1)
 
         self.logger.info("Starting farming")

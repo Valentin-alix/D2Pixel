@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from logging import Logger
 from typing import Iterator
 
@@ -82,15 +83,16 @@ def get_base_cells() -> dict[tuple[int, int], CellSchema]:
     return cells_by_xy
 
 
+@dataclass
 class Grid:
-    def __init__(self, logger: Logger, object_searcher: ObjectSearcher):
-        self.logger = logger
-        self.object_searcher = object_searcher
-        self._cells: dict[tuple[int, int], CellSchema] | None = None
-        self.character_cell: CellSchema | None = None
-        self.enemy_cells: list[CellSchema] = []
-        self.ally_cells: list[CellSchema] = []
-        self.movable_cells: list[CellSchema] = []
+    logger: Logger
+    object_searcher: ObjectSearcher
+
+    _cells: dict[tuple[int, int], CellSchema] | None = field(init=False)
+    character_cell: CellSchema | None = field(init=False)
+    enemy_cells: list[CellSchema] = field(default_factory=lambda: [], init=False)
+    ally_cells: list[CellSchema] = field(default_factory=lambda: [], init=False)
+    movable_cells: list[CellSchema] = field(default_factory=lambda: [], init=False)
 
     @property
     def cells(self):

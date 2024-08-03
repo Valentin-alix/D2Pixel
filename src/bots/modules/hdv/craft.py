@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from logging import Logger
 from time import sleep
 
@@ -27,31 +28,18 @@ from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
 
+@dataclass
 class Crafter:
-    def __init__(
-        self,
-        hud_sys: HudSystem,
-        bank_sys: BankSystem,
-        logger: Logger,
-        image_manager: ImageManager,
-        object_searcher: ObjectSearcher,
-        capturer: Capturer,
-        controller: Controller,
-        workshop_building: WorkshopBuilding,
-        service: ServiceSession,
-        character_state: CharacterState,
-    ) -> None:
-        self.hud_sys = hud_sys
-        self.bank_sys = bank_sys
-        self.logger = logger
-        self.object_searcher = object_searcher
-        self.capturer = capturer
-        self.image_manager = image_manager
-        self.controller = controller
-        self.workshop_building = workshop_building
-        self.hud_sys = hud_sys
-        self.service = service
-        self.character_state = character_state
+    hud_sys: HudSystem
+    bank_sys: BankSystem
+    logger: Logger
+    image_manager: ImageManager
+    object_searcher: ObjectSearcher
+    capturer: Capturer
+    controller: Controller
+    workshop_building: WorkshopBuilding
+    service: ServiceSession
+    character_state: CharacterState
 
     def craft_from_inventory(self, recipes: set[RecipeSchema]) -> None:
         """craft item in order of receipes given

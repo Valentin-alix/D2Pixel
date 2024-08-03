@@ -1,8 +1,9 @@
+from dataclasses import dataclass
 from logging import Logger
+
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.enums import CategoryEnum
 from D2Shared.shared.schemas.item import ItemSchema
-
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.elements.sale_hotel import SaleHotelSystem
 from src.bots.dofus.hud.hud_system import HudSystem
@@ -15,28 +16,17 @@ from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
 
+@dataclass
 class Seller:
-    def __init__(
-        self,
-        service: ServiceSession,
-        character_state: CharacterState,
-        sale_hotel_sys: SaleHotelSystem,
-        hud_sys: HudSystem,
-        bank_system: BankSystem,
-        logger: Logger,
-        controller: Controller,
-        capturer: Capturer,
-        image_manager: ImageManager,
-    ) -> None:
-        self.service = service
-        self.capturer = capturer
-        self.character_state = character_state
-        self.bank_system = bank_system
-        self.logger = logger
-        self.sale_hotel_sys = sale_hotel_sys
-        self.hud_sys = hud_sys
-        self.controller = controller
-        self.image_manager = image_manager
+    service: ServiceSession
+    character_state: CharacterState
+    sale_hotel_sys: SaleHotelSystem
+    hud_sys: HudSystem
+    bank_system: BankSystem
+    logger: Logger
+    controller: Controller
+    capturer: Capturer
+    image_manager: ImageManager
 
     def sell_inventory(
         self, items: set[ItemSchema]

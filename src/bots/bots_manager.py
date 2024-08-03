@@ -1,4 +1,5 @@
 from collections import defaultdict
+from dataclasses import dataclass, field
 from logging import Logger
 from threading import Lock
 
@@ -16,32 +17,33 @@ from src.window_manager.organizer import (
 from src.window_manager.window_info import WindowInfo
 
 
+@dataclass
 class BotsManager:
-    def __init__(
-        self,
-        logger: Logger,
-        service: ServiceSession,
-        app_signals: AppSignals,
-        user: ReadUserSchema,
-    ) -> None:
-        self.app_signals = app_signals
-        self.service = service
-        self.fake_sentence = FakeSentence()
-        self.logger = logger
-        self.user = user
-        self.bots_by_id: dict[str, Bot] = {}
-        self.dc_lock = Lock()
+    logger: Logger
+    service: ServiceSession
+    app_signals: AppSignals
+    user: ReadUserSchema
 
-        self.ankama_launcher: AnkamaLauncher | None = None
-        self.connection_manager: ConnectionManager | None = None
-        self.playtime_manager: PlayTimeManager | None = None
+    fake_sentence: FakeSentence = field(default_factory=FakeSentence, init=False)
+    bots_by_id: dict[str, Bot] = field(default_factory=lambda: {}, init=False)
+    dc_lock: Lock = field(default_factory=Lock, init=False)
+    ankama_launcher: AnkamaLauncher | None = field(default=None, init=False)
+    connection_manager: ConnectionManager | None = field(default=None, init=False)
+    playtime_manager: PlayTimeManager | None = field(default=None, init=False)
+    fighter_map_time: dict[int, float] = field(
+        default_factory=lambda: defaultdict(lambda: 0), init=False
+    )
+    fighter_sub_area_farming_ids: list[int] = field(
+        default_factory=lambda: [], init=False
+    )
+    harvest_map_time: dict[int, float] = field(
+        default_factory=lambda: defaultdict(lambda: 0), init=False
+    )
+    harvest_sub_area_farming_ids: list[int] = field(
+        default_factory=lambda: [], init=False
+    )
 
-        self.fighter_map_time: dict[int, float] = defaultdict(lambda: 0)
-        self.fighter_sub_area_farming_ids: list[int] = []
-
-        self.harvest_map_time: dict[int, float] = defaultdict(lambda: 0)
-        self.harvest_sub_area_farming_ids: list[int] = []
-
+    def __post_init__(self):
         self.app_signals.need_restart.connect(self._on_need_restart)
 
     def connect_all(self):
@@ -52,16 +54,18 @@ class BotsManager:
             )
         if self.connection_manager is None:
             self.connection_manager = ConnectionManager(
-                self.logger,
-                self.service,
-                self.user,
-                self.ankama_launcher,
-                self.bots_by_id,
-                self.app_signals,
-                self.dc_lock,
+                logger=self.logger,
+                service=self.service,
+                user=self.user,
+                ankama_launcher=self.ankama_launcher,
+                bots_by_id=self.bots_by_id,
+                app_signals=self.app_signals,
+                dc_lock=self.dc_lock,
             )
         if self.playtime_manager is None:
-            self.playtime_manager = PlayTimeManager(self.user, self.connection_manager)
+            self.playtime_manager = PlayTimeManager(
+                user=self.user, connection_manager=self.connection_manager
+            )
 
         self.ankama_launcher.launch_dofus_games()
         dofus_windows = self.connection_manager.connect_all_dofus_account()

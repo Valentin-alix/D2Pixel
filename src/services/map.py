@@ -46,6 +46,14 @@ class MapService:
             return MapSchema(**resp.json())
 
     @staticmethod
+    def update_not_allow_teleport_from(
+        service: ServiceSession, map_id: int
+    ) -> MapSchema:
+        with service.logged_session() as session:
+            resp = session.put(f"{MAP_URL}{map_id}/does_not_allow_teleport_from/")
+            return MapSchema(**resp.json())
+
+    @staticmethod
     @cached(
         cache={}, key=lambda _, coordinate_map_schema: hashkey(coordinate_map_schema)
     )

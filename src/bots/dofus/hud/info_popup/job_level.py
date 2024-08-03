@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 from logging import Logger
+
 import numpy
-from pydantic import BaseModel, ConfigDict
 import unidecode
+
 from D2Shared.shared.consts.adaptative.consts import (
     INFO_JOB_IMPOSSIBLE_OFFSET_BOT,
     INFO_JOB_IMPOSSIBLE_OFFSET_RIGHT,
@@ -11,7 +13,6 @@ from D2Shared.shared.consts.adaptative.consts import (
 from D2Shared.shared.schemas.job import JobSchema
 from D2Shared.shared.schemas.region import RegionSchema
 from D2Shared.shared.utils.text_similarity import get_similarity
-
 from src.bots.dofus.hud.info_popup.info_popup import clean_info_popup_img
 from src.exceptions import UnknowStateException
 from src.image_manager.ocr import get_text_from_image
@@ -19,9 +20,8 @@ from src.services.job import JobService
 from src.services.session import ServiceSession
 
 
-class JobParser(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
+@dataclass
+class JobParser:
     service: ServiceSession
     logger: Logger
 

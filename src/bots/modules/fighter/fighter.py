@@ -1,4 +1,5 @@
 import traceback
+from dataclasses import dataclass
 from logging import Logger
 from threading import Lock
 from time import perf_counter, sleep
@@ -16,7 +17,7 @@ from D2Shared.shared.utils.randomizer import (
     multiply_offset,
 )
 from D2Shared.shared.utils.text_similarity import are_similar_text
-from src.bots.dofus.connection.connection_system import ConnectionSystem
+from src.bots.dofus.deblocker.deblock_system import DeblockSystem
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.fight.fight_system import FightSystem
 from src.bots.dofus.hud.hud_system import HudSystem
@@ -70,44 +71,25 @@ OFFSET_LVL = 5
 fighter_choose_sub_area_lock = Lock()
 
 
+@dataclass
 class Fighter:
-    def __init__(
-        self,
-        service: ServiceSession,
-        character_state: CharacterState,
-        sub_area_farming: SubAreaFarming,
-        sub_area_farming_sys: SubAreaFarmingSystem,
-        core_walker_sys: CoreWalkerSystem,
-        hud_sys: HudSystem,
-        fight_sys: FightSystem,
-        bank_sys: BankSystem,
-        connection_sys: ConnectionSystem,
-        controller: Controller,
-        object_searcher: ObjectSearcher,
-        capturer: Capturer,
-        image_manager: ImageManager,
-        logger: Logger,
-        fighter_maps_time: dict[int, float],
-        fighter_sub_areas_farming_ids: list[int],
-        user: ReadUserSchema,
-    ):
-        self.service = service
-        self.user = user
-        self.capturer = capturer
-        self.controller = controller
-        self.object_searcher = object_searcher
-        self.image_manager = image_manager
-        self.character_state = character_state
-        self.core_walker_sys = core_walker_sys
-        self.hud_sys = hud_sys
-        self.fight_sys = fight_sys
-        self.bank_sys = bank_sys
-        self.sub_area_farming_sys = sub_area_farming_sys
-        self.sub_area_farming = sub_area_farming
-        self.connection_sys = connection_sys
-        self.logger = logger
-        self.fighter_maps_time = fighter_maps_time
-        self.fighter_sub_areas_farming_ids = fighter_sub_areas_farming_ids
+    service: ServiceSession
+    character_state: CharacterState
+    sub_area_farming: SubAreaFarming
+    sub_area_farming_sys: SubAreaFarmingSystem
+    core_walker_sys: CoreWalkerSystem
+    hud_sys: HudSystem
+    fight_sys: FightSystem
+    bank_sys: BankSystem
+    deblock_sys: DeblockSystem
+    controller: Controller
+    object_searcher: ObjectSearcher
+    capturer: Capturer
+    image_manager: ImageManager
+    logger: Logger
+    fighter_maps_time: dict[int, float]
+    fighter_sub_areas_farming_ids: list[int]
+    user: ReadUserSchema
 
     def run(self) -> None:
         limit_time = convert_time_to_seconds(
@@ -150,7 +132,7 @@ class Fighter:
                 raise
             except (UnknowStateException, CharacterIsStuckException):
                 self.logger.error(traceback.format_exc())
-                self.connection_sys.deblock_character()
+                self.deblock_sys.deblock_character()
             finally:
                 sub_areas_farmed_history.update(sub_areas)
                 for sub_area in sub_areas:

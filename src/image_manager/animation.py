@@ -1,9 +1,9 @@
+from dataclasses import dataclass, field
 from logging import Logger
 from time import sleep
 from typing import Literal, overload
 
 import numpy
-from pydantic import BaseModel, ConfigDict
 
 from D2Shared.shared.schemas.region import RegionSchema
 from src.exceptions import UnknowStateException
@@ -27,12 +27,11 @@ def prepare_img_animation(
     return img_to_gray(img)
 
 
-class AnimationManager(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
+@dataclass
+class AnimationManager:
     capturer: Capturer
     logger: Logger
-    _prev_img: numpy.ndarray | None = None
+    _prev_img: numpy.ndarray | None = field(default=None, init=False)
 
     def _is_end_animation(
         self, region: RegionSchema | None = None, img: numpy.ndarray | None = None

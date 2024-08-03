@@ -1,7 +1,7 @@
 import socket
-import traceback
+from dataclasses import dataclass
 from logging import Logger
-from threading import Event, RLock, Thread
+from threading import Event, RLock
 from time import sleep
 
 import numpy
@@ -9,9 +9,6 @@ import numpy
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from src.bots.dofus.fight.fight_system import FightSystem
 from src.bots.dofus.hud.hud_system import HudSystem
-from src.exceptions import (
-    StoppedException,
-)
 from src.gui.signals.app_signals import AppSignals
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
@@ -33,38 +30,22 @@ def has_internet_connection(host="8.8.8.8", port=53, timeout=3) -> bool:
         return False
 
 
+@dataclass
 class ConnectionSystem:
-    def __init__(
-        self,
-        fight_system: FightSystem,
-        hud_system: HudSystem,
-        controller: Controller,
-        object_searcher: ObjectSearcher,
-        capturer: Capturer,
-        image_manager: ImageManager,
-        logger: Logger,
-        app_signals: AppSignals,
-        is_connected_event: Event,
-        is_paused_internal_event: Event,
-        is_playing_event: Event,
-        is_paused_event: Event,
-        is_in_fight_event: Event,
-        action_lock: RLock,
-    ) -> None:
-        self.action_lock = action_lock
-        self.object_searcher = object_searcher
-        self.capturer = capturer
-        self.fight_system = fight_system
-        self.controller = controller
-        self.image_manager = image_manager
-        self.logger = logger
-        self.hud_system = hud_system
-        self.app_signals = app_signals
-        self.is_paused_internal_event = is_paused_internal_event
-        self.is_connected_event = is_connected_event
-        self.is_playing_event = is_playing_event
-        self.is_paused_event = is_paused_event
-        self.is_in_fight_event = is_in_fight_event
+    fight_system: FightSystem
+    hud_system: HudSystem
+    controller: Controller
+    object_searcher: ObjectSearcher
+    capturer: Capturer
+    image_manager: ImageManager
+    logger: Logger
+    app_signals: AppSignals
+    is_connected_event: Event
+    is_paused_internal_event: Event
+    is_playing_event: Event
+    is_paused_event: Event
+    is_in_fight_event: Event
+    action_lock: RLock
 
     def pause_bot(self):
         while True:
@@ -130,35 +111,3 @@ class ConnectionSystem:
 
         self.logger.info("Toujours pas connecté.")
         return img, False
-
-    def deblock_character(self, retry: int = 15) -> None:
-        self.logger.info("En train de débloquer le bot...")
-        if retry <= 0:
-            self.logger.info("Fail to deblock character, restarting...")
-            pause_thread = Thread(target=self.pause_bot, daemon=True)
-            pause_thread.start()
-            self.is_paused_internal_event.wait()
-            self.app_signals.need_restart.emit()
-            self.is_connected_event.wait()
-            return self.deblock_character()
-
-        while not has_internet_connection():
-            self.logger.info("En attente d'une connexion internet...")
-            sleep(1)
-        try:
-            img = self.capturer.capture()
-            img, connected = self.connect_character(img)
-            if not connected:
-                self.logger.info("Toujours pas connecté au jeu.")
-                sleep(1)
-                return self.deblock_character(retry - 1)
-            elif self.object_searcher.get_position(img, ObjectConfigs.Fight.in_fight):
-                img, _ = self.fight_system.play_fight()
-        except StoppedException:
-            raise
-        except Exception:
-            self.logger.error(traceback.format_exc())
-            sleep(1)
-            return self.deblock_character(retry - 1)
-        self.hud_system.clean_interface(self.capturer.capture())
-        self.logger.info("Bot débloqué.")

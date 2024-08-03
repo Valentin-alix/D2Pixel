@@ -1,7 +1,8 @@
+from dataclasses import dataclass
 from logging import Logger
 
 from D2Shared.shared.schemas.recipe import RecipeSchema
-from src.bots.modules.hdv.craft.craft import Crafter
+from src.bots.modules.hdv.craft import Crafter
 from src.bots.modules.hdv.sell import Seller
 from src.services.item import ItemService
 from src.services.recipe import RecipeService
@@ -9,21 +10,13 @@ from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 
 
+@dataclass
 class Hdv:
-    def __init__(
-        self,
-        service: ServiceSession,
-        character_state: CharacterState,
-        crafter: Crafter,
-        seller: Seller,
-        logger: Logger,
-    ) -> None:
-        self.logger = logger
-        self.service = service
-        self.character_state = character_state
-
-        self.crafter = crafter
-        self.seller = seller
+    service: ServiceSession
+    character_state: CharacterState
+    crafter: Crafter
+    seller: Seller
+    logger: Logger
 
     def run(self, recipes: list[RecipeSchema] | None = None):
         character = self.character_state.character

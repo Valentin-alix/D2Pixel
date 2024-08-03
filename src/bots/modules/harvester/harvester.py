@@ -1,4 +1,5 @@
 import traceback
+from dataclasses import dataclass, field
 from logging import Logger
 from threading import Lock
 from time import perf_counter, sleep
@@ -18,7 +19,7 @@ from D2Shared.shared.utils.debugger import timeit
 from D2Shared.shared.utils.randomizer import (
     multiply_offset,
 )
-from src.bots.dofus.connection.connection_system import ConnectionSystem
+from src.bots.dofus.deblocker.deblock_system import DeblockSystem
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.hud.highlight import remove_highlighted_zone
 from src.bots.dofus.hud.hud_system import HudSystem
@@ -69,44 +70,27 @@ def clean_image_after_collect(
 harvester_choose_sub_area_lock = Lock()
 
 
+@dataclass
 class Harvester:
-    def __init__(
-        self,
-        service: ServiceSession,
-        character_state: CharacterState,
-        sub_area_farming_sys: SubAreaFarmingSystem,
-        sub_area_farming: SubAreaFarming,
-        connection_sys: ConnectionSystem,
-        walker_sys: WalkerSystem,
-        hud_sys: HudSystem,
-        bank_sys: BankSystem,
-        controller: Controller,
-        object_searcher: ObjectSearcher,
-        capturer: Capturer,
-        image_manager: ImageManager,
-        logger: Logger,
-        harvest_sub_areas_farming_ids: list[int],
-        harvest_map_time: dict[int, float],
-        user: ReadUserSchema,
-    ):
-        self.service = service
-        self.user = user
-        self.object_searcher = object_searcher
-        self.capturer = capturer
-        self.character_state = character_state
-        self.sub_area_farming_sys = sub_area_farming_sys
-        self.sub_area_farming = sub_area_farming
-        self.connection_sys = connection_sys
-        self.bank_sys = bank_sys
-        self.walker_sys = walker_sys
-        self.hud_sys = hud_sys
-        self.controller = controller
-        self.image_manager = image_manager
-        self.logger = logger
-
-        self.weight_by_map_harvest: dict[int, float] = {}
-        self.harvest_sub_areas_farming_ids = harvest_sub_areas_farming_ids
-        self.harvest_map_time = harvest_map_time
+    service: ServiceSession
+    character_state: CharacterState
+    sub_area_farming_sys: SubAreaFarmingSystem
+    sub_area_farming: SubAreaFarming
+    deblock_sys: DeblockSystem
+    walker_sys: WalkerSystem
+    hud_sys: HudSystem
+    bank_sys: BankSystem
+    controller: Controller
+    object_searcher: ObjectSearcher
+    capturer: Capturer
+    image_manager: ImageManager
+    logger: Logger
+    harvest_sub_areas_farming_ids: list[int]
+    harvest_map_time: dict[int, float]
+    user: ReadUserSchema
+    weight_by_map_harvest: dict[int, float] = field(
+        default_factory=lambda: {}, init=False
+    )
 
     def run(self) -> None:
         if self.character_state.character.lvl < 10:
@@ -153,14 +137,14 @@ class Harvester:
                 self.collect_sub_areas(
                     sub_areas,
                     wait_default_args=WaitForNewMapWalking(
-                        extra_func=self._on_info_modal, check_fight=True
+                        extra_func=self._on_info_modal
                     ),
                 )
             except StoppedException:
                 raise
             except (UnknowStateException, CharacterIsStuckException):
                 self.logger.error(traceback.format_exc())
-                self.connection_sys.deblock_character()
+                self.deblock_sys.deblock_character()
             finally:
                 for sub_area in sub_areas:
                     self.harvest_sub_areas_farming_ids.remove(sub_area.id)

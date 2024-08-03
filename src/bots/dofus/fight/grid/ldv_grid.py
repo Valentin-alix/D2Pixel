@@ -1,18 +1,16 @@
 import random
+from dataclasses import dataclass
 
 from D2Shared.shared.enums import TypeCellEnum
-from D2Shared.shared.utils.algos.bresenhman import bresenham_dofus
-from D2Shared.shared.utils.debugger import timeit
-
 from D2Shared.shared.schemas.cell import CellSchema
+from D2Shared.shared.utils.algos.bresenhman import bresenham_dofus
 from src.bots.dofus.fight.grid.grid import Grid
 
 
+@dataclass
 class LdvGrid:
-    def __init__(self, grid: Grid) -> None:
-        self.grid = grid
+    grid: Grid
 
-    @timeit
     def get_near_movable_for_ldv_enemy(
         self, max_dist: int
     ) -> tuple[CellSchema, CellSchema] | None:

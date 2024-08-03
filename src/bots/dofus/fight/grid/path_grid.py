@@ -1,8 +1,8 @@
+from dataclasses import dataclass
 from logging import Logger
 
 from D2Shared.shared.schemas.cell import CellSchema
 from D2Shared.shared.utils.algos.astar import find_path
-from D2Shared.shared.utils.debugger import timeit
 from D2Shared.shared.utils.randomizer import multiply_offset
 from src.bots.dofus.fight.grid.grid import Grid
 
@@ -13,12 +13,11 @@ def get_dist_cell_to_multiple_cells(
     return min(current.get_dist_cell(end) for end in ends) * multiply_offset()
 
 
+@dataclass
 class AstarGrid:
-    def __init__(self, grid: Grid, logger: Logger) -> None:
-        self.grid = grid
-        self.logger = logger
+    grid: Grid
+    logger: Logger
 
-    @timeit
     def get_near_movable_to_reach_enemy(
         self, target_cell: CellSchema | None = None
     ) -> CellSchema | None:

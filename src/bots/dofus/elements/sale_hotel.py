@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from logging import Logger
 from time import sleep
 
@@ -48,9 +49,9 @@ from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
 
+@dataclass
 class SaleHotel:
-    def __init__(self, logger: Logger) -> None:
-        self.logger = logger
+    logger: Logger
 
     def sale_hotel_get_current_quantity_item(self, img: numpy.ndarray) -> int | None:
         """need to be in hdv & item selected, return quantity displayed
@@ -223,30 +224,18 @@ class SaleHotel:
             return None
 
 
+@dataclass
 class SaleHotelSystem:
-    def __init__(
-        self,
-        core_walker_sys: CoreWalkerSystem,
-        sale_hotel: SaleHotel,
-        controller: Controller,
-        capturer: Capturer,
-        object_searcher: ObjectSearcher,
-        icon_searcher: IconSearcher,
-        logger: Logger,
-        image_manager: ImageManager,
-        service: ServiceSession,
-        character_state: CharacterState,
-    ) -> None:
-        self.capturer = capturer
-        self.sale_hotel = sale_hotel
-        self.object_searcher = object_searcher
-        self.icon_searcher = icon_searcher
-        self.core_walker_sys = core_walker_sys
-        self.controller = controller
-        self.image_manager = image_manager
-        self.service = service
-        self.logger = logger
-        self.character_state = character_state
+    core_walker_sys: CoreWalkerSystem
+    sale_hotel: SaleHotel
+    controller: Controller
+    capturer: Capturer
+    object_searcher: ObjectSearcher
+    icon_searcher: IconSearcher
+    logger: Logger
+    image_manager: ImageManager
+    service: ServiceSession
+    character_state: CharacterState
 
     def sale_hotel_choose_biggest_quantity(self) -> numpy.ndarray:
         self.logger.info("Choosing biggest quantity")

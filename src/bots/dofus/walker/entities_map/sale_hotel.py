@@ -1,6 +1,7 @@
+from dataclasses import dataclass
+
 from cachetools import cached
 from cachetools.keys import hashkey
-from pydantic import ConfigDict
 
 from D2Shared.shared.consts.adaptative.positions import (
     BONTA_SALE_HOTEL_CONSUMABLE_POSITION,
@@ -16,9 +17,8 @@ from src.bots.dofus.walker.maps import (
 from src.services.session import ServiceSession
 
 
+@dataclass
 class SaleHotel(EntityMap):
-    model_config = ConfigDict(frozen=True)
-
     position: Position
 
     def __hash__(self) -> int:

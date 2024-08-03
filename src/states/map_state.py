@@ -1,14 +1,14 @@
+from dataclasses import dataclass
+
 import numpy
+
 from D2Shared.shared.enums import FromDirection
 from D2Shared.shared.schemas.map import MapSchema
-from pydantic import BaseModel, ConfigDict
-
 from src.entities.building_info import BuildingInfo
 
 
-class CurrentMapInfo(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
+@dataclass
+class CurrentMapInfo:
     map: MapSchema
     img: numpy.ndarray
     zone_text: str

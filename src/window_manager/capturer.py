@@ -1,4 +1,5 @@
 from ctypes import windll
+from dataclasses import dataclass
 from logging import Logger
 from threading import Event, Lock, RLock
 
@@ -11,22 +12,14 @@ from src.window_manager.organizer import Organizer
 from src.window_manager.window_info import WindowInfo
 
 
+@dataclass
 class Capturer:
-    def __init__(
-        self,
-        action_lock: RLock,
-        organizer: Organizer,
-        is_paused_event: Event,
-        window_info: WindowInfo,
-        logger: Logger,
-        dc_lock: Lock,
-    ) -> None:
-        self.action_lock = action_lock
-        self.organizer = organizer
-        self.is_paused_event = is_paused_event
-        self.window_info = window_info
-        self.logger = logger
-        self.dc_lock = dc_lock
+    action_lock: RLock
+    organizer: Organizer
+    is_paused_event: Event
+    window_info: WindowInfo
+    logger: Logger
+    dc_lock: Lock
 
     def capture(self) -> numpy.ndarray:
         def _get_window_dimensions() -> tuple[int, int]:

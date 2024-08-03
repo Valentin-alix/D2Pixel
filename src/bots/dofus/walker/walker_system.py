@@ -1,11 +1,12 @@
+from dataclasses import dataclass
 from logging import Logger
 from time import perf_counter, sleep
 from typing import override
 
 import numpy
+
 from D2Shared.shared.consts.adaptative.regions import INFO_MAP_REGION
 from D2Shared.shared.consts.object_configs import ObjectConfigs
-
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.dofus.fight.fight_system import FightSystem
 from src.bots.dofus.hud.hud_system import HudSystem
@@ -23,36 +24,20 @@ from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
 
+@dataclass
 class WalkerSystem(CoreWalkerSystem):
-    def __init__(
-        self,
-        fight_sys: FightSystem,
-        hud_sys: HudSystem,
-        logger: Logger,
-        map_state: MapState,
-        character_state: CharacterState,
-        controller: Controller,
-        image_manager: ImageManager,
-        object_searcher: ObjectSearcher,
-        animation_manager: AnimationManager,
-        capturer: Capturer,
-        service: ServiceSession,
-        user: ReadUserSchema,
-    ) -> None:
-        self.fight_sys = fight_sys
-        super().__init__(
-            hud_sys,
-            logger,
-            map_state,
-            character_state,
-            controller,
-            image_manager,
-            object_searcher=object_searcher,
-            animation_manager=animation_manager,
-            capturer=capturer,
-            service=service,
-            user=user,
-        )
+    fight_sys: FightSystem
+    hud_sys: HudSystem
+    logger: Logger
+    map_state: MapState
+    character_state: CharacterState
+    controller: Controller
+    image_manager: ImageManager
+    object_searcher: ObjectSearcher
+    animation_manager: AnimationManager
+    capturer: Capturer
+    service: ServiceSession
+    user: ReadUserSchema
 
     @override
     def wait_for_new_map_walking(
@@ -71,10 +56,9 @@ class WalkerSystem(CoreWalkerSystem):
                 img = args.extra_func(img)
 
             if (
-                args.check_fight or self.get_curr_map_info().map.allow_monster_fight
-            ) and self.object_searcher.get_position(
-                img, ObjectConfigs.Fight.in_fight
-            ) is not None:
+                self.object_searcher.get_position(img, ObjectConfigs.Fight.in_fight)
+                is not None
+            ):
                 before_fight_time = perf_counter()
                 img, was_teleported = self.fight_sys.play_fight()
                 self.logger.info(f"Was teleported : {was_teleported}")

@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from dataclasses import dataclass
 from logging import Logger
 from threading import Event, RLock
 from time import sleep
@@ -33,20 +34,13 @@ def get_long_param(pos: Position) -> float:
 focus_lock: RLock = RLock()
 
 
+@dataclass
 class Controller:
-    def __init__(
-        self,
-        logger: Logger,
-        window_info: WindowInfo,
-        is_paused_event: Event,
-        organizer: Organizer,
-        action_lock: RLock,
-    ) -> None:
-        self.logger = logger
-        self.window_info = window_info
-        self.is_paused = is_paused_event
-        self.organizer = organizer
-        self.action_lock = action_lock
+    logger: Logger
+    window_info: WindowInfo
+    is_paused_event: Event
+    organizer: Organizer
+    action_lock: RLock
 
     def kill_window(self):
         with self.action_lock:
@@ -54,7 +48,7 @@ class Controller:
 
     @contextmanager
     def set_focus(self):
-        if self.is_paused.is_set():
+        if self.is_paused_event.is_set():
             raise StoppedException()
         try:
             focus_lock.acquire()
@@ -68,7 +62,7 @@ class Controller:
             focus_lock.release()
 
     def click(self, pos: Position, count: int = 1):
-        if self.is_paused.is_set():
+        if self.is_paused_event.is_set():
             raise StoppedException()
         with self.action_lock:
             long_param = get_long_param(pos)
@@ -94,7 +88,7 @@ class Controller:
         self.click(EMPTY_POSITION)
 
     def move(self, pos: Position):
-        if self.is_paused.is_set():
+        if self.is_paused_event.is_set():
             raise StoppedException()
         with (
             self.set_focus(),
@@ -109,7 +103,7 @@ class Controller:
             sleep(0.2)
 
     def key_down(self, char: Key, l_param: int = 0):
-        if self.is_paused.is_set():
+        if self.is_paused_event.is_set():
             raise StoppedException()
         with self.action_lock:
             self.logger.debug(f"Appuie sur {char}.")
@@ -120,7 +114,7 @@ class Controller:
             sleep(PAUSE)
 
     def key_up(self, char: Key, l_param: int = 0):
-        if self.is_paused.is_set():
+        if self.is_paused_event.is_set():
             raise StoppedException()
         with self.action_lock:
             self.logger.debug(f"Relache {char}.")
@@ -131,7 +125,7 @@ class Controller:
             sleep(PAUSE)
 
     def key(self, key: Key):
-        if self.is_paused.is_set():
+        if self.is_paused_event.is_set():
             raise StoppedException()
         with self.action_lock:
             self.key_down(key)
@@ -139,7 +133,7 @@ class Controller:
 
     @contextmanager
     def hold(self, key: Key):
-        if self.is_paused.is_set():
+        if self.is_paused_event.is_set():
             raise StoppedException()
         with self.action_lock:
             self.key_down(key)
@@ -147,7 +141,7 @@ class Controller:
             self.key_up(key)
 
     def send_text(self, text: str, with_enter=True, pos: Position | None = None):
-        if self.is_paused.is_set():
+        if self.is_paused_event.is_set():
             raise StoppedException()
         with self.action_lock:
             if pos is not None:

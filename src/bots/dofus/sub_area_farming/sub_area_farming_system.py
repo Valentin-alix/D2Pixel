@@ -1,5 +1,6 @@
 import math
 import random
+from dataclasses import dataclass
 from logging import Logger
 from time import perf_counter
 
@@ -16,12 +17,10 @@ from src.services.sub_area import SubAreaService
 from src.states.character_state import CharacterState
 
 
+@dataclass
 class SubAreaFarming:
-    def __init__(
-        self, service: ServiceSession, character_state: CharacterState
-    ) -> None:
-        self.service = service
-        self.character_state = character_state
+    service: ServiceSession
+    character_state: CharacterState
 
     def get_random_grouped_sub_area(
         self,

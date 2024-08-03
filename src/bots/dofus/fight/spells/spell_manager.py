@@ -1,4 +1,5 @@
 from collections import defaultdict
+from dataclasses import dataclass, field
 
 from D2Shared.shared.enums import CharacteristicEnum
 from D2Shared.shared.schemas.spell import CurrentBoostSchema, SpellSchema
@@ -7,19 +8,19 @@ from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 
 
+@dataclass
 class SpellManager:
-    _max_range_spell: int
+    grid: Grid
+    service: ServiceSession
+    character_state: CharacterState
 
-    def __init__(
-        self, grid: Grid, service: ServiceSession, character_state: CharacterState
-    ) -> None:
-        self.grid = grid
-        self._pa: int = 6
-        self._turn: int = 0
-        self._spell_used_ids_with_count: dict[int, int] = defaultdict(lambda: 0)
-        self._current_boosts: set[CurrentBoostSchema] = set()
-        self.service = service
-        self.character_state = character_state
+    _pa: int = field(default=6, init=False)
+    _turn: int = field(default=0, init=False)
+    _spell_used_ids_with_count: dict[int, int] = field(
+        default_factory=lambda: defaultdict(lambda: 0), init=False
+    )
+    _current_boosts: set[CurrentBoostSchema] = field(default_factory=set, init=False)
+    _max_range_spell: int | None = field(default=None, init=False)
 
     def on_start_fight_spells(self):
         self._max_range_spell = self.get_max_range_valuable_dmg_spell()
