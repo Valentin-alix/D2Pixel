@@ -5,7 +5,7 @@ from dotenv import get_key
 
 RESOURCE_FOLDER_PATH = os.path.join(Path(__file__).parent.parent, "resources")
 ASSET_FOLDER_PATH = os.path.join(RESOURCE_FOLDER_PATH, "assets")
-LOGS_FOLDER = os.path.join(Path(__file__).parent.parent.parent.parent, "logs")
+LOGS_FOLDER = os.path.join(Path(__file__).parent.parent, "logs")
 
 ENV_PATH = os.path.join(Path(__file__).parent.parent, ".env")
 
