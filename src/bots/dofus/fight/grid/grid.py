@@ -88,8 +88,8 @@ class Grid:
     logger: Logger
     object_searcher: ObjectSearcher
 
-    _cells: dict[tuple[int, int], CellSchema] | None = field(init=False)
-    character_cell: CellSchema | None = field(init=False)
+    _cells: dict[tuple[int, int], CellSchema] | None = field(default=None, init=False)
+    character_cell: CellSchema | None = field(default=None, init=False)
     enemy_cells: list[CellSchema] = field(default_factory=lambda: [], init=False)
     ally_cells: list[CellSchema] = field(default_factory=lambda: [], init=False)
     movable_cells: list[CellSchema] = field(default_factory=lambda: [], init=False)
