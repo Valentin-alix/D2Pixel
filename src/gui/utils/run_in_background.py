@@ -25,7 +25,7 @@ def run_in_background(func: Callable) -> tuple[QThread, Worker]:
 
     worker.moveToThread(thread)
     thread.started.connect(worker.run)
-    thread.finished.connect(lambda: on_finished_thread(worker, thread))
+    worker.signals.function_result.connect(lambda: on_finished_thread(worker, thread))
     thread.start()
     return thread, worker
 

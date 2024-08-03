@@ -1,7 +1,8 @@
 import os
 import subprocess
+from dataclasses import dataclass, field
 from logging import Logger
-from threading import Event, Lock, RLock, Thread
+from threading import Event, Lock, RLock
 from time import sleep
 
 import win32gui
@@ -63,45 +64,41 @@ def get_or_launch_ankama_window(logger: Logger) -> WindowInfo:
     return window_info
 
 
+@dataclass
 class AnkamaLauncher:
-    def __init__(
-        self,
-        window_info: WindowInfo,
-        logger: Logger,
-        service: ServiceSession,
-        dc_lock: Lock,
-    ) -> None:
-        self.pause_threads: list[Thread] | None = None
+    window_info: WindowInfo
+    logger: Logger
+    service: ServiceSession
+    dc_lock: Lock
+    action_lock: RLock = field(default_factory=RLock, init=False)
+    is_paused_event: Event = field(default_factory=Event, init=False)
 
-        self.service = service
-        self.action_lock = RLock()
-        self.dc_lock = dc_lock
-        self.logger = logger
-        self.is_paused_event = Event()
-        self.window_info: WindowInfo = window_info
+    def __post_init__(self) -> None:
         self.organizer = Organizer(
-            window_info=window_info,
+            window_info=self.window_info,
             is_paused_event=self.is_paused_event,
             target_window_width_height=ANKAMA_WINDOW_SIZE,
             logger=self.logger,
         )
         self.controller = Controller(
             logger=self.logger,
-            window_info=window_info,
+            window_info=self.window_info,
             is_paused_event=self.is_paused_event,
             organizer=self.organizer,
             action_lock=self.action_lock,
         )
-        capturer = Capturer(
+        self.capturer = Capturer(
             action_lock=self.action_lock,
             organizer=self.organizer,
             is_paused_event=self.is_paused_event,
-            window_info=window_info,
+            window_info=self.window_info,
             logger=self.logger,
-            dc_lock=dc_lock,
+            dc_lock=self.dc_lock,
         )
-        object_searcher = ObjectSearcher(self.logger, self.service)
-        self.image_manager = ImageManager(capturer, object_searcher, self.dc_lock)
+        self.object_searcher = ObjectSearcher(logger=self.logger, service=self.service)
+        self.image_manager = ImageManager(
+            self.capturer, self.object_searcher, self.dc_lock
+        )
 
     def launch_dofus_games(self):
         ank_window_info = get_or_launch_ankama_window(self.logger)

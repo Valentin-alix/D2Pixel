@@ -1,5 +1,6 @@
 import math
 import os
+from dataclasses import dataclass
 from logging import Logger
 from typing import Iterator, Literal, Sequence, overload
 
@@ -72,10 +73,10 @@ def get_region_from_template(template: numpy.ndarray, pos: Position) -> RegionSc
     )
 
 
+@dataclass
 class ObjectSearcher:
-    def __init__(self, logger: Logger, service: ServiceSession) -> None:
-        self.service = service
-        self.logger = logger
+    logger: Logger
+    service: ServiceSession
 
     def iter_position_from_template_info(
         self,

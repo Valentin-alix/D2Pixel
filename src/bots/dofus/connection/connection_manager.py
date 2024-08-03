@@ -8,6 +8,7 @@ from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.ankama.ankama_launcher import AnkamaLauncher
 from src.bots.dofus.connection.connection_system import ConnectionSystem
+from src.bots.dofus.deblocker.blocked import Blocked
 from src.bots.dofus.fight.fight_system import FightSystem
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.ldv_grid import LdvGrid
@@ -165,6 +166,7 @@ class ConnectionManager:
             character_state,
         )
         hud = Hud(logger=self.logger)
+        blocked = Blocked(capturer=capturer, object_searcher=object_searcher, hud=hud)
         job_parser = JobParser(service=self.service, logger=self.logger)
         hud_sys = HudSystem(
             hud=hud,
@@ -190,6 +192,7 @@ class ConnectionManager:
             capturer,
             self.service,
             self.user,
+            blocked=blocked,
         )
         fight_sys = FightSystem(
             ia_brute_sys,

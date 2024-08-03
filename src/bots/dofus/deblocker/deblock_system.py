@@ -10,7 +10,7 @@ from src.bots.dofus.connection.connection_system import (
     has_internet_connection,
 )
 from src.bots.dofus.fight.fight_system import FightSystem
-from src.bots.dofus.hud.hud_system import Hud, HudSystem
+from src.bots.dofus.hud.hud_system import HudSystem
 from src.exceptions import StoppedException
 from src.gui.signals.app_signals import AppSignals
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
@@ -24,27 +24,10 @@ class DeblockSystem:
     is_paused_internal_event: Event
     is_connected_event: Event
     capturer: Capturer
-    hud: Hud
     hud_system: HudSystem
     object_searcher: ObjectSearcher
     connection_system: ConnectionSystem
     fight_system: FightSystem
-
-    def is_blocked_character(self) -> bool:
-        """check if character has any interface open or is not in game
-
-        Returns:
-            bool: is_blocked
-        """
-        img = self.capturer.capture()
-        if not self.object_searcher.get_position(img, ObjectConfigs.in_game):
-            return True
-
-        for config in self.hud.close_interface_configs:
-            if self.object_searcher.get_position(img, config):
-                return True
-
-        return False
 
     def deblock_character(self, retry: int = 15) -> None:
         self.logger.info("En train de débloquer le bot...")

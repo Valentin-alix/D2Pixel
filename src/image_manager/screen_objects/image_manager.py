@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from threading import Lock
 from typing import Literal, overload
 
@@ -19,13 +20,11 @@ from src.utils.retry import RetryTimeArgs, retry_time
 from src.window_manager.capturer import Capturer
 
 
+@dataclass
 class ImageManager:
-    def __init__(
-        self, capturer: Capturer, object_searcher: ObjectSearcher, dc_lock: Lock
-    ) -> None:
-        self.object_searcher = object_searcher
-        self.capturer = capturer
-        self.dc_lock = dc_lock
+    capturer: Capturer
+    object_searcher: ObjectSearcher
+    dc_lock: Lock
 
     @overload
     def wait_multiple_or_template(

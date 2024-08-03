@@ -1,13 +1,18 @@
+from dataclasses import dataclass, field
+
 from D2Shared.shared.schemas.character import CharacterSchema
 from src.services.character import CharacterService
 from src.services.session import ServiceSession
 
 
+@dataclass
 class CharacterState:
-    def __init__(self, service: ServiceSession, character_id: str) -> None:
-        self._character: CharacterSchema | None = None
-        self.service = service
-        self.character_id = character_id
+    service: ServiceSession
+    character_id: str
+    pods: int = field(init=False)
+    _character: CharacterSchema | None = field(default=None, init=False)
+
+    def __post_init__(self):
         self.pods = self.character.max_pods
 
     @property

@@ -26,7 +26,7 @@ from D2Shared.shared.schemas.user import ReadUserSchema
 from D2Shared.shared.schemas.waypoint import WaypointSchema
 from D2Shared.shared.schemas.zaapi import ZaapiSchema
 from D2Shared.shared.utils.randomizer import wait
-from src.bots.dofus.deblocker.deblock_system import DeblockSystem
+from src.bots.dofus.deblocker.blocked import Blocked
 from src.bots.dofus.hud.hud_system import HudSystem
 from src.bots.dofus.hud.map import get_map
 from src.bots.dofus.walker.directions import (
@@ -83,7 +83,7 @@ class CoreWalkerSystem:
     capturer: Capturer
     service: ServiceSession
     user: ReadUserSchema
-    deblock_system: DeblockSystem
+    blocked: Blocked
 
     def on_new_map(self, do_pause: bool = True) -> tuple[bool, numpy.ndarray]:
         """
@@ -396,7 +396,7 @@ class CoreWalkerSystem:
             f"Map : {self.get_curr_map_info().map} != {map_direction.to_map_id}"
         )
         if do_trust:
-            if self.deblock_system.is_blocked_character():
+            if self.blocked.is_blocked_character():
                 raise Exception("Character is blocked")
 
             MapService.confirm_map_direction(
@@ -436,7 +436,7 @@ class CoreWalkerSystem:
             f"No new map : {self.get_curr_map_info().map} != {map_direction.to_map_id}"
         )
         if do_trust:
-            if self.deblock_system.is_blocked_character():
+            if self.blocked.is_blocked_character():
                 raise Exception("Character is blocked")
             if not map_direction.was_checked:
                 if (

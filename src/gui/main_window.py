@@ -18,7 +18,7 @@ from src.gui.fragments.sidebar.sidebar_menu import SideBarMenu
 from src.gui.fragments.sub_header.sub_header import SubHeader
 from src.gui.pages.login.login_page import LoginModal
 from src.gui.signals.app_signals import AppSignals
-from src.gui.workers.worker_connect import WorkerConnect
+from src.gui.utils.run_in_background import run_in_background
 from src.services.session import ServiceSession
 from src.services.user import UserService
 
@@ -93,19 +93,14 @@ class MainWindow(QMainWindow):
         self._setup_bots()
 
     def _setup_bots(self):
+        def connect_all_bots():
+            self.bots_manager.connect_all()
+            self.app_signals.connected_bots.emit(self.bots_manager.bots_by_id)
+
         self.app_signals.is_connecting.emit(True)
-
-        if self.thread_connect_bots is not None:
-            self.thread_connect_bots.quit()
-            self.thread_connect_bots.wait()
-
-        self.worker_connect_bots = WorkerConnect(self.bots_manager, self.app_signals)
-        self.thread_connect_bots = QThread()
-
-        self.worker_connect_bots.moveToThread(self.thread_connect_bots)
-        self.thread_connect_bots.started.connect(self.worker_connect_bots.run)
-        self.thread_connect_bots.finished.connect(self.worker_connect_bots.deleteLater)
-        self.thread_connect_bots.start()
+        self.thread_connect_bots, self.worker_connect_bots = run_in_background(
+            connect_all_bots
+        )
 
     def add_bot(self, bot: Bot) -> None:
         character = bot.character_state.character

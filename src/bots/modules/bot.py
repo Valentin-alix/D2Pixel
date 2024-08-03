@@ -1,4 +1,5 @@
 import traceback
+from dataclasses import dataclass, field
 from enum import StrEnum
 from random import shuffle
 from threading import Event, Lock, RLock
@@ -13,6 +14,7 @@ from src.bots.dofus.antibot.humanizer import Humanizer
 from src.bots.dofus.chat.chat_system import ChatSystem
 from src.bots.dofus.chat.sentence import FakeSentence
 from src.bots.dofus.connection.connection_system import ConnectionSystem
+from src.bots.dofus.deblocker.blocked import Blocked
 from src.bots.dofus.deblocker.deblock_system import DeblockSystem
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.elements.sale_hotel import SaleHotel, SaleHotelSystem
@@ -72,45 +74,31 @@ DEFAULT_FARMING_ACTIONS: list[FarmingAction] = [
 ]
 
 
+@dataclass
 class Bot:
-    def __init__(
-        self,
-        character_id: str,
-        service: ServiceSession,
-        fake_sentence: FakeSentence,
-        window_info: WindowInfo,
-        user: ReadUserSchema,
-        fighter_maps_time: dict[int, float],
-        fighter_sub_areas_farming_ids: list[int],
-        harvest_sub_areas_farming_ids: list[int],
-        harvest_map_time: dict[int, float],
-        app_signals: AppSignals,
-        dc_lock: Lock,
-    ) -> None:
-        self.fighter_maps_time = fighter_maps_time
-        self.fighter_sub_areas_farming_ids = fighter_sub_areas_farming_ids
-        self.harvest_sub_areas_farming_ids = harvest_sub_areas_farming_ids
-        self.harvest_map_time = harvest_map_time
-        self.character_id = character_id
-        self.service = service
-        self.window_info = window_info
-        self.fake_sentence = fake_sentence
-        self.user = user
-        self.bot_signals = BotSignals()
+    character_id: str
+    service: ServiceSession
+    fake_sentence: FakeSentence
+    window_info: WindowInfo
+    user: ReadUserSchema
+    fighter_maps_time: dict[int, float]
+    fighter_sub_areas_farming_ids: list[int]
+    harvest_sub_areas_farming_ids: list[int]
+    harvest_map_time: dict[int, float]
+    app_signals: AppSignals
+    dc_lock: Lock
 
-        self.is_paused_event = Event()
-        self.is_paused_internal_event = Event()
-        self.is_playing_event = Event()
-        self.is_connected_event = Event()
-        self.is_in_fight_event = Event()
+    bot_signals: BotSignals = field(default_factory=BotSignals, init=False)
+    is_paused_event: Event = field(default_factory=Event, init=False)
+    is_paused_internal_event: Event = field(default_factory=Event, init=False)
+    is_playing_event: Event = field(default_factory=Event, init=False)
+    is_connected_event: Event = field(default_factory=Event, init=False)
+    is_in_fight_event: Event = field(default_factory=Event, init=False)
+    action_lock: RLock = field(default_factory=RLock, init=False)
 
-        self.action_lock = RLock()
-        self.dc_lock = dc_lock
-
-        self.app_signals = app_signals
-        self.logger = BotLogger(character_id, self.bot_signals)
-        self.character_state = CharacterState(self.service, character_id)
-
+    def __post_init__(self):
+        self.logger = BotLogger(self.character_id, self.bot_signals)
+        self.character_state = CharacterState(self.service, self.character_id)
         self.organizer = Organizer(
             window_info=self.window_info,
             is_paused_event=self.is_paused_event,
@@ -182,6 +170,9 @@ class Bot:
         )
         self.hud = Hud(logger=self.logger)
         self.job_parser = JobParser(service=self.service, logger=self.logger)
+        self.blocked = Blocked(
+            capturer=self.capturer, object_searcher=self.object_searcher, hud=self.hud
+        )
         self.hud_sys = HudSystem(
             hud=self.hud,
             image_manager=self.image_manager,
@@ -206,6 +197,7 @@ class Bot:
             self.capturer,
             self.service,
             self.user,
+            self.blocked,
         )
         fight_sys = FightSystem(
             ia_brute_sys,
@@ -235,6 +227,7 @@ class Bot:
             self.capturer,
             self.service,
             self.user,
+            self.blocked,
             fight_sys,
         )
 
@@ -256,7 +249,7 @@ class Bot:
         )
         self.deblock_sys = DeblockSystem(
             logger=self.logger,
-            app_signals=app_signals,
+            app_signals=self.app_signals,
             is_paused_internal_event=self.is_paused_internal_event,
             is_connected_event=self.is_connected_event,
             capturer=self.capturer,

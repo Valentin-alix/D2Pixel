@@ -1,4 +1,5 @@
 import os
+from dataclasses import dataclass
 from logging import Logger
 
 import cv2
@@ -27,10 +28,10 @@ STORAGE_COUNT_CELL_X = 5
 STORAGE_COUNT_CELL_Y = 10
 
 
+@dataclass
 class IconSearcher:
-    def __init__(self, logger: Logger, service: ServiceSession) -> None:
-        self.service = service
-        self.logger = logger
+    logger: Logger
+    service: ServiceSession
 
     def get_icon_item_img(self, item: ItemSchema) -> numpy.ndarray | None:
         img_icon = ItemService.get_icon_img(self.service, item.id)

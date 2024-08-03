@@ -10,8 +10,7 @@ from src.gui.components.organization import VerticalLayout
 from src.gui.components.play_stop import PlayStopWidget
 from src.gui.pages.fm.fm_item.fm_item import FmItem
 from src.gui.signals.app_signals import AppSignals
-from src.gui.workers.worker_fm import WorkerFm
-from src.gui.workers.worker_stop import WorkerStop
+from src.gui.utils.run_in_background import run_in_background
 from src.services.equipment import EquipmentService
 from src.services.session import ServiceSession
 
@@ -146,34 +145,18 @@ class FmPage(QWidget):
             self.play_stop_widget.on_click_stop()
             self.logger.warning("Veuillez sélectionner un item.")
             return
+        lines = self.curr_fm_item.get_edited_lines()
+        exo_stat = self.curr_fm_item.get_exo_stat()
+        equipment = self.curr_fm_item.equipment
 
-        if self.thread_run is not None:
-            self.thread_run.quit()
-            self.thread_run.wait()
-
-        self.worker_run = WorkerFm(
-            bot,
-            self.curr_fm_item.get_edited_lines(),
-            self.curr_fm_item.get_exo_stat(),
-            self.curr_fm_item.equipment,
+        self.thread_run, self.worker_run = run_in_background(
+            lambda: bot.run_fm(
+                lines,
+                exo_stat,
+                equipment,
+            )
         )
-        self.thread_run = QThread()
-
-        self.worker_run.moveToThread(self.thread_run)
-        self.thread_run.started.connect(self.worker_run.run)
-        self.thread_run.finished.connect(self.worker_run.deleteLater)
-        self.thread_run.start()
 
     @pyqtSlot(object)
     def _on_stop(self, bot: Bot):
-        if self.thread_stop is not None:
-            self.thread_stop.quit()
-            self.thread_stop.wait()
-
-        self.worker_stop = WorkerStop(bot)
-        self.thread_stop = QThread()
-
-        self.worker_stop.moveToThread(self.thread_stop)
-        self.thread_stop.started.connect(self.worker_stop.run)
-        self.thread_stop.finished.connect(self.worker_stop.deleteLater)
-        self.thread_stop.start()
+        self.thread_stop, self.worker_stop = run_in_background(bot.stop_bot)

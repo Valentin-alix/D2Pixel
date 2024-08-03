@@ -21,7 +21,7 @@ from src.gui.fragments.sidebar.settings.bot_settings_modal.tabs.gameplay_tab imp
 from src.gui.fragments.sidebar.settings.bot_settings_modal.tabs.general_tab import (
     GeneralTab,
 )
-from src.gui.workers.run_in_background import run_in_background
+from src.gui.utils.run_in_background import run_in_background
 from src.services.session import ServiceSession
 
 

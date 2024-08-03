@@ -1,7 +1,5 @@
 FIX ANKAMA le bouton play
 
-Coté gui utiliser run in background pour factoriser du code
-
 Utiliser yolov8 pour les collectable pour unity qui arrive (bcp plus rapide et devient tjrs meilleur modèle)
 
 Quand enemy est une dd -> plouf pas le bon enemy
