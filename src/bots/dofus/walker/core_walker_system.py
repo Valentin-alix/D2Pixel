@@ -25,7 +25,6 @@ from D2Shared.shared.schemas.map_direction import MapDirectionSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
 from D2Shared.shared.schemas.waypoint import WaypointSchema
 from D2Shared.shared.schemas.zaapi import ZaapiSchema
-from D2Shared.shared.utils.randomizer import wait
 from src.bots.dofus.deblocker.blocked import Blocked
 from src.bots.dofus.hud.hud_system import HudSystem
 from src.bots.dofus.hud.map import get_map
@@ -55,6 +54,7 @@ from src.utils.retry import (
     retry_count,
     retry_force_count,
 )
+from src.utils.time import wait
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
@@ -204,7 +204,7 @@ class CoreWalkerSystem:
             new_img: numpy.ndarray | None = None
             for _ in range(3):
                 self.controller.key("h")
-                if (new_img := self.wait_for_new_map()) is not None:
+                if (new_img := self.wait_for_new_map(force=False)) is not None:
                     break
             if new_img is None:
                 MapService.update_not_allow_teleport_from(
@@ -397,7 +397,7 @@ class CoreWalkerSystem:
         )
         if do_trust:
             if self.blocked.is_blocked_character():
-                raise Exception("Character is blocked")
+                raise CharacterIsStuckException()
 
             MapService.confirm_map_direction(
                 self.service, map_direction.id, self.get_curr_map_info().map.id
@@ -437,7 +437,7 @@ class CoreWalkerSystem:
         )
         if do_trust:
             if self.blocked.is_blocked_character():
-                raise Exception("Character is blocked")
+                raise CharacterIsStuckException()
             if not map_direction.was_checked:
                 if (
                     len(

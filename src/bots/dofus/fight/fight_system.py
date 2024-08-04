@@ -9,7 +9,6 @@ from D2Shared.shared.consts.adaptative.positions import END_TURN_POSITION
 from D2Shared.shared.consts.adaptative.regions import CONTENT_REGION
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.schemas.region import RegionSchema
-from D2Shared.shared.utils.randomizer import wait
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.grid.path_grid import AstarGrid
 from src.bots.dofus.fight.ias.brute import IaBruteFightSystem
@@ -26,6 +25,7 @@ from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.session import ServiceSession
 from src.utils.retry import RetryTimeArgs
+from src.utils.time import wait
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 

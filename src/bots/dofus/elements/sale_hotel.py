@@ -27,7 +27,6 @@ from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.enums import CategoryEnum
 from D2Shared.shared.schemas.item import ItemSchema
 from D2Shared.shared.schemas.region import RegionSchema
-from D2Shared.shared.utils.randomizer import wait
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.entities_map.sale_hotel import (
     get_sales_hotels_by_category,
@@ -45,6 +44,7 @@ from src.image_manager.transformation import crop_image
 from src.services.price import PriceService
 from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
+from src.utils.time import wait
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 

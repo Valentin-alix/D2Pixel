@@ -15,7 +15,6 @@ from D2Shared.shared.schemas.map import MapSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from D2Shared.shared.schemas.template_found import InfoTemplateFoundPlacementSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
-from D2Shared.shared.utils.debugger import timeit
 from D2Shared.shared.utils.randomizer import (
     multiply_offset,
 )
@@ -258,7 +257,6 @@ class Harvester:
 
         self.logger.info("Zone finished")
 
-    @timeit
     def get_pos_configs(
         self, img: numpy.ndarray, configs: set[ObjectSearchConfig]
     ) -> list[tuple[Position, InfoTemplateFoundPlacementSchema, ObjectSearchConfig]]:

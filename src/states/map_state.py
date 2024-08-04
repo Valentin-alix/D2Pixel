@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy
 
@@ -20,12 +20,12 @@ class CurrentMapInfo:
         return self.__str__()
 
 
+@dataclass
 class MapState:
-    def __init__(self) -> None:
-        self.curr_map_info: CurrentMapInfo | None = None
-        self.curr_direction: FromDirection | None = None
-        self.building: BuildingInfo | None = None
-        self.is_first_move: bool = True
+    curr_map_info: CurrentMapInfo | None = field(default=None, init=False)
+    curr_direction: FromDirection | None = field(default=None, init=False)
+    building: BuildingInfo | None = field(default=None, init=False)
+    is_first_move: bool = field(default=True, init=False)
 
     def reset_state(self):
         self.curr_map_info = None

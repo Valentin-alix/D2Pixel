@@ -9,7 +9,6 @@ from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.enums import CharacteristicEnum
 from D2Shared.shared.schemas.cell import CellSchema
 from D2Shared.shared.schemas.spell import CurrentBoostSchema, SpellSchema
-from D2Shared.shared.utils.randomizer import wait
 from src.bots.dofus.fight.grid.grid import Grid
 from src.bots.dofus.fight.spells.spell_manager import SpellManager
 from src.bots.dofus.hud.info_bar import get_percentage_info_bar_fight
@@ -20,6 +19,7 @@ from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.services.session import ServiceSession
 from src.utils.retry import RetryTimeArgs, retry_time
+from src.utils.time import wait
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 

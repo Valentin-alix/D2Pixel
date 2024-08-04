@@ -19,7 +19,7 @@
 
 ### Game
 - Ne pas être dans le tutoriel
-- Etre abonné de préférence
+- Etre abonné
 - Avoir le zaap de bonta
 
 # Development

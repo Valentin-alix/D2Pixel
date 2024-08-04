@@ -4,9 +4,9 @@ from logging import Logger
 
 import numpy
 import tesserocr
-from pydantic import BaseModel
 
 from D2Shared.shared.consts.adaptative.regions import LINE_AREAS
+from D2Shared.shared.consts.stats import BIG_STATS_NAMES
 from D2Shared.shared.schemas.stat import (
     BaseLineSchema,
     RuneSchema,
@@ -22,7 +22,8 @@ from src.services.session import ServiceSession
 from src.services.stat import StatService
 
 
-class LinePriority(BaseModel):
+@dataclass
+class LinePriority:
     index: int
     current_line: BaseLineSchema
     target_line: BaseLineSchema
@@ -112,10 +113,11 @@ class FmAnalyser:
     def get_highest_priority_line(
         self, current_lines: list[BaseLineSchema], target_lines: list[BaseLineSchema]
     ) -> LinePriority | None:
-        priority_line_weight: tuple[LinePriority, float] | None = None
+        priority_line_with_weight: tuple[LinePriority, float] | None = None
 
         for target_line in target_lines:
             if target_line.value <= 0:
+                # ignore negative values
                 continue
             try:
                 index, current_line = next(
@@ -126,17 +128,21 @@ class FmAnalyser:
             except StopIteration:
                 self.logger.error(f"Did not found {target_line.stat.name}")
                 raise
+
             difference_weight: float = current_line.value / target_line.value
             if difference_weight >= 1.0:
+                # ignore achieved lines
                 continue
-            if (
-                priority_line_weight is None
-                or priority_line_weight[1] > difference_weight
+
+            if priority_line_with_weight is None or (
+                priority_line_with_weight[1] > difference_weight
+                and priority_line_with_weight[0].target_line.stat.name
+                not in BIG_STATS_NAMES  # put big stats at last
             ):
-                priority_line_weight = (
+                priority_line_with_weight = (
                     LinePriority(
                         current_line=current_line, target_line=target_line, index=index
                     ),
                     difference_weight,
                 )
-        return priority_line_weight[0] if priority_line_weight else None
+        return priority_line_with_weight[0] if priority_line_with_weight else None

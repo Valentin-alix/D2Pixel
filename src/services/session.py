@@ -1,9 +1,10 @@
 from contextlib import contextmanager
 from logging import Logger
+
+from dotenv import get_key
 from PyQt5.QtCore import QEventLoop, QTimer
 from requests import Response, Session
 from requests.auth import HTTPBasicAuth
-from dotenv import get_key
 
 from src.consts import ENV_PATH
 from src.gui.signals.app_signals import AppSignals
