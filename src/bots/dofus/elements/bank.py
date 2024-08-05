@@ -95,6 +95,7 @@ class BankSystem:
         pos, _, img = self.image_manager.wait_on_screen(
             ObjectConfigs.Bank.transfer_icon_out, force=True
         )
+        sleep(0.6)
         self.controller.click(pos)
         sleep(0.3)
         pos = self.object_searcher.get_position(
