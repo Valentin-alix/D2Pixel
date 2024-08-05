@@ -1,10 +1,13 @@
+import datetime
 import os
 import subprocess
 from dataclasses import dataclass, field
 from logging import Logger
+from pathlib import Path
 from threading import Event, Lock, RLock
 from time import sleep
 
+import cv2
 import win32gui
 from dotenv import get_key, set_key
 
@@ -108,9 +111,10 @@ class AnkamaLauncher:
         if not win32gui.IsWindowVisible(self.window_info.hwnd):
             self.logger.info("Launch launcher for visible window")
             launch_launcher()  # to have window visible
-        else:
-            self.controller.click(EMPTY_POSITION)  # to defocus play button
-        pos, _, config, _ = self.image_manager.wait_multiple_or_template(
+
+        self.controller.click(EMPTY_POSITION)  # to defocus play button
+
+        pos, _, config, img = self.image_manager.wait_multiple_or_template(
             [ObjectConfigs.Ankama.play, ObjectConfigs.Ankama.empty_play],
             force=True,
             retry_time_args=RetryTimeArgs(timeout=35, offset_start=1),
@@ -118,3 +122,12 @@ class AnkamaLauncher:
         if config == ObjectConfigs.Ankama.play:
             self.controller.click(pos)
             sleep(15)
+        else:
+            cv2.imwrite(
+                os.path.join(
+                    Path(__file__).parent.parent.parent.parent,
+                    "logs",
+                    f"{datetime.datetime.now().strftime('%d_%H-%M-%S')}_ankama_empty_play.png",
+                ),
+                img,
+            )

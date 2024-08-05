@@ -3,19 +3,18 @@ import sys
 from logging import Logger
 from pathlib import Path
 from threading import Event, Lock
+from time import sleep
 from typing import Iterator
 
 import cv2
 import numpy
 from pyparsing import RLock
 
-from src.window_manager.window_searcher import get_windows_by_process_and_name
-
 sys.path.append(str(Path(__file__).parent.parent.parent))
-
 from src.consts import ANKAMA_WINDOW_SIZE, DOFUS_WINDOW_SIZE
 from src.window_manager.capturer import Capturer
 from src.window_manager.organizer import Organizer
+from src.window_manager.window_searcher import get_windows_by_process_and_name
 
 os.makedirs(os.path.join(Path(__file__).parent, "output", "captures"), exist_ok=True)
 
@@ -69,5 +68,5 @@ def get_sc_ankama():
 
 
 if __name__ == "__main__":
-    # sleep(4)
+    sleep(4)
     get_sc_ankama()

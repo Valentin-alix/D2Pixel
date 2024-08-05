@@ -134,10 +134,12 @@ class FmAnalyser:
                 # ignore achieved lines
                 continue
 
+            # TODO If a stat failed between big stat missing, then ignore next line
+            if target_line.stat.name in BIG_STATS_NAMES:
+                difference_weight = 1  # put big stats at last
+
             if priority_line_with_weight is None or (
                 priority_line_with_weight[1] > difference_weight
-                and priority_line_with_weight[0].target_line.stat.name
-                not in BIG_STATS_NAMES  # put big stats at last
             ):
                 priority_line_with_weight = (
                     LinePriority(
