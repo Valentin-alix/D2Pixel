@@ -36,6 +36,7 @@ class DeblockSystem:
             pause_thread = Thread(target=self.connection_system.pause_bot, daemon=True)
             pause_thread.start()
             self.is_paused_internal_event.wait()
+            sleep(2)
             self.app_signals.need_restart.emit()
             self.is_connected_event.wait()
             return self.deblock_character()
