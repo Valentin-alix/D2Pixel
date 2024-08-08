@@ -350,7 +350,7 @@ class CoreWalkerSystem:
             if new_img is None:
                 continue
             return new_img
-        raise UnknowStateException(self.capturer.capture(), "cant_change_map")
+        raise CharacterIsStuckException
 
     def __handle_neighbor_new_map(
         self,
@@ -397,7 +397,7 @@ class CoreWalkerSystem:
         )
         if do_trust:
             if self.blocked.is_blocked_character():
-                raise CharacterIsStuckException()
+                raise CharacterIsStuckException
 
             MapService.confirm_map_direction(
                 self.service, map_direction.id, self.get_curr_map_info().map.id
@@ -437,7 +437,7 @@ class CoreWalkerSystem:
         )
         if do_trust:
             if self.blocked.is_blocked_character():
-                raise CharacterIsStuckException()
+                raise CharacterIsStuckException
             if not map_direction.was_checked:
                 if (
                     len(
@@ -561,7 +561,7 @@ class CoreWalkerSystem:
             self.logger.info(
                 f"Path from {self.get_curr_map_info().map} from direction : {self.get_curr_direction()} to {target_maps} not found..."
             )
-            raise CharacterIsStuckException()
+            raise CharacterIsStuckException
 
         self.logger.info("Found path")
         for action_map_change in path_map:

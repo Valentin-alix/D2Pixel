@@ -8,6 +8,7 @@ from threading import Event, Lock, RLock
 from time import sleep
 
 import cv2
+import win32con
 import win32gui
 from dotenv import get_key, set_key
 
@@ -113,6 +114,14 @@ class AnkamaLauncher:
             launch_launcher()  # to have window visible
 
         self.controller.click(EMPTY_POSITION)  # to defocus play button
+
+        win32gui.UpdateWindow(self.window_info.hwnd)
+        win32gui.RedrawWindow(
+            self.window_info.hwnd,
+            None,  # type: ignore
+            None,  # type: ignore
+            win32con.RDW_INTERNALPAINT,
+        )
 
         pos, _, config, img = self.image_manager.wait_multiple_or_template(
             [ObjectConfigs.Ankama.play, ObjectConfigs.Ankama.empty_play],

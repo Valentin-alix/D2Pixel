@@ -105,6 +105,12 @@ class Organizer:
 
             sleep(0.3)
             win32gui.UpdateWindow(self.window_info.hwnd)
+            win32gui.RedrawWindow(
+                self.window_info.hwnd,
+                None,  # type: ignore
+                None,  # type: ignore
+                win32con.RDW_INTERNALPAINT,
+            )
 
 
 def relink_windows_hwnd(

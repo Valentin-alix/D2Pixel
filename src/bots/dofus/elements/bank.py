@@ -24,6 +24,7 @@ from D2Shared.shared.schemas.item import ItemSchema
 from D2Shared.shared.schemas.recipe import RecipeSchema
 from D2Shared.shared.schemas.region import RegionSchema
 from D2Shared.shared.utils.text_similarity import are_similar_text
+from src.bots.dofus.hud.info_bar import BarType, get_percentage_info_bar_normal
 from src.bots.dofus.hud.small_bar import get_percentage_inventory_bar_normal
 from src.bots.dofus.walker.buildings.bank_buildings import BankBuilding
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
@@ -244,7 +245,10 @@ class BankSystem:
             wait((0.6, 1))
             img = self.capturer.capture()
 
-            self.character_state.pods -= max_craft_round * receipe_pod_cost
+            self.character_state.pods = int(
+                self.character_state.character.max_pods
+                * get_percentage_info_bar_normal(img, BarType.PODS)
+            )
 
             slot_area_img = crop_image(img, slot_area)
             pos_check = self.object_searcher.get_position(

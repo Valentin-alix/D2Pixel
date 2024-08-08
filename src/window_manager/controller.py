@@ -1,8 +1,9 @@
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from logging import Logger
 from threading import Event, RLock
 from time import sleep
+
 
 import win32api
 import win32con
@@ -41,6 +42,9 @@ class Controller:
     is_paused_event: Event
     organizer: Organizer
     action_lock: RLock
+    front_keyboard: KeyBoardController = field(
+        default_factory=KeyBoardController, init=False
+    )
 
     def kill_window(self):
         with self.action_lock:
@@ -53,9 +57,9 @@ class Controller:
         try:
             focus_lock.acquire()
             if win32gui.GetForegroundWindow() != self.window_info.hwnd:
-                KeyBoardController().press(PyKey.alt)
+                self.front_keyboard.press(PyKey.alt)
                 win32gui.SetForegroundWindow(self.window_info.hwnd)
-                KeyBoardController().release(PyKey.alt)
+                self.front_keyboard.release(PyKey.alt)
                 sleep(0.5)
             yield None
         finally:

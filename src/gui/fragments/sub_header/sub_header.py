@@ -7,6 +7,7 @@ from src.gui.components.organization import HorizontalLayout
 from src.gui.pages.craft.craft_page import CraftPage
 from src.gui.pages.farm.farm_page import FarmPage
 from src.gui.pages.fm.fm_page import FmPage
+from src.gui.pages.sell.sell_page import SellPage
 from src.gui.signals.app_signals import AppSignals
 from src.services.session import ServiceSession
 
@@ -34,7 +35,7 @@ class SubHeader(QWidget):
         self.tabs = QTabWidget()
 
         self.bot_page = FarmPage(self.logger, self.app_signals, bot=bot)
-        self.tabs.addTab(self.bot_page, "Farming")
+        self.tabs.addTab(self.bot_page, "Farm")
 
         self.craft_frame = CraftPage(
             self.app_signals,
@@ -42,7 +43,16 @@ class SubHeader(QWidget):
             bot=bot,
             logger=self.logger,
         )
-        self.tabs.addTab(self.craft_frame, "Crafting")
+        self.tabs.addTab(self.craft_frame, "Craft")
+
+        self.sell_frame = SellPage(
+            self.app_signals,
+            self.service,
+            bot=bot,
+            logger=self.logger,
+        )
+        self.tabs.addTab(self.sell_frame, "Vente")
+
         self.fm_frame = FmPage(
             self.service, self.app_signals, bot=bot, logger=self.logger
         )

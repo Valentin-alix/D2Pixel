@@ -210,7 +210,7 @@ class Harvester:
                         sub_areas
                     )
                     continue
-                raise CharacterIsStuckException()
+                raise CharacterIsStuckException
 
             if is_new_map:
                 collecting_count = self.collect_map(

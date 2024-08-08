@@ -61,6 +61,19 @@ class CharacterService:
             )
 
     @staticmethod
+    def update_sell_items(
+        service: ServiceSession,
+        character_id: str,
+        items_ids: list[int],
+    ):
+        with service.logged_session() as session:
+            session.put(
+                f"{CHARACTER_URL}{character_id}/sell_items",
+                params={"character_id": character_id},
+                json=items_ids,
+            )
+
+    @staticmethod
     def update_spells(
         service: ServiceSession,
         character_id: str,
