@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from logging import Logger
 
-from D2Shared.shared.schemas.recipe import RecipeSchema
 from src.bots.modules.hdv.craft import Crafter
 from src.bots.modules.hdv.sell import Seller
 from src.services.item import ItemService
@@ -18,13 +17,12 @@ class Hdv:
     seller: Seller
     logger: Logger
 
-    def run(self, recipes: list[RecipeSchema] | None = None):
+    def run(self):
         character = self.character_state.character
         if character.lvl < 10:
             return
 
-        if recipes is None:
-            recipes = self.character_state.character.recipes
+        recipes = self.character_state.character.recipes
 
         recipes = RecipeService.get_valid_ordered(
             self.service,
@@ -36,12 +34,16 @@ class Hdv:
             self.logger.info(f"Gonna craft : {recipes}")
             self.crafter.run_crafter(recipes)
 
-        # do not sell items that are in ingredient of craft items
-        sell_items = ItemService.get_default_sellable_items(
-            self.service,
-            self.character_state.character.id,
-            [_elem.id for _elem in recipes],
-        )
+        if len(self.character_state.character.sell_items) == 0:
+            # do not sell items that are in ingredient of craft items
+            sell_items = ItemService.get_default_sellable_items(
+                self.service,
+                self.character_state.character.id,
+                [_elem.id for _elem in recipes],
+            )
+        else:
+            sell_items = self.character_state.character.sell_items
+
         if len(sell_items) > 0:
             self.logger.info(f"Gonna sell : {sell_items}")
             self.seller.run_seller(sell_items)
