@@ -4,7 +4,8 @@ from PyQt5.QtWidgets import QTabWidget, QWidget
 
 from src.bots.modules.bot import Bot
 from src.gui.components.organization import VerticalLayout
-from src.gui.pages.sell.automatic_tab.automatic_tab import SellAutomaticTab
+from src.gui.pages.sell.sell_automatic_tab import SellAutomaticTab
+from src.gui.pages.sell.sell_manual_tab import SellManualTab
 from src.gui.signals.app_signals import AppSignals
 from src.services.session import ServiceSession
 
@@ -30,6 +31,18 @@ class SellPage(QWidget):
 
         self.tabs = QTabWidget()
 
-        self.automatic_tab = SellAutomaticTab()
+        self.automatic_tab = SellAutomaticTab(
+            service=service, character=bot.character_state.character, logger=logger
+        )
         self.tabs.addTab(self.automatic_tab, "Automatique")
+        self.layout().addWidget(self.tabs)
+
+        self.manual_tab = SellManualTab(
+            app_signals=app_signals,
+            bot=self.bot,
+            service=service,
+            character=bot.character_state.character,
+            logger=logger,
+        )
+        self.tabs.addTab(self.manual_tab, "Manuel")
         self.layout().addWidget(self.tabs)

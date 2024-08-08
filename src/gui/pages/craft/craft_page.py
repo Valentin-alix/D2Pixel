@@ -4,8 +4,9 @@ from PyQt5.QtWidgets import QTabWidget, QWidget
 
 from src.bots.modules.bot import Bot
 from src.gui.components.organization import VerticalLayout
-from src.gui.pages.craft.automatic_tab.automatic_tab import AutomaticTab
-from src.gui.pages.craft.manual_tab.manual_tab import ManualTab
+
+from src.gui.pages.craft.craft_automatic_tab import CraftAutomaticTab
+from src.gui.pages.craft.craft_manual_tab import CraftManualTab
 from src.gui.signals.app_signals import AppSignals
 from src.services.recipe import RecipeService
 from src.services.session import ServiceSession
@@ -36,7 +37,7 @@ class CraftPage(QWidget):
             self.service, self.bot.character_state.character.id
         )
 
-        self.automatic_tab = AutomaticTab(
+        self.automatic_tab = CraftAutomaticTab(
             self.service,
             self.bot.character_state.character,
             self.logger,
@@ -45,7 +46,7 @@ class CraftPage(QWidget):
         self.tabs.addTab(self.automatic_tab, "Automatique")
         self.layout().addWidget(self.tabs)
 
-        self.manual_tab = ManualTab(
+        self.manual_tab = CraftManualTab(
             self.app_signals, self.service, self.bot, self.logger, available_recipes
         )
         self.tabs.addTab(self.manual_tab, "Manuel")

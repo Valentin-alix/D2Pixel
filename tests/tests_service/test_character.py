@@ -1,5 +1,6 @@
 import os
 import sys
+from time import perf_counter
 import unittest
 from logging import Logger
 from pathlib import Path
@@ -64,3 +65,14 @@ class TestServiceCharacter(unittest.TestCase):
         CharacterService.add_bank_items(
             self.service, self.character.id, [elem.item_id for elem in colls]
         )
+
+    def test_item(self):
+        before = perf_counter()
+        items = ItemService.get_items(self.service)
+        print(perf_counter() - before)
+        print(len(items))
+
+        before = perf_counter()
+        items = ItemService.get_items(self.service)
+        print(perf_counter() - before)
+        print(len(items))

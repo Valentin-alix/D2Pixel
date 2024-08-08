@@ -16,7 +16,7 @@ from src.services.recipe import RecipeService
 from src.services.session import ServiceSession
 
 
-class ManualTab(QWidget):
+class CraftManualTab(QWidget):
     def __init__(
         self,
         app_signals: AppSignals,
@@ -43,9 +43,9 @@ class ManualTab(QWidget):
         self.setLayout(self.main_layout)
 
         self.craft_table = RecipeTable()
-        self.craft_group = RecipeGroup(available_recipes)
+        self.craft_group = RecipeGroup(recipes=available_recipes)
 
-        self.craft_group.signals.added_recipe_queue.connect(self.on_added_recipe_queue)
+        self.craft_group.signals.clicked_elem_queue.connect(self.on_added_recipe_queue)
         self.craft_table.signals.removed_recipe.connect(self.on_removed_recipe_queue)
 
         self._setup_play_stop()
@@ -81,11 +81,11 @@ class ManualTab(QWidget):
             for _elem in recipes
             if _elem not in self.craft_table.widget_item_by_recipe.keys()
         ]
-        self.craft_group._on_refresh_recipes(not_in_queue_recipes)
+        self.craft_group.on_refresh_elems(not_in_queue_recipes)
 
     @pyqtSlot(object)
     def on_removed_recipe_queue(self, recipe: RecipeSchema):
-        self.craft_group.add_recipe(recipe)
+        self.craft_group.add_elem(recipe)
 
     @pyqtSlot(object)
     def on_added_recipe_queue(self, recipe: RecipeSchema):

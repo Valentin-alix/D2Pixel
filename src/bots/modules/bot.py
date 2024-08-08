@@ -7,6 +7,7 @@ from time import sleep
 from typing import Callable
 
 from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
+from D2Shared.shared.schemas.item import ItemSchema
 from D2Shared.shared.schemas.recipe import RecipeSchema
 from D2Shared.shared.schemas.stat import BaseLineSchema, StatSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
@@ -321,7 +322,7 @@ class Bot:
             self.service,
             self.character_state,
         )
-        seller = Seller(
+        self.seller = Seller(
             self.service,
             self.character_state,
             sale_hotel_sys,
@@ -333,7 +334,7 @@ class Bot:
             self.image_manager,
         )
         self.hdv = Hdv(
-            self.service, self.character_state, self.crafter, seller, self.logger
+            self.service, self.character_state, self.crafter, self.seller, self.logger
         )
 
         sub_area_farming = SubAreaFarming(self.service, self.character_state)
@@ -438,6 +439,10 @@ class Bot:
     def run_craft(self, recipes: list[RecipeSchema]):
         self.logger.info("Starting crafter")
         self.run_action(lambda: self.crafter.run_crafter(recipes))
+
+    def run_sell(self, items: list[ItemSchema]):
+        self.logger.info("Starting seller")
+        self.run_action(lambda: self.seller.run_seller(items))
 
     def run_fm(
         self,

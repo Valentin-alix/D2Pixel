@@ -14,7 +14,7 @@ from src.services.recipe import RecipeService
 from src.services.session import ServiceSession
 
 
-class AutomaticTab(QWidget):
+class CraftAutomaticTab(QWidget):
     def __init__(
         self,
         service: ServiceSession,
@@ -36,14 +36,14 @@ class AutomaticTab(QWidget):
 
         self.craft_table = RecipeTable(self.character.recipes)
         self.craft_group = RecipeGroup(
-            [
+            recipes=[
                 _elem
                 for _elem in available_recipes
                 if _elem not in self.character.recipes
             ]
         )
 
-        self.craft_group.signals.added_recipe_queue.connect(self.on_added_recipe_queue)
+        self.craft_group.signals.clicked_elem_queue.connect(self.on_added_recipe_queue)
         self.craft_table.signals.removed_recipe.connect(self.on_removed_recipe_queue)
 
         refresh_btn = PushButtonIcon("restart.svg")
@@ -62,7 +62,7 @@ class AutomaticTab(QWidget):
                 self.character.id,
                 [_elem.id for _elem in self.character.recipes],
             )
-        self.craft_group.add_recipe(recipe)
+        self.craft_group.add_elem(recipe)
 
     @pyqtSlot(object)
     def on_added_recipe_queue(self, recipe: RecipeSchema):
@@ -78,7 +78,7 @@ class AutomaticTab(QWidget):
     @pyqtSlot()
     def _on_refresh_recipes(self) -> None:
         recipes = self.get_not_in_queue_available_recipes()
-        self.craft_group._on_refresh_recipes(recipes)
+        self.craft_group.on_refresh_elems(recipes)
 
     def get_not_in_queue_available_recipes(self) -> list[RecipeSchema]:
         recipes = RecipeService.get_available_recipes(self.service, self.character.id)

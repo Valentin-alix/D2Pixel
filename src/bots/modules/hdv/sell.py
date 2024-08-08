@@ -57,10 +57,10 @@ class Seller:
     def run_seller(
         self,
         items: list[ItemSchema],
-        all_completed_items_ids: set[int] | None = None,
+        _all_completed_items_ids: set[int] | None = None,
     ):
-        if all_completed_items_ids is None:
-            all_completed_items_ids = set()
+        if _all_completed_items_ids is None:
+            _all_completed_items_ids = set()
 
         self.bank_system.bank_clear_inventory()
 
@@ -90,15 +90,15 @@ class Seller:
                     sellable_items = [
                         item
                         for item in items
-                        if item not in all_completed_items_ids
+                        if item not in _all_completed_items_ids
                         and item.type_item.category not in full_categories
                     ]
-                    return self.run_seller(sellable_items, all_completed_items_ids)
+                    return self.run_seller(sellable_items, _all_completed_items_ids)
 
                 self.bank_system.bank_clear_inventory()
                 items_inventory.clear()
 
-            all_completed_items_ids.add(item.id)
+            _all_completed_items_ids.add(item.id)
 
         self.logger.info("Got all items in inventory")
         self.hud_sys.close_modals(
@@ -106,9 +106,9 @@ class Seller:
             ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
         )
         _, completed_items = self.sell_inventory(items_inventory)
-        all_completed_items_ids.update(completed_items)
+        _all_completed_items_ids.update(completed_items)
         CharacterService.remove_bank_items(
             self.service,
             self.character_state.character.id,
-            list(all_completed_items_ids),
+            list(_all_completed_items_ids),
         )

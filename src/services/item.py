@@ -12,6 +12,13 @@ ITEM_URL = BACKEND_URL + "/item/"
 
 class ItemService:
     @staticmethod
+    @cached(cache={})
+    def get_items(service: ServiceSession) -> list[ItemSchema]:
+        with service.logged_session() as session:
+            resp = session.get(f"{ITEM_URL}")
+            return [ItemSchema(**elem) for elem in resp.json()]
+
+    @staticmethod
     def get_default_sellable_items(
         service: ServiceSession, character_id: str, recipe_ids: list[int]
     ) -> list[ItemSchema]:
