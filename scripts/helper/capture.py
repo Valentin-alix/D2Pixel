@@ -69,4 +69,4 @@ def get_sc_ankama():
 
 if __name__ == "__main__":
     sleep(4)
-    get_sc_ankama()
+    get_sc_dofus()

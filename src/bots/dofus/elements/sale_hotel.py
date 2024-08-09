@@ -25,7 +25,7 @@ from D2Shared.shared.consts.adaptative.regions import (
 )
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.enums import CategoryEnum, SaleHotelQuantity
-from D2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.schemas.item import SellItemInfo
 from D2Shared.shared.schemas.region import RegionSchema
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.bots.dofus.walker.entities_map.sale_hotel import (
@@ -152,7 +152,7 @@ class SaleHotel:
 
     def sale_hotel_get_price_item(
         self, img: numpy.ndarray, price_average: float
-    ) -> tuple[int, int] | None:
+    ) -> tuple[int, SaleHotelQuantity] | None:
         """get price for current item in sell place
 
         Args:
@@ -239,7 +239,14 @@ class SaleHotelSystem:
     service: ServiceSession
     character_state: CharacterState
 
-    def sale_hotel_choose_biggest_quantity(self) -> numpy.ndarray:
+    def sale_hotel_choose_biggest_quantity(
+        self,
+        quantities: list[SaleHotelQuantity] = [
+            SaleHotelQuantity.HUNDRED,
+            SaleHotelQuantity.TEN,
+            SaleHotelQuantity.ONE,
+        ],
+    ) -> numpy.ndarray | None:
         self.logger.info("Choosing biggest quantity")
         self.controller.click(HOTEL_OPEN_QUANTITY_PANEL_POSITION)
         sleep(0.3)
@@ -248,20 +255,33 @@ class SaleHotelSystem:
         hundred_info = self.object_searcher.get_position(
             img, ObjectConfigs.SaleHotel.hundred_quantity
         )
-        if hundred_info:
+        if hundred_info and SaleHotelQuantity.HUNDRED in quantities:
             self.controller.click(hundred_info[0])
             sleep(0.3)
             img = self.capturer.capture()
-        elif ten_info := self.object_searcher.get_position(
-            img, ObjectConfigs.SaleHotel.ten_quantity
-        ):
+        elif (
+            ten_info := self.object_searcher.get_position(
+                img, ObjectConfigs.SaleHotel.ten_quantity
+            )
+        ) and SaleHotelQuantity.TEN in quantities:
             self.controller.click(ten_info[0])
             sleep(0.3)
             img = self.capturer.capture()
+        elif (
+            one_info := self.object_searcher.get_position(
+                img, ObjectConfigs.SaleHotel.one_quantity
+            )
+        ) and SaleHotelQuantity.ONE in quantities:
+            self.controller.click(one_info[0])
+            sleep(0.3)
+            img = self.capturer.capture()
+        else:
+            return None
+
         return img
 
     def sale_hotel_sell_items_inv(
-        self, items_inventory: set[ItemSchema]
+        self, items_info_inventory: set[SellItemInfo]
     ) -> tuple[bool, list[int]]:
         """need to be in category sell in hdv, sell all item from inventory
 
@@ -298,33 +318,39 @@ class SaleHotelSystem:
             img = self.capturer.capture()
 
         completed_items: list[int] = []
-        for item_inv in items_inventory:
+        for item_info_inv in items_info_inventory:
             wait()
             img = self.capturer.capture()
-            self.logger.info(f"Treating item : {item_inv}")
+            self.logger.info(f"Treating item : {item_info_inv}")
             pos_item_inv = self.icon_searcher.search_icon_item(
-                item_inv, img, RIGHT_INVENTORY_SALE_HOTEL
+                item_info_inv.item, img, RIGHT_INVENTORY_SALE_HOTEL
             )
             if pos_item_inv is None:
-                self.logger.warning(f"Did not found icon for item {item_inv}")
+                self.logger.warning(f"Did not found icon for item {item_info_inv}")
                 continue
             self.controller.click(pos_item_inv)
             wait((0.8, 1.5))
-            img = self.sale_hotel_choose_biggest_quantity()
-
+            img = self.capturer.capture()
             price_average = self.sale_hotel.sale_hotel_get_price_average_item(img)
             self.logger.info(f"Got average price from hud : {price_average}")
             if price_average is None:
                 continue
             price = PriceService.update_or_create_price(
                 self.service,
-                item_inv.id,
+                item_info_inv.item_id,
                 self.character_state.character.server_id,
                 price_average,
             )
             price_average = price.average
             self.logger.info(f"Got average price : {price_average}")
+
             if price_average is None:
+                continue
+
+            img = self.sale_hotel_choose_biggest_quantity(
+                item_info_inv.sale_hotel_quantities
+            )
+            if img is None:
                 continue
 
             old_price: int | None = None
@@ -336,6 +362,8 @@ class SaleHotelSystem:
                 if price_info is None:
                     break
                 curr_price, curr_quantity = price_info
+                if curr_quantity not in item_info_inv.sale_hotel_quantities:
+                    break
 
                 if (
                     old_price is None
@@ -363,7 +391,7 @@ class SaleHotelSystem:
                 count_remaining_slot -= 1
                 if count_remaining_slot <= 0:
                     return True, completed_items
-            completed_items.append(item_inv.id)
+            completed_items.append(item_info_inv.item_id)
         return False, completed_items
 
     def go_to_sale_hotel(self, category: CategoryEnum):

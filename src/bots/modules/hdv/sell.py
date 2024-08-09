@@ -3,7 +3,7 @@ from logging import Logger
 
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.enums import CategoryEnum
-from D2Shared.shared.schemas.item import ItemSchema, SellItemInfo
+from D2Shared.shared.schemas.item import SellItemInfo
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.elements.sale_hotel import SaleHotelSystem
 from src.bots.dofus.hud.hud_system import HudSystem
@@ -29,7 +29,7 @@ class Seller:
     image_manager: ImageManager
 
     def sell_inventory(
-        self, items: set[ItemSchema]
+        self, sell_items_infos: set[SellItemInfo]
     ) -> tuple[list[CategoryEnum], list[int]]:
         """sell all items in order of type sale hotel,
 
@@ -38,10 +38,12 @@ class Seller:
         """
         all_completed_items: list[int] = []
         full_categories: list[CategoryEnum] = []
-        for category in set(map(lambda elem: elem.type_item.category, items)):
+        for category in set(
+            map(lambda elem: elem.item.type_item.category, sell_items_infos)
+        ):
             self.sale_hotel_sys.go_to_sale_hotel(category)
             is_full_place, completed_items = (
-                self.sale_hotel_sys.sale_hotel_sell_items_inv(items)
+                self.sale_hotel_sys.sale_hotel_sell_items_inv(sell_items_infos)
             )
             if is_full_place:
                 full_categories.append(category)
@@ -59,21 +61,21 @@ class Seller:
         sell_item_infos: list[SellItemInfo],
         _all_completed_items_ids: set[int] | None = None,
     ):
-        items = [_elem.item for _elem in sell_item_infos]
-
         if _all_completed_items_ids is None:
             _all_completed_items_ids = set()
 
         self.bank_system.bank_clear_inventory()
 
-        items_inventory: set[ItemSchema] = set()
-        for item in sorted(items, key=lambda elem: id(elem.type_item.category)):
+        items_infos_inventory: set[SellItemInfo] = set()
+        for item_info in sorted(
+            sell_item_infos, key=lambda elem: id(elem.item.type_item.category)
+        ):
             while True:
-                item_processed = self.bank_system.bank_get_item(item)
+                item_processed = self.bank_system.bank_get_item(item_info.item)
                 if item_processed == ItemProcessedStatus.NOT_PROCESSED:
                     self.logger.info("Did not found any item in bank, skipping item")
                     break
-                items_inventory.add(item)
+                items_infos_inventory.add(item_info)
                 if item_processed == ItemProcessedStatus.PROCESSED:
                     self.logger.info(
                         "Got all possible related item in inv, go to next item"
@@ -85,7 +87,7 @@ class Seller:
                     self.capturer.capture(),
                     ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
                 )
-                full_categories, _ = self.sell_inventory(items_inventory)
+                full_categories, _ = self.sell_inventory(items_infos_inventory)
 
                 if len(full_categories) != 0:
                     self.logger.info("A sale hotel is full, filtering items.")
@@ -100,16 +102,16 @@ class Seller:
                     )
 
                 self.bank_system.bank_clear_inventory()
-                items_inventory.clear()
+                items_infos_inventory.clear()
 
-            _all_completed_items_ids.add(item.id)
+            _all_completed_items_ids.add(item_info.item_id)
 
         self.logger.info("Got all items in inventory")
         self.hud_sys.close_modals(
             self.capturer.capture(),
             ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
         )
-        _, completed_items = self.sell_inventory(items_inventory)
+        _, completed_items = self.sell_inventory(items_infos_inventory)
         _all_completed_items_ids.update(completed_items)
         CharacterService.remove_bank_items(
             self.service,
