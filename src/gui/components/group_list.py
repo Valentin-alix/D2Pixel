@@ -122,7 +122,6 @@ class GroupList[T](QGroupBox):
 
         self.filter_elems(self.input_search)
 
-    @pyqtSlot(object)
     def _on_click_elem_widget(self, item: QListWidgetItem):
         name = item.data(Qt.UserRole)
         elem = self.elems_by_name[name]
