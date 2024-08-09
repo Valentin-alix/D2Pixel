@@ -80,7 +80,6 @@ class GroupList[T](QGroupBox):
         related_item = self.widget_by_name.pop(self.get_name_elem(elem))
         row_index = self.list_wid_elem.row(related_item)
         self.list_wid_elem.takeItem(row_index)
-        self.handle_elem_visibility(elem)
 
     def handle_elem_visibility(self, elem: T):
         search_input_elem = self.input_search
