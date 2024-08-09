@@ -1,5 +1,6 @@
 from typing import override
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLabel, QWidget
 from D2Shared.shared.schemas.item import ItemSchema
 from src.gui.components.group_list import GroupList
@@ -15,4 +16,6 @@ class ItemGroup(GroupList[ItemSchema]):
 
     @override
     def get_widget_elem(self, elem: ItemSchema) -> QWidget:
-        return QLabel(self.get_name_elem(elem))
+        label = QLabel(self.get_name_elem(elem))
+        label.setAlignment(Qt.AlignLeft)
+        return label
