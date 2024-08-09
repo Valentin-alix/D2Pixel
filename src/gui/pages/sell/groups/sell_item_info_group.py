@@ -44,7 +44,7 @@ class SellItemInfoGroup(GroupList[SellItemInfo]):
         widget.layout().addWidget(combo_quantities)
 
         delete_btn = PushButtonIcon("delete.svg")
-        delete_btn.clicked.connect(self.on_clicked_delete_item)
+        delete_btn.clicked.connect(lambda: self.on_clicked_delete_item(elem))
         widget.layout().addWidget(delete_btn)
 
         return widget
