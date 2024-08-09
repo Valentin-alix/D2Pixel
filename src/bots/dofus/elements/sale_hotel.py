@@ -24,7 +24,7 @@ from D2Shared.shared.consts.adaptative.regions import (
     SALE_HOTEL_THIRD_QUANTITY_REGION,
 )
 from D2Shared.shared.consts.object_configs import ObjectConfigs
-from D2Shared.shared.enums import CategoryEnum
+from D2Shared.shared.enums import CategoryEnum, SaleHotelQuantity
 from D2Shared.shared.schemas.item import ItemSchema
 from D2Shared.shared.schemas.region import RegionSchema
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
@@ -53,7 +53,9 @@ from src.window_manager.controller import Controller
 class SaleHotel:
     logger: Logger
 
-    def sale_hotel_get_current_quantity_item(self, img: numpy.ndarray) -> int | None:
+    def sale_hotel_get_current_quantity_item(
+        self, img: numpy.ndarray
+    ) -> SaleHotelQuantity | None:
         """need to be in hdv & item selected, return quantity displayed
 
         Args:
@@ -66,12 +68,12 @@ class SaleHotel:
         with tesserocr.PyTessBaseAPI(**BASE_CONFIG) as tes_api:
             set_config_for_ocr_number(tes_api, white_list="10")
             try:
-                return int(get_text_from_image(img, tes_api))
+                return SaleHotelQuantity(int(get_text_from_image(img, tes_api)))
             except ValueError:
                 return None
 
     def sale_hotel_get_area_price_by_quantity(
-        self, img: numpy.ndarray, quantity: int
+        self, img: numpy.ndarray, quantity: SaleHotelQuantity
     ) -> RegionSchema | None:
         """get area of price based on quantity (1, 10, 100)
 
@@ -133,7 +135,7 @@ class SaleHotel:
         """
         sum_prices: float = 0
         quantity_found: int = 0
-        for quantity in [1, 10, 100]:
+        for quantity in SaleHotelQuantity:
             area_price = self.sale_hotel_get_area_price_by_quantity(img, quantity)
             if area_price is None:
                 continue
@@ -179,7 +181,7 @@ class SaleHotel:
         )
         other_quantities = [
             other_quantity
-            for other_quantity in [1, 10, 100]
+            for other_quantity in SaleHotelQuantity
             if other_quantity != quantity
         ]
         prices = []

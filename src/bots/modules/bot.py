@@ -6,8 +6,9 @@ from threading import Event, Lock, RLock
 from time import sleep
 from typing import Callable
 
+
 from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
-from D2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.schemas.item import SellItemInfo
 from D2Shared.shared.schemas.recipe import RecipeSchema
 from D2Shared.shared.schemas.stat import BaseLineSchema, StatSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
@@ -440,9 +441,9 @@ class Bot:
         self.logger.info("Starting crafter")
         self.run_action(lambda: self.crafter.run_crafter(recipes))
 
-    def run_sell(self, items: list[ItemSchema]):
+    def run_sell(self, sell_item_infos: list[SellItemInfo]):
         self.logger.info("Starting seller")
-        self.run_action(lambda: self.seller.run_seller(items))
+        self.run_action(lambda: self.seller.run_seller(sell_item_infos))
 
     def run_fm(
         self,

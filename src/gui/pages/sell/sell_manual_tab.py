@@ -4,11 +4,12 @@ from PyQt5.QtCore import QThread, Qt, pyqtSlot
 from PyQt5.QtWidgets import QWidget
 
 from D2Shared.shared.schemas.character import CharacterSchema
-from D2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.schemas.item import ItemSchema, SellItemInfo
 from src.bots.modules.bot import Bot
 from src.gui.components.organization import VerticalLayout
 from src.gui.components.play_stop import PlayStopWidget
-from src.gui.pages.sell.sell_group import SellGroup
+from src.gui.pages.sell.groups.sell_item_info_group import SellItemInfoGroup
+from src.gui.pages.sell.groups.item_group import ItemGroup
 from src.gui.signals.app_signals import AppSignals
 from src.gui.utils.run_in_background import run_in_background
 from src.services.item import ItemService
@@ -40,8 +41,8 @@ class SellManualTab(QWidget):
         self.main_layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.main_layout)
 
-        self.sell_group = SellGroup(ItemService.get_items(self.service))
-        self.char_sell_group = SellGroup(items=[])
+        self.sell_group = ItemGroup(ItemService.get_items(self.service))
+        self.char_sell_group = SellItemInfoGroup(item_infos=[])
 
         self.sell_group.signals.clicked_elem_queue.connect(self.on_added_item_queue)
         self.char_sell_group.signals.clicked_elem_queue.connect(
@@ -62,7 +63,7 @@ class SellManualTab(QWidget):
     @pyqtSlot(object)
     def on_play(self, bot: Bot):
         self.thread_run, self.worker_run = run_in_background(
-            lambda: bot.run_sell(self.char_sell_group.elems)
+            lambda: bot.run_sell(list(self.char_sell_group.elems_by_name.values()))
         )
 
     @pyqtSlot(object)
@@ -70,9 +71,12 @@ class SellManualTab(QWidget):
         self.thread_stop, self.worker_stop = run_in_background(bot.stop_bot)
 
     @pyqtSlot(object)
-    def on_removed_item_queue(self, item: ItemSchema):
-        self.sell_group.add_elem(item)
+    def on_removed_item_queue(self, sell_item_info: SellItemInfo):
+        self.sell_group.add_elem(sell_item_info.item)
 
     @pyqtSlot(object)
     def on_added_item_queue(self, item: ItemSchema):
-        self.char_sell_group.add_elem(item)
+        sell_item_info = SellItemInfo(
+            item_id=item.id, item=item, sale_hotel_quantities=[]
+        )
+        self.char_sell_group.add_elem(sell_item_info)

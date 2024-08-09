@@ -33,7 +33,7 @@ class Hdv:
             self.crafter.run_crafter(recipes)
 
         sell_items = list(
-            set(self.character_state.character.sell_items)
+            set(self.character_state.character.sell_items_infos)
             & set(self.character_state.character.bank_items)
         )
         if len(sell_items) > 0:

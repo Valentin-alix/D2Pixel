@@ -170,7 +170,7 @@ class Fighter:
 
     def __attack_enemy_in_group(self, infobul_area: RegionSchema) -> bool:
         center = (infobul_area.left + infobul_area.right) // 2
-        with self.controller.set_focus():
+        with self.controller.hold_focus():
             for y in range(infobul_area.bot + 15, infobul_area.bot + 50, 5):
                 curr_pos = Position(x_pos=center, y_pos=y)
                 self.controller.move(curr_pos)

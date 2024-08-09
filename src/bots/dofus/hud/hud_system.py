@@ -128,7 +128,7 @@ class HudSystem:
                 related_job_info = next(
                     (
                         elem
-                        for elem in self.character_state.character.character_job_info
+                        for elem in self.character_state.character.jobs_infos
                         if elem.job_id == job.id
                     )
                 )
@@ -136,7 +136,7 @@ class HudSystem:
                 CharacterService.update_job_infos(
                     self.service,
                     self.character_state.character.id,
-                    self.character_state.character.character_job_info,
+                    self.character_state.character.jobs_infos,
                 )
                 self.logger.info(f"new character job lvl : {job}:{level}")
                 if (level % 10) == 0:
@@ -150,7 +150,7 @@ class HudSystem:
             related_job_info = next(
                 (
                     elem
-                    for elem in self.character_state.character.character_job_info
+                    for elem in self.character_state.character.jobs_infos
                     if elem.job_id == job.id
                 )
             )
@@ -158,7 +158,7 @@ class HudSystem:
             CharacterService.update_job_infos(
                 self.service,
                 self.character_state.character.id,
-                self.character_state.character.character_job_info,
+                self.character_state.character.jobs_infos,
             )
             if (level % 10) == 0:
                 events_info_modal.add(EventInfoPopup.LVL_UP_JOB)

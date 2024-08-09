@@ -50,17 +50,20 @@ class Controller:
         with self.action_lock:
             win32gui.PostMessage(self.window_info.hwnd, win32con.WM_CLOSE, 0, 0)
 
+    def set_foreground(self):
+        self.front_keyboard.press(PyKey.alt)
+        win32gui.SetForegroundWindow(self.window_info.hwnd)
+        self.front_keyboard.release(PyKey.alt)
+        sleep(0.5)
+
     @contextmanager
-    def set_focus(self):
+    def hold_focus(self):
         if self.is_paused_event.is_set():
             raise StoppedException()
         try:
             focus_lock.acquire()
             if win32gui.GetForegroundWindow() != self.window_info.hwnd:
-                self.front_keyboard.press(PyKey.alt)
-                win32gui.SetForegroundWindow(self.window_info.hwnd)
-                self.front_keyboard.release(PyKey.alt)
-                sleep(0.5)
+                self.set_foreground()
             yield None
         finally:
             focus_lock.release()
@@ -95,7 +98,7 @@ class Controller:
         if self.is_paused_event.is_set():
             raise StoppedException()
         with (
-            self.set_focus(),
+            self.hold_focus(),
             self.action_lock,
         ):  # because we need the mouse to be on window area
             self.logger.debug(f"Bouge la souris jusqu'a {pos}.")

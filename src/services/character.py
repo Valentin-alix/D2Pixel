@@ -1,9 +1,11 @@
+from typing import Sequence
 from D2Shared.shared.schemas.character import (
     CharacterJobInfoSchema,
     CharacterSchema,
     UpdateCharacterSchema,
 )
 from D2Shared.shared.schemas.collectable import CollectableSchema
+from D2Shared.shared.schemas.item import SellItemInfo
 from D2Shared.shared.schemas.spell import SpellSchema, UpdateSpellSchema
 from src.consts import BACKEND_URL
 from src.services.session import ServiceSession
@@ -64,13 +66,13 @@ class CharacterService:
     def update_sell_items(
         service: ServiceSession,
         character_id: str,
-        items_ids: list[int],
+        items_info: Sequence[SellItemInfo],
     ):
         with service.logged_session() as session:
             session.put(
-                f"{CHARACTER_URL}{character_id}/sell_items",
+                f"{CHARACTER_URL}{character_id}/sell_items/",
                 params={"character_id": character_id},
-                json=items_ids,
+                json=[_elem.model_dump() for _elem in items_info],
             )
 
     @staticmethod

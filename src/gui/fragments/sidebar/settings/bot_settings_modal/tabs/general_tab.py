@@ -95,7 +95,7 @@ class GeneralTab(QWidget):
             tuple[CharacterJobInfoSchema, QLineEdit, QLineEdit | None]
         ] = []
         job_infos = sorted(
-            self.character.character_job_info,
+            self.character.jobs_infos,
             key=lambda elem: (elem.job.name not in HARVEST_JOBS_NAME, elem.job.name),
         )
 

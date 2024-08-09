@@ -1,14 +1,10 @@
-import datetime
 import os
 import subprocess
 from dataclasses import dataclass, field
 from logging import Logger
-from pathlib import Path
 from threading import Event, Lock, RLock
 from time import sleep
 
-import cv2
-import win32con
 import win32gui
 from dotenv import get_key, set_key
 
@@ -107,23 +103,22 @@ class AnkamaLauncher:
     def launch_dofus_games(self):
         ank_window_info = get_or_launch_ankama_window(self.logger)
         self.window_info.hwnd = ank_window_info.hwnd
+        self.logger.info(f"ankama hwnd : {self.window_info.hwnd}")
 
         """launch games by clicking play on ankama launcher & wait 12 seconds"""
         if not win32gui.IsWindowVisible(self.window_info.hwnd):
             self.logger.info("Launch launcher for visible window")
             launch_launcher()  # to have window visible
 
+        # Temp FIX
+        self.controller.set_foreground()
+        win32gui.InvalidateRect(self.window_info.hwnd, None, True)  # type: ignore
+        win32gui.UpdateWindow(self.window_info.hwnd)
+        self.logger.info(f"ankama hwnds : {get_ankama_window_info(self.logger)}")
+
         self.controller.click(EMPTY_POSITION)  # to defocus play button
 
-        win32gui.UpdateWindow(self.window_info.hwnd)
-        win32gui.RedrawWindow(
-            self.window_info.hwnd,
-            None,  # type: ignore
-            None,  # type: ignore
-            win32con.RDW_INTERNALPAINT,
-        )
-
-        pos, _, config, img = self.image_manager.wait_multiple_or_template(
+        pos, _, config, _ = self.image_manager.wait_multiple_or_template(
             [ObjectConfigs.Ankama.play, ObjectConfigs.Ankama.empty_play],
             force=True,
             retry_time_args=RetryTimeArgs(timeout=35, offset_start=1),
@@ -131,12 +126,3 @@ class AnkamaLauncher:
         if config == ObjectConfigs.Ankama.play:
             self.controller.click(pos)
             sleep(15)
-        else:
-            cv2.imwrite(
-                os.path.join(
-                    Path(__file__).parent.parent.parent.parent,
-                    "logs",
-                    f"{datetime.datetime.now().strftime('%d_%H-%M-%S')}_ankama_empty_play.png",
-                ),
-                img,
-            )

@@ -1,6 +1,6 @@
 from typing import TypeVar
 
-from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtCore import QEvent, QObject, Qt, pyqtSignal
 from PyQt5.QtGui import QFontMetrics, QPalette, QStandardItem
 from PyQt5.QtWidgets import (
     QComboBox,
@@ -9,6 +9,10 @@ from PyQt5.QtWidgets import (
 )
 
 T = TypeVar("T")
+
+
+class CheckableComboBoxSignals(QObject):
+    clicked_item = pyqtSignal()
 
 
 class CheckableComboBox[T](QComboBox):
@@ -22,7 +26,7 @@ class CheckableComboBox[T](QComboBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.signals = CheckableComboBoxSignals()
         # Make the combo editable to set a custom text, but readonly
         self.setEditable(True)
         self.lineEdit().setReadOnly(True)
@@ -68,6 +72,7 @@ class CheckableComboBox[T](QComboBox):
                     item.setCheckState(Qt.Unchecked)
                 else:
                     item.setCheckState(Qt.Checked)
+                self.signals.clicked_item.emit()
                 return True
         return False
 

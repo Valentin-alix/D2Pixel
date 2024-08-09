@@ -3,7 +3,7 @@ from logging import Logger
 
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.enums import CategoryEnum
-from D2Shared.shared.schemas.item import ItemSchema
+from D2Shared.shared.schemas.item import ItemSchema, SellItemInfo
 from src.bots.dofus.elements.bank import BankSystem
 from src.bots.dofus.elements.sale_hotel import SaleHotelSystem
 from src.bots.dofus.hud.hud_system import HudSystem
@@ -56,9 +56,11 @@ class Seller:
 
     def run_seller(
         self,
-        items: list[ItemSchema],
+        sell_item_infos: list[SellItemInfo],
         _all_completed_items_ids: set[int] | None = None,
     ):
+        items = [_elem.item for _elem in sell_item_infos]
+
         if _all_completed_items_ids is None:
             _all_completed_items_ids = set()
 
@@ -87,13 +89,15 @@ class Seller:
 
                 if len(full_categories) != 0:
                     self.logger.info("A sale hotel is full, filtering items.")
-                    sellable_items = [
-                        item
-                        for item in items
-                        if item not in _all_completed_items_ids
-                        and item.type_item.category not in full_categories
+                    sellable_item_infos = [
+                        item_info
+                        for item_info in sell_item_infos
+                        if item_info.item not in _all_completed_items_ids
+                        and item_info.item.type_item.category not in full_categories
                     ]
-                    return self.run_seller(sellable_items, _all_completed_items_ids)
+                    return self.run_seller(
+                        sellable_item_infos, _all_completed_items_ids
+                    )
 
                 self.bank_system.bank_clear_inventory()
                 items_inventory.clear()

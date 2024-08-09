@@ -46,7 +46,7 @@ class TestServiceCharacter(unittest.TestCase):
         print(items)
 
     def test_get_or_create(self):
-        for job_info in self.character.character_job_info:
+        for job_info in self.character.jobs_infos:
             if job_info.job.name == JobEnum.ALCHIMIST:
                 job_info.lvl = 100
             elif job_info.job.name == JobEnum.PEASANT:
@@ -56,7 +56,7 @@ class TestServiceCharacter(unittest.TestCase):
             elif job_info.job.name == JobEnum.FISHERMAN:
                 job_info.lvl = 85
         CharacterService.update_job_infos(
-            self.service, self.character.id, self.character.character_job_info
+            self.service, self.character.id, self.character.jobs_infos
         )
 
         colls = CharacterService.get_possible_collectable(
@@ -67,11 +67,6 @@ class TestServiceCharacter(unittest.TestCase):
         )
 
     def test_item(self):
-        before = perf_counter()
-        items = ItemService.get_items(self.service)
-        print(perf_counter() - before)
-        print(len(items))
-
         before = perf_counter()
         items = ItemService.get_items(self.service)
         print(perf_counter() - before)
