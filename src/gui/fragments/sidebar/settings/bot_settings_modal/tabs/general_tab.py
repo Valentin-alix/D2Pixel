@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import (
     QComboBox,
@@ -19,6 +19,7 @@ from D2Shared.shared.schemas.character import (
 from D2Shared.shared.schemas.waypoint import WaypointSchema
 from src.gui.components.combobox import CheckableComboBox
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
+from src.gui.utils.run_in_background import run_in_background
 from src.services.character import CharacterService
 from src.services.server import ServerService
 from src.services.session import ServiceSession
@@ -40,13 +41,17 @@ class GeneralTab(QWidget):
         self._set_base_infos()
         self._set_bot_job_infos()
 
-        self.set_default_values()
+        self.wp_thread, self.wp_worker = run_in_background(
+            lambda: WorldService.get_waypoints(self.service, 1)
+        )
+        self.wp_worker.signals.function_result.connect(self.set_default_values)
 
-    def set_default_values(self) -> None:
+    @pyqtSlot(object)
+    def set_default_values(self, waypoints: list[WaypointSchema]) -> None:
         self.bot_lvl_form.setText(str(self.character.lvl))
         self.combo_waypoints.clear()
         for waypoint in sorted(
-            WorldService.get_waypoints(self.service, 1),
+            waypoints,
             key=lambda elem: elem.map.sub_area.name,
         ):
             checked = waypoint in self.character.waypoints

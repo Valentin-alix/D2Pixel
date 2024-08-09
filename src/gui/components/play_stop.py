@@ -20,12 +20,12 @@ class PlayStopWidget(QWidget):
         super().__init__(*args, **kwargs)
         self.setLayout(VerticalLayout())
         self.signals = PlayStopSignals()
-        self._setup_btns()
+        self.setup_btns()
         bot_signals.terminated_bot.connect(self.on_click_stop)
         bot_signals.is_stopping_bot.connect(self.on_new_is_stopping_bot)
         app_signals.is_connecting.connect(self.on_connecting)
 
-    def _setup_btns(self):
+    def setup_btns(self):
         self.action_widget = QWidget()
         self.layout().addWidget(self.action_widget)
         self.action_widget.setLayout(HorizontalLayout())

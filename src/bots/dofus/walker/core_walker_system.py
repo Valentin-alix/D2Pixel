@@ -169,7 +169,9 @@ class CoreWalkerSystem:
             ),
             key=lambda _waypoint: min(
                 _waypoint.map.get_dist_map(target_map) for target_map in target_maps
-            ),
+            )
+            if _waypoint
+            else float("inf"),
             default=None,
         )
         if near_zaap is not None:

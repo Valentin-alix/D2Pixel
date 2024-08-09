@@ -89,4 +89,5 @@ class CraftManualTab(QWidget):
 
     @pyqtSlot(object)
     def on_added_recipe_queue(self, recipe: RecipeSchema):
+        self.craft_group.remove_elem(recipe)
         self.craft_table.add_recipe(recipe)

@@ -347,11 +347,12 @@ class SaleHotelSystem:
             if price_average is None:
                 continue
 
-            img = self.sale_hotel_choose_biggest_quantity(
+            new_img = self.sale_hotel_choose_biggest_quantity(
                 item_info_inv.sale_hotel_quantities
             )
-            if img is None:
+            if new_img is None:
                 continue
+            img = new_img
 
             old_price: int | None = None
             old_quantity: int | None = None

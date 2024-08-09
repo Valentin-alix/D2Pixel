@@ -66,6 +66,7 @@ class CraftAutomaticTab(QWidget):
 
     @pyqtSlot(object)
     def on_added_recipe_queue(self, recipe: RecipeSchema):
+        self.craft_group.remove_elem(recipe)
         if recipe not in self.character.recipes:
             self.character.recipes.append(recipe)
             CharacterService.update_recipes(
