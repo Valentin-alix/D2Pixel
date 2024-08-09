@@ -74,8 +74,6 @@ class GroupList[T](QGroupBox):
             self.get_or_create_widget_item(elem)
 
     def remove_elem(self, elem: T):
-        print(elem)
-        print(self.get_name_elem(elem))
         self.elems_by_name.pop(self.get_name_elem(elem))
         related_item = self.widget_by_name.pop(self.get_name_elem(elem))
         row_index = self.list_wid_elem.row(related_item)

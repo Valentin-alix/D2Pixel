@@ -33,15 +33,16 @@ QHeaderView::section{{
 
 QListView{{
   color: {QTMATERIAL_PRIMARYCOLOR};
+  background-color: {QTMATERIAL_SECONDARYCOLOR};
 }}
 
 QLabel {{
-  qproperty-alignment: AlignCenter;
+  /* qproperty-alignment: AlignCenter; */
   font-weight: bold;
 }}
 
 QGroupBox {{
-  qproperty-alignment: AlignCenter;
+  /* qproperty-alignment: AlignCenter; */
 }}
 
 .no-border {{
