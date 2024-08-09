@@ -60,6 +60,7 @@ class GroupList[T](QGroupBox):
         if elem_wid_item := self.widget_by_name.get(self.get_name_elem(elem)):
             return elem_wid_item
         elem_wid_item = QListWidgetItem()
+        elem_wid_item.setTextAlignment(Qt.AlignLeft)
         elem_wid_item.setData(Qt.UserRole, self.get_name_elem(elem))
         elem_wid = self.get_widget_elem(elem)
         elem_wid_item.setSizeHint(elem_wid.sizeHint())
