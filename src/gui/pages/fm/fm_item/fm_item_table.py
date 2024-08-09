@@ -1,10 +1,8 @@
-from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QComboBox, QLabel, QLineEdit
 
 from D2Shared.shared.consts.stats import BIG_STATS_NAMES
 from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
 from D2Shared.shared.schemas.stat import BaseLineSchema, LineSchema, StatSchema
-from src.gui.components.organization import AlignDelegate
 from src.gui.components.table import BaseTableWidget
 from src.services.session import ServiceSession
 from src.services.stat import StatService
@@ -66,9 +64,6 @@ class FmItemTable(BaseTableWidget):
 
     def _add_empty_exo_line(self, table_index: int, base_stats: list[StatSchema]):
         self.exo_combo = QComboBox()
-        self.exo_combo.setItemDelegate(AlignDelegate(self.exo_combo))
-
-        self.exo_combo.setEditable(True)
 
         self.exo_combo.addItem("", None)
 
@@ -76,10 +71,6 @@ class FmItemTable(BaseTableWidget):
             if stat in base_stats:
                 continue
             self.exo_combo.addItem(stat.name, stat.id)
-
-        exo_combo_edit = self.exo_combo.lineEdit()
-        exo_combo_edit.setAlignment(Qt.AlignCenter)
-        exo_combo_edit.setReadOnly(True)
 
         self.table.setCellWidget(table_index, 0, self.exo_combo)
 

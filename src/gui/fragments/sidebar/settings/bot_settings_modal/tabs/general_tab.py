@@ -41,13 +41,10 @@ class GeneralTab(QWidget):
         self._set_base_infos()
         self._set_bot_job_infos()
 
-        self.wp_thread, self.wp_worker = run_in_background(
-            lambda: WorldService.get_waypoints(self.service, 1)
-        )
-        self.wp_worker.signals.function_result.connect(self.set_default_values)
+        self.set_default_values()
 
     @pyqtSlot(object)
-    def set_default_values(self, waypoints: list[WaypointSchema]) -> None:
+    def on_fetched_waypoints(self, waypoints: list[WaypointSchema]):
         self.bot_lvl_form.setText(str(self.character.lvl))
         self.combo_waypoints.clear()
         for waypoint in sorted(
@@ -60,6 +57,12 @@ class GeneralTab(QWidget):
             )
         for char_job_info, job_lvl_edit, _ in self.job_info_edits:
             job_lvl_edit.setText(str(char_job_info.lvl))
+
+    def set_default_values(self) -> None:
+        self.wp_thread, self.wp_worker = run_in_background(
+            lambda: WorldService.get_waypoints(self.service, 1)
+        )
+        self.wp_worker.signals.function_result.connect(self.on_fetched_waypoints)
 
     def _set_base_infos(self) -> None:
         base_info_wid = QWidget()

@@ -13,10 +13,10 @@ QTimeEdit {{
   color: {QTMATERIAL_PRIMARYCOLOR};
 }}
 
-QListWidget::item {{
+/* QListWidget::item {{
   padding:0px;
   margin:0px;
-}}
+}} */
 
 QComboBox:items{{
   font-weight: bold;
@@ -37,12 +37,10 @@ QListView{{
 }}
 
 QLabel {{
-  /* qproperty-alignment: AlignCenter; */
   font-weight: bold;
 }}
 
 QGroupBox {{
-  /* qproperty-alignment: AlignCenter; */
 }}
 
 .no-border {{
