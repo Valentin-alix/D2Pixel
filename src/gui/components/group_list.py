@@ -73,37 +73,39 @@ class GroupList[T](QGroupBox):
         self.elems_by_name[self.get_name_elem(elem)] = elem
         if not self.is_lazy_loaded:
             self.get_or_create_widget_item(elem)
+        self.handle_elem_visibility(elem)
 
     def remove_elem(self, elem: T):
         self.elems_by_name.pop(self.get_name_elem(elem))
         related_item = self.widget_by_name.pop(self.get_name_elem(elem))
         row_index = self.list_wid_elem.row(related_item)
         self.list_wid_elem.takeItem(row_index)
+        self.handle_elem_visibility(elem)
+
+    def handle_elem_visibility(self, elem: T):
+        search_input_elem = self.input_search
+        if self.is_lazy_loaded:
+            if (
+                len(search_input_elem) > 2
+                and search_input_elem.casefold() in self.get_name_elem(elem).casefold()
+            ):
+                related_widget = self.get_or_create_widget_item(elem)
+                related_widget.setHidden(False)
+            elif related_widget := self.widget_by_name.get(self.get_name_elem(elem)):
+                related_widget.setHidden(True)
+        else:
+            related_widget = self.get_or_create_widget_item(elem)
+            if (
+                search_input_elem == ""
+                or search_input_elem.casefold() in self.get_name_elem(elem).casefold()
+            ):
+                related_widget.setHidden(False)
+            else:
+                related_widget.setHidden(True)
 
     def filter_elems(self, search_input_elem: str):
         for elem in self.elems_by_name.values():
-            if self.is_lazy_loaded:
-                if (
-                    len(search_input_elem) > 2
-                    and search_input_elem.casefold()
-                    in self.get_name_elem(elem).casefold()
-                ):
-                    related_widget = self.get_or_create_widget_item(elem)
-                    related_widget.setHidden(False)
-                elif related_widget := self.widget_by_name.get(
-                    self.get_name_elem(elem)
-                ):
-                    related_widget.setHidden(True)
-            else:
-                related_widget = self.get_or_create_widget_item(elem)
-                if (
-                    search_input_elem == ""
-                    or search_input_elem.casefold()
-                    in self.get_name_elem(elem).casefold()
-                ):
-                    related_widget.setHidden(False)
-                else:
-                    related_widget.setHidden(True)
+            self.handle_elem_visibility(elem)
 
     def on_refresh_elems(self, elems: list[T]):
         untreated_elems: dict[str, T] = {
