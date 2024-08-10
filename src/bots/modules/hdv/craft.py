@@ -70,6 +70,7 @@ class Crafter:
                 current_job = recipe.job
             else:
                 self.controller.click(SEARCH_RECEIPE_POSITION, count=3)
+                sleep(0.3)
                 self.controller.key(win32con.VK_BACK)
             self.controller.send_text(recipe.result_item.name)
             sleep(1)
@@ -83,6 +84,7 @@ class Crafter:
                 self.controller.click(FIRST_SLOT_RECEIPE_POSITION)
                 wait()
                 self.controller.click(COUNT_CRAFT_RECEIP_POSITION)
+                sleep(0.3)
                 self.controller.key(win32con.VK_RETURN)
                 sleep(0.3)
                 self.controller.click(MERGE_CRAFT_POSITION)

@@ -39,7 +39,7 @@ class GroupList[T](QGroupBox):
 
     def setup_list_elems(self, elems: list[T]) -> None:
         self.list_wid_elem = QListWidget()
-        self.list_wid_elem.setSpacing(8)
+        self.list_wid_elem.setSpacing(4)
         self.list_wid_elem.setLayoutMode(QListWidget.Batched)
         self.list_wid_elem.setBatchSize(10)
         self.list_wid_elem.setUniformItemSizes(True)
