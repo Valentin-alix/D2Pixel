@@ -80,7 +80,7 @@ class IconSearcher:
                 pos = get_position_template_in_image(
                     cell_img,
                     icon_img,
-                    threshold=0.8,
+                    threshold=0.9,
                     method=cv2.TM_CCOEFF_NORMED,
                     offset_area=offset_area,
                 )
