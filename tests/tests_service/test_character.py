@@ -1,11 +1,11 @@
 import os
 import sys
-from time import perf_counter
 import unittest
 from logging import Logger
 from pathlib import Path
 
 from src.services.item import ItemService
+from src.services.price import PriceService
 
 sys.path.append(os.path.join(Path(__file__).parent.parent.parent))
 from D2Shared.shared.enums import JobEnum
@@ -67,7 +67,10 @@ class TestServiceCharacter(unittest.TestCase):
         )
 
     def test_item(self):
-        before = perf_counter()
-        items = ItemService.get_items(self.service)
-        print(perf_counter() - before)
-        print(len(items))
+        # before = perf_counter()
+        # items = ItemService.get_items(self.service)
+        # print(perf_counter() - before)
+        # print(len(items))
+
+        prices = PriceService.get_price_items(self.service, [], 1)
+        print(prices)

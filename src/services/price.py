@@ -27,7 +27,7 @@ class PriceService:
     ) -> list[PriceSchema]:
         with service.logged_session() as session:
             resp = session.get(
-                f"{PRICE_URL}/",
+                f"{PRICE_URL}",
                 params={
                     "server_id": server_id,
                 },
