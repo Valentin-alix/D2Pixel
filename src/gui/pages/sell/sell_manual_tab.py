@@ -8,8 +8,8 @@ from D2Shared.shared.schemas.item import ItemSchema, SellItemInfo
 from src.bots.modules.bot import Bot
 from src.gui.components.organization import VerticalLayout
 from src.gui.components.play_stop import PlayStopWidget
-from src.gui.pages.sell.groups.sell_item_info_group import SellItemInfoGroup
-from src.gui.pages.sell.groups.item_group import ItemGroup
+from src.gui.pages.sell.item_group import ItemGroup
+from src.gui.pages.sell.sell_info_table import SellInfoTable
 from src.gui.signals.app_signals import AppSignals
 from src.gui.utils.run_in_background import run_in_background
 from src.services.session import ServiceSession
@@ -42,16 +42,14 @@ class SellManualTab(QWidget):
         self.setLayout(self.main_layout)
 
         self.sell_group = ItemGroup(items)
-        self.sell_info_group = SellItemInfoGroup(item_infos=[])
+        self.sell_table = SellInfoTable([])
 
         self.sell_group.signals.clicked_elem_queue.connect(self.on_added_item_queue)
-        self.sell_info_group.sell_signals.removed_item.connect(
-            self.on_removed_item_queue
-        )
+        self.sell_table.signals.removed_item_info.connect(self.on_removed_item_queue)
 
         self._setup_play_stop()
 
-        self.layout().addWidget(self.sell_info_group)
+        self.layout().addWidget(self.sell_table)
         self.layout().addWidget(self.sell_group)
 
     def _setup_play_stop(self):
@@ -63,7 +61,7 @@ class SellManualTab(QWidget):
     @pyqtSlot(object)
     def on_play(self, bot: Bot):
         self.thread_run, self.worker_run = run_in_background(
-            lambda: bot.run_sell(list(self.sell_info_group.elems_by_name.values()))
+            lambda: bot.run_sell(list(self.sell_table.widget_item_by_item_info.keys()))
         )
 
     @pyqtSlot(object)
@@ -80,4 +78,4 @@ class SellManualTab(QWidget):
         sell_item_info = SellItemInfo(
             item_id=item.id, item=item, sale_hotel_quantities=[]
         )
-        self.sell_info_group.add_elem(sell_item_info)
+        self.sell_table.add_item_info(sell_item_info)

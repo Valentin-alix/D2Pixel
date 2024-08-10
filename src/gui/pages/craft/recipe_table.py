@@ -12,18 +12,15 @@ class RecipeTableSignals(QObject):
 
 
 class RecipeTable(TableWidget):
-    def __init__(
-        self, recipes: list[RecipeSchema] | None = None, *args, **kwargs
-    ) -> None:
+    def __init__(self, recipes: list[RecipeSchema], *args, **kwargs) -> None:
         column_names: list[str] = ["Nom", "Métier", "LVL", ""]
         super().__init__(column_names, *args, **kwargs)
         self.table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
 
         self.signals = RecipeTableSignals()
         self.widget_item_by_recipe: dict[RecipeSchema, QTableWidgetItem] = {}
-        if recipes is not None:
-            for recipe in recipes:
-                self.add_recipe(recipe)
+        for recipe in recipes:
+            self.add_recipe(recipe)
 
     def add_recipe(self, recipe: RecipeSchema) -> None:
         table_index = self.table.rowCount()

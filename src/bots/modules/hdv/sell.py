@@ -10,6 +10,7 @@ from src.bots.dofus.hud.hud_system import HudSystem
 from src.entities.item import ItemProcessedStatus
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.services.character import CharacterService
+from src.services.price import PriceService
 from src.services.session import ServiceSession
 from src.states.character_state import CharacterState
 from src.window_manager.capturer import Capturer
@@ -56,27 +57,48 @@ class Seller:
             )
         return full_categories, all_completed_items
 
+    def get_ordered_items(
+        self, sell_items_infos: list[SellItemInfo]
+    ) -> list[SellItemInfo]:
+        price_items = PriceService.get_price_items(
+            self.service,
+            [_item_info.item_id for _item_info in sell_items_infos],
+            self.character_state.character.server_id,
+        )
+        return sorted(
+            sell_items_infos,
+            key=lambda _item_info: (
+                id(_item_info.item.type_item.category),
+                next(
+                    _price.average
+                    for _price in price_items
+                    if _price.item_id == _item_info.item_id
+                ),
+            ),
+            reverse=True,
+        )
+
     def run_seller(
         self,
-        sell_item_infos: list[SellItemInfo],
-        _all_completed_items_ids: set[int] | None = None,
+        sell_items_infos: list[SellItemInfo],
+        _completed_items_ids: set[int] | None = None,
     ):
-        if _all_completed_items_ids is None:
-            _all_completed_items_ids = set()
+        if _completed_items_ids is None:
+            _completed_items_ids = set()
 
         self.bank_system.bank_clear_inventory()
 
+        sell_items_infos = self.get_ordered_items(sell_items_infos)
+
         items_infos_inventory: set[SellItemInfo] = set()
-        for item_info in sorted(
-            sell_item_infos, key=lambda elem: id(elem.item.type_item.category)
-        ):
+        for item_info in sell_items_infos:
             while True:
-                item_processed = self.bank_system.bank_get_item(item_info.item)
-                if item_processed == ItemProcessedStatus.NOT_PROCESSED:
+                item_processed_status = self.bank_system.bank_get_item(item_info.item)
+                if item_processed_status == ItemProcessedStatus.NOT_PROCESSED:
                     self.logger.info("Did not found any item in bank, skipping item")
                     break
                 items_infos_inventory.add(item_info)
-                if item_processed == ItemProcessedStatus.PROCESSED:
+                if item_processed_status == ItemProcessedStatus.PROCESSED:
                     self.logger.info(
                         "Got all possible related item in inv, go to next item"
                     )
@@ -90,21 +112,21 @@ class Seller:
                 full_categories, _ = self.sell_inventory(items_infos_inventory)
 
                 if len(full_categories) != 0:
-                    self.logger.info("A sale hotel is full, filtering items.")
-                    sellable_item_infos = [
+                    self.logger.info(f"{full_categories} are full, filtering items.")
+                    remaining_sell_item_infos = [
                         item_info
-                        for item_info in sell_item_infos
-                        if item_info.item not in _all_completed_items_ids
+                        for item_info in sell_items_infos
+                        if item_info.item not in _completed_items_ids
                         and item_info.item.type_item.category not in full_categories
                     ]
                     return self.run_seller(
-                        sellable_item_infos, _all_completed_items_ids
+                        remaining_sell_item_infos, _completed_items_ids
                     )
 
                 self.bank_system.bank_clear_inventory()
                 items_infos_inventory.clear()
 
-            _all_completed_items_ids.add(item_info.item_id)
+            _completed_items_ids.add(item_info.item_id)
 
         self.logger.info("Got all items in inventory")
         self.hud_sys.close_modals(
@@ -112,9 +134,9 @@ class Seller:
             ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
         )
         _, completed_items = self.sell_inventory(items_infos_inventory)
-        _all_completed_items_ids.update(completed_items)
+        _completed_items_ids.update(completed_items)
         CharacterService.remove_bank_items(
             self.service,
             self.character_state.character.id,
-            list(_all_completed_items_ids),
+            list(_completed_items_ids),
         )

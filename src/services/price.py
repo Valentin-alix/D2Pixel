@@ -20,3 +20,17 @@ class PriceService:
                 },
             )
             return PriceSchema(**resp.json())
+
+    @staticmethod
+    def get_price_items(
+        service: ServiceSession, item_ids: list[int], server_id: int
+    ) -> list[PriceSchema]:
+        with service.logged_session() as session:
+            resp = session.get(
+                f"{PRICE_URL}/",
+                params={
+                    "server_id": server_id,
+                },
+                json=item_ids,
+            )
+            return [PriceSchema(**_elem) for _elem in resp.json()]

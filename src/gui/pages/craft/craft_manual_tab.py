@@ -42,7 +42,7 @@ class CraftManualTab(QWidget):
         self.main_layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.main_layout)
 
-        self.craft_table = RecipeTable()
+        self.craft_table = RecipeTable([])
         self.craft_group = RecipeGroup(recipes=available_recipes)
 
         self.craft_group.signals.clicked_elem_queue.connect(self.on_added_recipe_queue)

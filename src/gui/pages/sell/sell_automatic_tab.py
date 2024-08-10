@@ -6,8 +6,8 @@ from PyQt5.QtWidgets import QWidget
 from D2Shared.shared.schemas.character import CharacterSchema
 from D2Shared.shared.schemas.item import ItemSchema, SellItemInfo
 from src.gui.components.organization import VerticalLayout
-from src.gui.pages.sell.groups.sell_item_info_group import SellItemInfoGroup
-from src.gui.pages.sell.groups.item_group import ItemGroup
+from src.gui.pages.sell.item_group import ItemGroup
+from src.gui.pages.sell.sell_info_table import SellInfoTable
 from src.services.character import CharacterService
 from src.services.session import ServiceSession
 
@@ -36,19 +36,13 @@ class SellAutomaticTab(QWidget):
             _sell_item_info.item for _sell_item_info in self.character.sell_items_infos
         ]
         self.sell_group = ItemGroup(list(set(character_sell_items) ^ set(items)))
-        self.sell_info_group = SellItemInfoGroup(
-            item_infos=self.character.sell_items_infos
-        )
+        self.sell_table = SellInfoTable(self.character.sell_items_infos)
 
         self.sell_group.signals.clicked_elem_queue.connect(self.on_added_item_queue)
-        self.sell_info_group.sell_signals.removed_item.connect(
-            self.on_removed_item_queue
-        )
-        self.sell_info_group.sell_signals.changed_item_info.connect(
-            self.on_changed_item_info
-        )
+        self.sell_table.signals.removed_item_info.connect(self.on_removed_item_queue)
+        self.sell_table.signals.changed_item_info.connect(self.on_changed_item_info)
 
-        self.layout().addWidget(self.sell_info_group)
+        self.layout().addWidget(self.sell_table)
         self.layout().addWidget(self.sell_group)
 
     @pyqtSlot(object)
@@ -89,4 +83,4 @@ class SellAutomaticTab(QWidget):
                 self.character.id,
                 self.character.sell_items_infos,
             )
-        self.sell_info_group.add_elem(sell_item_info)
+        self.sell_table.add_item_info(sell_item_info)
