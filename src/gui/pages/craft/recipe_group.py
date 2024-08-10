@@ -1,6 +1,5 @@
 from typing import override
 
-from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLabel, QWidget
 
 from D2Shared.shared.schemas.recipe import RecipeSchema
@@ -19,5 +18,5 @@ class RecipeGroup(GroupList[RecipeSchema]):
     @override
     def get_widget_elem(self, elem: RecipeSchema) -> QWidget:
         label = QLabel(self.get_name_elem(elem))
-        label.setAlignment(Qt.AlignLeft)
+        label.setStyleSheet("""qproperty-alignment: AlignLeft;""")
         return label

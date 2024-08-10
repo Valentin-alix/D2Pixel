@@ -35,6 +35,21 @@ QListView{{
   color: {QTMATERIAL_PRIMARYCOLOR};
 }}
 
+QListWidget{{
+  color: {QTMATERIAL_PRIMARYCOLOR};
+}}
+
+QListWidget::item {{
+  border: 0px;
+  padding-left: 8px;
+}}
+
+QListWidget::item:selected:active {{
+    background-color: {QTMATERIAL_SECONDARYDARKCOLOR};
+    color: {QTMATERIAL_SECONDARYLIGHTCOLOR};
+}}
+
+
 QLabel {{
   qproperty-alignment: AlignCenter;
   font-weight: bold;

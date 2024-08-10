@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from PyQt5.QtCore import QObject, Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, QSize, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import (
     QGroupBox,
     QLineEdit,
@@ -39,7 +39,6 @@ class GroupList[T](QGroupBox):
 
     def setup_list_elems(self, elems: list[T]) -> None:
         self.list_wid_elem = QListWidget()
-        self.list_wid_elem.setSpacing(4)
         self.list_wid_elem.setLayoutMode(QListWidget.Batched)
         self.list_wid_elem.setBatchSize(10)
         self.list_wid_elem.setUniformItemSizes(True)
@@ -63,7 +62,8 @@ class GroupList[T](QGroupBox):
         elem_wid_item = QListWidgetItem()
         elem_wid_item.setData(Qt.UserRole, self.get_name_elem(elem))
         elem_wid = self.get_widget_elem(elem)
-        elem_wid_item.setSizeHint(elem_wid.sizeHint())
+        size = elem_wid.sizeHint()
+        elem_wid_item.setSizeHint(QSize(size.width(), size.height() + 5))
         self.list_wid_elem.addItem(elem_wid_item)
         self.list_wid_elem.setItemWidget(elem_wid_item, elem_wid)
         self.widget_by_name[self.get_name_elem(elem)] = elem_wid_item

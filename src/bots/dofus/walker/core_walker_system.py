@@ -107,7 +107,13 @@ class CoreWalkerSystem:
         else:
             from_map = None
 
-        map, text = get_map(self.service, img, from_map)
+        try:
+            map, text = get_map(self.service, img, from_map)
+        except UnknowStateException:
+            if not self.blocked.is_blocked_character():
+                raise
+            else:
+                raise CharacterIsStuckException
 
         if (
             self.map_state.curr_map_info

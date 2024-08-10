@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Callable, cast
+from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import (
     QHeaderView,
@@ -32,6 +33,7 @@ class BaseTableWidget(QScrollArea):
         super().__init__(*args, **kwargs)
 
         self.table = QTableWidget(parent=self)
+        self.current_sort: QtCore.Qt.SortOrder | None = None
         self.table.setRowCount(1)
         self.delegate_type = AlignDelegate
 
@@ -48,6 +50,7 @@ class BaseTableWidget(QScrollArea):
     def set_columns(self, columns_infos: list[ColumnInfo]):
         self.columns_infos = columns_infos
         self.table.setColumnCount(len(columns_infos))
+
         delegate = self.delegate_type(self.table)
         for index, col_info in enumerate(columns_infos):
             self.table.setItemDelegateForColumn(index, delegate)
