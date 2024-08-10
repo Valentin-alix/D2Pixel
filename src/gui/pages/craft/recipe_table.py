@@ -4,17 +4,23 @@ from PyQt5.QtWidgets import QTableWidgetItem
 
 from D2Shared.shared.schemas.recipe import RecipeSchema
 from src.gui.components.buttons import PushButtonIcon
-from src.gui.components.table import TableWidget
+from src.gui.components.table import BaseTableWidget, ColumnInfo
 
 
 class RecipeTableSignals(QObject):
     removed_recipe = pyqtSignal(object)
 
 
-class RecipeTable(TableWidget):
+class RecipeTable(BaseTableWidget):
     def __init__(self, recipes: list[RecipeSchema], *args, **kwargs) -> None:
-        column_names: list[str] = ["Nom", "Métier", "LVL", ""]
-        super().__init__(column_names, *args, **kwargs)
+        super().__init__(*args, **kwargs)
+        columns: list[ColumnInfo] = [
+            ColumnInfo(name="Nom"),
+            ColumnInfo(name="Métier"),
+            ColumnInfo(name="Lvl"),
+            ColumnInfo(name="", search_type=None),
+        ]
+        self.set_columns(columns)
         self.table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
 
         self.signals = RecipeTableSignals()

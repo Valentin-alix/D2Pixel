@@ -2,7 +2,7 @@ from D2Shared.shared.enums import CategoryEnum
 from PyQt5.QtWidgets import QLabel, QTableWidgetItem, QWidget
 
 from src.gui.components.organization import VerticalLayout
-from src.gui.components.table import TableWidget
+from src.gui.components.table import BaseTableWidget, ColumnInfo
 from src.services.recipe import RecipeService
 from src.services.session import ServiceSession
 
@@ -17,7 +17,13 @@ class BenefitRecipeTable(QWidget):
         title = QLabel(parent=self, text="Meilleur bénéfice sur les crafts")
         v_layout.addWidget(title)
 
-        table_benefit_recipe_scroll = TableWidget(["Nom", "Bénéfice"])
+        columns: list[ColumnInfo] = [
+            ColumnInfo(name="Nom"),
+            ColumnInfo(name="Bénéfice"),
+        ]
+
+        table_benefit_recipe_scroll = BaseTableWidget()
+        table_benefit_recipe_scroll.set_columns(columns)
         self.table_benefit_recipe = table_benefit_recipe_scroll.table
         v_layout.addWidget(table_benefit_recipe_scroll)
 

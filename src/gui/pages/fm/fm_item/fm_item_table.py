@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QComboBox, QLabel, QLineEdit
 from D2Shared.shared.consts.stats import BIG_STATS_NAMES
 from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
 from D2Shared.shared.schemas.stat import BaseLineSchema, LineSchema, StatSchema
-from src.gui.components.table import BaseTableWidget
+from src.gui.components.table import BaseTableWidget, ColumnInfo
 from src.services.session import ServiceSession
 from src.services.stat import StatService
 
@@ -23,7 +23,12 @@ class FmItemTable(BaseTableWidget):
     def set_table_from_equipment(self, equipment: ReadEquipmentSchema):
         self.count_lines_achieved = equipment.count_lines_achieved
         self.clear_table()
-        columns = ["Stat", "Valeur", "Tentatives", "Tentatives Moyenne"]
+        columns = [
+            ColumnInfo(name="Stat", search_type=None),
+            ColumnInfo(name="Valeur", search_type=None),
+            ColumnInfo(name="Tentatives", search_type=None),
+            ColumnInfo(name="Tentatives Moyenne", search_type=None),
+        ]
         self.set_columns(columns)
 
         for line in equipment.lines:
@@ -46,7 +51,10 @@ class FmItemTable(BaseTableWidget):
 
     def set_table_from_base_lines(self, base_lines: list[BaseLineSchema]):
         self.clear_table()
-        columns = ["Stat", "Valeur"]
+        columns = [
+            ColumnInfo(name="Stat", search_type=None),
+            ColumnInfo(name="Valeur", search_type=None),
+        ]
         self.set_columns(columns)
 
         for line in base_lines:

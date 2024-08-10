@@ -1,12 +1,13 @@
+from typing import cast
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QTableWidgetItem
+from PyQt5.QtWidgets import QTableWidgetItem, QWidget
 
 from D2Shared.shared.enums import SaleHotelQuantity
 from D2Shared.shared.schemas.item import SellItemInfo
 from src.gui.components.buttons import PushButtonIcon
 from src.gui.components.combobox import CheckableComboBox
-from src.gui.components.table import TableWidget
+from src.gui.components.table import BaseTableWidget, ColumnInfo, SearchType
 
 
 class SellInfoTableSignals(QObject):
@@ -14,10 +15,26 @@ class SellInfoTableSignals(QObject):
     changed_item_info = pyqtSignal(object)
 
 
-class SellInfoTable(TableWidget):
+class SellInfoTable(BaseTableWidget):
+    def get_text_quantity(self, widget: QWidget) -> list[str]:
+        checkable_combo = cast(CheckableComboBox[SaleHotelQuantity], widget)
+        return [str(_elem) for _elem in checkable_combo.currentData()]
+
     def __init__(self, sell_items_infos: list[SellItemInfo], *args, **kwargs) -> None:
-        column_names: list[str] = ["Nom", "Type", "Lvl", ""]
-        super().__init__(column_names, *args, **kwargs)
+        super().__init__(*args, **kwargs)
+        columns: list[ColumnInfo] = [
+            ColumnInfo(name="Nom"),
+            ColumnInfo(name="Type"),
+            ColumnInfo(name="Lvl"),
+            ColumnInfo(
+                name="Quantités",
+                get_texts_func=self.get_text_quantity,
+                search_type=SearchType.EXACT,
+            ),
+            ColumnInfo(name="", search_type=None),
+        ]
+        self.set_columns(columns)
+
         self.table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
 
         self.signals = SellInfoTableSignals()

@@ -8,7 +8,7 @@ from D2Shared.shared.schemas.character import CharacterSchema
 from D2Shared.shared.schemas.spell import SpellSchema, UpdateSpellSchema
 from src.gui.components.buttons import PushButtonIcon
 from src.gui.components.organization import VerticalLayout
-from src.gui.components.table import TableWidget
+from src.gui.components.table import BaseTableWidget, ColumnInfo
 from src.services.character import CharacterService
 from src.services.session import ServiceSession
 
@@ -50,24 +50,25 @@ class GameplayTab(QWidget):
         add_spell_btn.clicked.connect(lambda: self.add_spell())
         self.layout().addWidget(add_spell_btn)
 
-        columns = [
-            "Nom",
-            "Index",
-            "Élément",
-            "Désenchante",
-            "Boost",
-            "Soigne",
-            "Pour un enemi",
-            "PA",
-            "Max par tour",
-            "Portée min",
-            "Portée",
-            "Durée de boost",
-            "Portée Boostable",
-            "LVL",
-            "",
+        columns: list[ColumnInfo] = [
+            ColumnInfo(name="Nom"),
+            ColumnInfo(name="Index"),
+            ColumnInfo(name="Élément"),
+            ColumnInfo(name="Désenchante"),
+            ColumnInfo(name="Boost"),
+            ColumnInfo(name="Soigne"),
+            ColumnInfo(name="Pour un enemi"),
+            ColumnInfo(name="PA"),
+            ColumnInfo(name="Max par tour"),
+            ColumnInfo(name="Portée min"),
+            ColumnInfo(name="Portée"),
+            ColumnInfo(name="Durée de boost"),
+            ColumnInfo(name="Portée Boostable"),
+            ColumnInfo(name="LVL"),
+            ColumnInfo(name="", search_type=None),
         ]
-        self.spells_table = TableWidget(columns)
+        self.spells_table = BaseTableWidget()
+        self.spells_table.set_columns(columns)
         self.layout().addWidget(self.spells_table)
 
         spells: list[SpellSchema] = self.character.spells
