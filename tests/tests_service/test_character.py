@@ -4,7 +4,6 @@ import unittest
 from logging import Logger
 from pathlib import Path
 
-from D2Shared.shared.consts.maps import ASTRUB_BANK_MAP_CN, BONTA_BANK_MAP_CN
 from src.services.item import ItemService
 from src.services.map import MapService
 
@@ -72,8 +71,5 @@ class TestServiceCharacter(unittest.TestCase):
         # items = ItemService.get_items(self.service)
         # print(perf_counter() - before)
         # print(len(items))
-
-        map = MapService.get_related_map(self.service, BONTA_BANK_MAP_CN)
-        map2 = MapService.get_related_map(self.service, ASTRUB_BANK_MAP_CN)
-        res = MapService.get_map_directions(self.service, map.id)
-        print(res)
+        temp = MapService.get_limit_maps_sub_area(self.service, [])
+        print(temp)

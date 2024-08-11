@@ -85,7 +85,7 @@ class GroupList[T](QGroupBox):
         search_input_elem = self.input_search
         if self.is_lazy_loaded:
             if (
-                len(search_input_elem) >= 2
+                len(search_input_elem) > 2
                 and search_input_elem.casefold() in self.get_name_elem(elem).casefold()
             ):
                 related_widget = self.get_or_create_widget_item(elem)
@@ -102,7 +102,7 @@ class GroupList[T](QGroupBox):
             else:
                 related_widget.setHidden(True)
 
-    def filter_elems(self, search_input_elem: str):
+    def filter_elems(self):
         for elem in self.elems_by_name.values():
             self.handle_elem_visibility(elem)
 
@@ -120,7 +120,7 @@ class GroupList[T](QGroupBox):
         for elem in untreated_elems.values():
             self.add_elem(elem)
 
-        self.filter_elems(self.input_search)
+        self.filter_elems()
 
     def _on_click_elem_widget(self, item: QListWidgetItem):
         name = item.data(Qt.UserRole)
@@ -130,4 +130,4 @@ class GroupList[T](QGroupBox):
     @pyqtSlot(str)
     def _on_search_changed(self, name: str) -> None:
         self.input_search = name
-        self.filter_elems(self.input_search)
+        self.filter_elems()

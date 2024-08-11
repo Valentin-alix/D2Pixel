@@ -101,17 +101,17 @@ class MapService:
     ):
         with service.logged_session() as session:
             session.patch(
-                f"{MAP_URL}/map_direction/{map_direction_id}",
+                f"{MAP_URL}map_direction/{map_direction_id}",
                 params={"to_map_id": to_map_id},
             )
 
     @staticmethod
     def delete_map_direction(service: ServiceSession, map_direction_id: int):
         with service.logged_session() as session:
-            session.delete(f"{MAP_URL}/map_direction/{map_direction_id}")
+            session.delete(f"{MAP_URL}map_direction/{map_direction_id}")
 
     @staticmethod
     def get_limit_maps_sub_area(service: ServiceSession, sub_area_ids: list[int]):
         with service.logged_session() as session:
-            resp = session.get(f"{MAP_URL}/map_direction/", json=sub_area_ids)
+            resp = session.get(f"{MAP_URL}limit_maps_sub_area/", json=sub_area_ids)
             return [MapSchema(**_elem) for _elem in resp.json()]
