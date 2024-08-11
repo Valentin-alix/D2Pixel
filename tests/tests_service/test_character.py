@@ -4,8 +4,9 @@ import unittest
 from logging import Logger
 from pathlib import Path
 
+from D2Shared.shared.consts.maps import ASTRUB_BANK_MAP_CN, BONTA_BANK_MAP_CN
 from src.services.item import ItemService
-from src.services.price import PriceService
+from src.services.map import MapService
 
 sys.path.append(os.path.join(Path(__file__).parent.parent.parent))
 from D2Shared.shared.enums import JobEnum
@@ -72,5 +73,7 @@ class TestServiceCharacter(unittest.TestCase):
         # print(perf_counter() - before)
         # print(len(items))
 
-        prices = PriceService.get_price_items(self.service, [], 1)
-        print(prices)
+        map = MapService.get_related_map(self.service, BONTA_BANK_MAP_CN)
+        map2 = MapService.get_related_map(self.service, ASTRUB_BANK_MAP_CN)
+        res = MapService.get_map_directions(self.service, map.id)
+        print(res)

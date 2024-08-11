@@ -10,7 +10,7 @@ import win32con
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from D2Shared.shared.entities.position import Position
-from D2Shared.shared.enums import ToDirection
+from D2Shared.shared.enums import Direction
 from D2Shared.shared.schemas.map import MapSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from D2Shared.shared.schemas.template_found import InfoTemplateFoundPlacementSchema
@@ -33,7 +33,6 @@ from src.bots.dofus.sub_area_farming.sub_area_farming_system import (
 )
 from src.bots.dofus.walker.core_walker_system import WaitForNewMapWalking
 from src.bots.dofus.walker.directions import (
-    get_pos_from_direction,
     get_pos_to_direction,
 )
 from src.bots.dofus.walker.walker_system import WalkerSystem
@@ -216,7 +215,7 @@ class Harvester:
                 collecting_count = self.collect_map(
                     img,
                     self.walker_sys.get_curr_map_info().map,
-                    map_direction.to_direction,
+                    map_direction.direction,
                 )
                 timeout = 15 + collecting_count * 5
                 wait_args = wait_default_args._replace(
@@ -226,10 +225,7 @@ class Harvester:
                 wait_args = wait_default_args
 
             new_img, was_teleported = self.walker_sys.go_to_neighbor(
-                map_direction,
-                do_trust=True,
-                use_shift=is_new_map,
-                wait_new_map_walking_args=wait_args,
+                map_direction, use_shift=is_new_map, wait_new_map_walking_args=wait_args
             )
 
             if was_teleported:
@@ -275,9 +271,10 @@ class Harvester:
         self,
         img: numpy.ndarray,
         map: MapSchema,
-        next_direction: ToDirection,
+        next_direction: Direction,
     ) -> int:
-        start_pos = get_pos_from_direction(self.walker_sys.get_curr_direction())
+        curr_direction = self.walker_sys.map_state.curr_direction
+        start_pos = get_pos_to_direction(curr_direction) if curr_direction else None
         end_pos = get_pos_to_direction(next_direction)
 
         possible_colls = [

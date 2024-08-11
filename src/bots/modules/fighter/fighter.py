@@ -259,7 +259,7 @@ class Fighter:
                 raise CharacterIsStuckException
 
             new_img, was_teleported = self.core_walker_sys.go_to_neighbor(
-                map_direction, do_trust=True, use_shift=False
+                map_direction, use_shift=False
             )
             if was_teleported:
                 new_img = self.sub_area_farming_sys.go_inside_grouped_sub_area(

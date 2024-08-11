@@ -50,11 +50,12 @@ class CraftManualTab(QWidget):
 
         self._setup_play_stop()
 
+        self.layout().addWidget(self.craft_table)
+
         refresh_btn = PushButtonIcon("restart.svg")
         refresh_btn.clicked.connect(self._on_refresh_recipes)
         self.layout().addWidget(refresh_btn)
 
-        self.layout().addWidget(self.craft_table)
         self.layout().addWidget(self.craft_group)
 
     def _setup_play_stop(self):

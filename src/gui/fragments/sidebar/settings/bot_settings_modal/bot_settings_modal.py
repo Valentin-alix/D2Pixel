@@ -1,4 +1,3 @@
-import traceback
 from logging import Logger
 
 from PyQt5.QtCore import QThread, pyqtSlot
@@ -70,16 +69,10 @@ class BotSettingsModal(Dialog):
 
     @pyqtSlot()
     def on_save(self) -> None:
-        try:
-            self.threads.append(
-                run_in_background(lambda: self.general_tab.on_save())[0]
-            )
-            self.threads.append(run_in_background(lambda: self.farm_tab.on_save())[0])
-            self.threads.append(
-                run_in_background(lambda: self.gameplay_tab.on_save())[0]
-            )
-        except Exception:
-            self.logger.error(traceback.format_exc())
-            return
+        def _on_save():
+            self.general_tab.on_save()
+            self.farm_tab.on_save()
+            self.gameplay_tab.on_save()
 
+        self.threads.append(run_in_background(_on_save)[0])
         self.close()

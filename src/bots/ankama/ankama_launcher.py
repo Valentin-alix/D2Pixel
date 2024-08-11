@@ -109,12 +109,8 @@ class AnkamaLauncher:
         if not win32gui.IsWindowVisible(self.window_info.hwnd):
             self.logger.info("Launch launcher for visible window")
             launch_launcher()  # to have window visible
-
-        # Temp FIX
-        self.controller.set_foreground()
-        win32gui.InvalidateRect(self.window_info.hwnd, None, True)  # type: ignore
-        win32gui.UpdateWindow(self.window_info.hwnd)
-        self.logger.info(f"ankama hwnds : {get_ankama_window_info(self.logger)}")
+        else:
+            self.controller.set_foreground()  # to redraw image
 
         self.controller.click(EMPTY_POSITION)  # to defocus play button
 

@@ -85,7 +85,7 @@ class GroupList[T](QGroupBox):
         search_input_elem = self.input_search
         if self.is_lazy_loaded:
             if (
-                len(search_input_elem) > 2
+                len(search_input_elem) >= 2
                 and search_input_elem.casefold() in self.get_name_elem(elem).casefold()
             ):
                 related_widget = self.get_or_create_widget_item(elem)

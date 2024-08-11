@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QFormLayout, QLabel, QWidget
 from D2Shared.shared.schemas.character import CharacterSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from src.gui.components.combobox import CheckableComboBox
+from src.gui.components.loaders import Loading
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.gui.utils.run_in_background import run_in_background
 from src.services.character import CharacterService
@@ -21,6 +22,10 @@ class FarmTab(QWidget):
         self.character = character
         self.combo_sub_areas: list[CheckableComboBox[SubAreaSchema]] = []
 
+        self.loading = Loading(self)
+        self.layout().addWidget(self.loading)
+        self.loading.start()
+
         self.sub_area_thread, self.sub_area_worker = run_in_background(
             lambda: SubAreaService.get_sub_areas(self.service)
         )
@@ -28,6 +33,7 @@ class FarmTab(QWidget):
 
     @pyqtSlot(object)
     def set_sub_area_farmable(self, sub_areas: list[SubAreaSchema]) -> None:
+        self.loading.stop()
         sub_area_widg = QWidget()
         self.layout().addWidget(sub_area_widg)
         sub_area_layout = VerticalLayout()

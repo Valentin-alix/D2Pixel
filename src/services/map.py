@@ -1,7 +1,3 @@
-from cachetools import cached
-from cachetools.keys import hashkey
-
-from D2Shared.shared.enums import FromDirection
 from D2Shared.shared.schemas.map import CoordinatesMapSchema, MapSchema
 from D2Shared.shared.schemas.map_direction import MapDirectionSchema
 from D2Shared.shared.schemas.map_with_action import MapWithActionSchema
@@ -17,18 +13,13 @@ class MapService:
         service: ServiceSession,
         use_transport: bool,
         map_id: int,
-        from_direction: FromDirection,
         available_waypoints_ids: list[int],
         target_map_ids: list[int],
     ) -> list[MapWithActionSchema] | None:
         with service.logged_session() as session:
             resp = session.get(
                 f"{MAP_URL}find_path/",
-                params={
-                    "use_transport": use_transport,
-                    "map_id": map_id,
-                    "from_direction": from_direction.value,
-                },
+                params={"use_transport": use_transport, "map_id": map_id},
                 json={
                     "available_waypoints_ids": available_waypoints_ids,
                     "target_map_ids": target_map_ids,
@@ -39,24 +30,23 @@ class MapService:
             return [MapWithActionSchema(**elem) for elem in resp.json()]
 
     @staticmethod
-    @cached(cache={}, key=lambda _, map_id: hashkey(map_id))
     def get_map(service: ServiceSession, map_id: int) -> MapSchema:
         with service.logged_session() as session:
             resp = session.get(f"{MAP_URL}{map_id}")
             return MapSchema(**resp.json())
 
     @staticmethod
-    def update_not_allow_teleport_from(
-        service: ServiceSession, map_id: int
+    def update_can_havre_sac(
+        service: ServiceSession, can_havre_sac: bool, map_id: int
     ) -> MapSchema:
         with service.logged_session() as session:
-            resp = session.put(f"{MAP_URL}{map_id}/does_not_allow_teleport_from/")
+            resp = session.patch(
+                f"{MAP_URL}{map_id}/can_havre_sac/",
+                params={"can_havre_sac": can_havre_sac},
+            )
             return MapSchema(**resp.json())
 
     @staticmethod
-    @cached(
-        cache={}, key=lambda _, coordinate_map_schema: hashkey(coordinate_map_schema)
-    )
     def get_related_map(
         service: ServiceSession, coordinate_map_schema: CoordinatesMapSchema
     ) -> MapSchema:
@@ -67,12 +57,6 @@ class MapService:
             return MapSchema(**resp.json())
 
     @staticmethod
-    @cached(
-        cache={},
-        key=lambda _, zone_text, from_map_id, coordinates: hashkey(
-            zone_text, from_map_id, tuple(coordinates)
-        ),
-    )
     def get_map_from_hud(
         service: ServiceSession,
         zone_text: str,
@@ -81,7 +65,7 @@ class MapService:
     ) -> MapSchema | None:
         with service.logged_session() as session:
             resp = session.get(
-                f"{MAP_URL}from_coordinate/",
+                f"{MAP_URL}from_hud/",
                 params={
                     "zone_text": zone_text,
                     "from_map_id": from_map_id,
@@ -93,7 +77,6 @@ class MapService:
             return MapSchema(**resp.json())
 
     @staticmethod
-    @cached(cache={}, key=lambda _, map_id: hashkey(map_id))
     def get_near_map_allow_havre(
         service: ServiceSession,
         map_id: int,
@@ -105,46 +88,30 @@ class MapService:
             return MapSchema(**resp.json())
 
     @staticmethod
-    def get_map_neighbors(
-        service: ServiceSession,
-        map_id: int,
-        from_direction: FromDirection | None = None,
+    def get_map_directions(
+        service: ServiceSession, map_id: int
     ) -> list[MapDirectionSchema]:
         with service.logged_session() as session:
-            resp = session.get(
-                f"{MAP_URL}{map_id}/map_direction/",
-                params={
-                    "from_direction": from_direction.value if from_direction else None
-                },
-            )
+            resp = session.get(f"{MAP_URL}{map_id}/map_direction/")
             return [MapDirectionSchema(**elem) for elem in resp.json()]
 
     @staticmethod
-    @cached(
-        cache={},
-        key=lambda _, sub_area_ids: hashkey(tuple(sub_area_ids)),
-    )
-    def get_limit_maps_sub_area(
-        service: ServiceSession, sub_area_ids: list[int]
-    ) -> list[MapSchema]:
-        with service.logged_session() as session:
-            resp = session.get(f"{MAP_URL}limit_maps_sub_area/", json=sub_area_ids)
-            return [MapSchema(**elem) for elem in resp.json()]
-
-    @staticmethod
-    def confirm_map_direction(
+    def update_map_direction(
         service: ServiceSession, map_direction_id: int, to_map_id: int
-    ) -> MapDirectionSchema:
+    ):
         with service.logged_session() as session:
-            resp = session.put(
-                f"{MAP_URL}map_direction/{map_direction_id}/confirm/",
+            session.patch(
+                f"{MAP_URL}/map_direction/{map_direction_id}",
                 params={"to_map_id": to_map_id},
             )
-            return MapDirectionSchema(**resp.json())
 
     @staticmethod
     def delete_map_direction(service: ServiceSession, map_direction_id: int):
         with service.logged_session() as session:
-            session.delete(
-                f"{MAP_URL}map_direction/{map_direction_id}",
-            )
+            session.delete(f"{MAP_URL}/map_direction/{map_direction_id}")
+
+    @staticmethod
+    def get_limit_maps_sub_area(service: ServiceSession, sub_area_ids: list[int]):
+        with service.logged_session() as session:
+            resp = session.get(f"{MAP_URL}/map_direction/", json=sub_area_ids)
+            return [MapSchema(**_elem) for _elem in resp.json()]

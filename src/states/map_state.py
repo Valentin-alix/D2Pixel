@@ -2,7 +2,8 @@ from dataclasses import dataclass, field
 
 import numpy
 
-from D2Shared.shared.enums import FromDirection
+
+from D2Shared.shared.enums import Direction
 from D2Shared.shared.schemas.map import MapSchema
 from src.entities.building_info import BuildingInfo
 
@@ -23,12 +24,11 @@ class CurrentMapInfo:
 @dataclass
 class MapState:
     curr_map_info: CurrentMapInfo | None = field(default=None, init=False)
-    curr_direction: FromDirection | None = field(default=None, init=False)
+    curr_direction: Direction | None = None
     building: BuildingInfo | None = field(default=None, init=False)
     is_first_move: bool = field(default=True, init=False)
 
     def reset_state(self):
         self.curr_map_info = None
-        self.curr_direction = None
         self.building = None
         self.is_first_move = True

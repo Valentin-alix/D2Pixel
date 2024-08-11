@@ -1,3 +1,4 @@
+import random
 from D2Shared.shared.consts.adaptative.positions import (
     BOTTOM_LEFT_MAP_CHANGE_POSITION,
     BOTTOM_MAP_CHANGE_POSITION,
@@ -13,68 +14,40 @@ from D2Shared.shared.consts.adaptative.positions import (
     TOP_MAP_RIGHT_CHANGE_POSITION,
 )
 from D2Shared.shared.entities.position import Position
-from D2Shared.shared.enums import FromDirection, ToDirection
+from D2Shared.shared.enums import Direction
 
 
-def get_pos_to_direction(direction: ToDirection) -> Position:
+def get_pos_to_direction(direction: Direction) -> Position:
     match direction:
-        case ToDirection.LEFT_TOP:
-            return LEFT_TOP_MAP_CHANGE_POSITION
-        case ToDirection.LEFT:
-            return LEFT_MAP_CHANGE_POSITION
-        case ToDirection.LEFT_BOT:
-            return LEFT_BOT_MAP_CHANGE_POSITION
-
-        case ToDirection.RIGHT_TOP:
-            return RIGHT_TOP_MAP_CHANGE_POSITION
-        case ToDirection.RIGHT:
-            return RIGHT_MAP_CHANGE_POSITION
-        case ToDirection.RIGHT_BOT:
-            return RIGHT_BOT_MAP_CHANGE_POSITION
-
-        case ToDirection.TOP_LEFT:
-            return TOP_MAP_LEFT_CHANGE_POSITION
-        case ToDirection.TOP:
-            return TOP_MAP_CHANGE_POSITION
-        case ToDirection.TOP_RIGHT:
-            return TOP_MAP_RIGHT_CHANGE_POSITION
-
-        case ToDirection.BOT_LEFT:
-            return BOTTOM_RIGHT_MAP_CHANGE_POSITION
-        case ToDirection.BOT:
-            return BOTTOM_MAP_CHANGE_POSITION
-        case ToDirection.BOT_RIGHT:
-            return BOTTOM_LEFT_MAP_CHANGE_POSITION
-
-
-def get_pos_from_direction(direction: FromDirection) -> Position | None:
-    match direction:
-        case FromDirection.LEFT_TOP:
-            return LEFT_TOP_MAP_CHANGE_POSITION
-        case FromDirection.LEFT:
-            return LEFT_MAP_CHANGE_POSITION
-        case FromDirection.LEFT_BOT:
-            return LEFT_BOT_MAP_CHANGE_POSITION
-
-        case FromDirection.RIGHT_TOP:
-            return RIGHT_TOP_MAP_CHANGE_POSITION
-        case FromDirection.RIGHT:
-            return RIGHT_MAP_CHANGE_POSITION
-        case FromDirection.RIGHT_BOT:
-            return RIGHT_BOT_MAP_CHANGE_POSITION
-
-        case FromDirection.TOP_LEFT:
-            return TOP_MAP_LEFT_CHANGE_POSITION
-        case FromDirection.TOP:
-            return TOP_MAP_CHANGE_POSITION
-        case FromDirection.TOP_RIGHT:
-            return TOP_MAP_RIGHT_CHANGE_POSITION
-
-        case FromDirection.BOT_LEFT:
-            return BOTTOM_RIGHT_MAP_CHANGE_POSITION
-        case FromDirection.BOT:
-            return BOTTOM_MAP_CHANGE_POSITION
-        case FromDirection.BOT_RIGHT:
-            return BOTTOM_LEFT_MAP_CHANGE_POSITION
-        case _:
-            return None
+        case Direction.LEFT:
+            return random.choice(
+                [
+                    LEFT_TOP_MAP_CHANGE_POSITION,
+                    LEFT_MAP_CHANGE_POSITION,
+                    LEFT_BOT_MAP_CHANGE_POSITION,
+                ]
+            )
+        case Direction.RIGHT:
+            return random.choice(
+                [
+                    RIGHT_TOP_MAP_CHANGE_POSITION,
+                    RIGHT_MAP_CHANGE_POSITION,
+                    RIGHT_BOT_MAP_CHANGE_POSITION,
+                ]
+            )
+        case Direction.TOP:
+            return random.choice(
+                [
+                    TOP_MAP_LEFT_CHANGE_POSITION,
+                    TOP_MAP_CHANGE_POSITION,
+                    TOP_MAP_RIGHT_CHANGE_POSITION,
+                ]
+            )
+        case Direction.BOT:
+            return random.choice(
+                [
+                    BOTTOM_LEFT_MAP_CHANGE_POSITION,
+                    BOTTOM_MAP_CHANGE_POSITION,
+                    BOTTOM_RIGHT_MAP_CHANGE_POSITION,
+                ]
+            )

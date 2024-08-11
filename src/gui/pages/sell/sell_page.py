@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QTabWidget, QWidget
 
 from D2Shared.shared.schemas.item import ItemSchema
 from src.bots.modules.bot import Bot
+from src.gui.components.loaders import Loading
 from src.gui.components.organization import VerticalLayout
 from src.gui.pages.sell.sell_automatic_tab import SellAutomaticTab
 from src.gui.pages.sell.sell_manual_tab import SellManualTab
@@ -33,6 +34,10 @@ class SellPage(QWidget):
 
         self.setLayout(VerticalLayout())
 
+        self.loading_widget = Loading(self)
+        self.loading_widget.start()
+        self.layout().addWidget(self.loading_widget)
+
         self.tabs = QTabWidget()
 
         self.items_thread, self.items_worker = run_in_background(
@@ -42,6 +47,7 @@ class SellPage(QWidget):
 
     @pyqtSlot(object)
     def on_items_fetched(self, items: list[ItemSchema]):
+        self.loading_widget.stop()
         self.automatic_tab = SellAutomaticTab(
             service=self.service,
             character=self.bot.character_state.character,

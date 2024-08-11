@@ -7,9 +7,9 @@ from time import perf_counter
 import numpy
 
 from D2Shared.shared.schemas.map import MapSchema
+
 from D2Shared.shared.schemas.map_direction import MapDirectionSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
-from D2Shared.shared.utils.debugger import log_caller
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
 from src.services.map import MapService
 from src.services.session import ServiceSession
@@ -49,8 +49,7 @@ class SubAreaFarmingSystem:
         self.logger = logger
         self.character_state = character_state
 
-    @log_caller
-    def __get_neighbors_time_sub_area(
+    def get_neighbors_time_sub_area(
         self,
         map: MapSchema,
         sub_areas: list[SubAreaSchema],
@@ -58,11 +57,8 @@ class SubAreaFarmingSystem:
     ) -> list[tuple[MapDirectionSchema, float]]:
         neighbors_time: list[tuple[MapDirectionSchema, float]] = [
             (map_direction, maps_time[map_direction.to_map_id])
-            for map_direction in MapService.get_map_neighbors(
-                self.service, map.id, self.core_walker_sys.get_curr_direction()
-            )
-            if MapService.get_map(self.service, map_direction.to_map_id).sub_area_id
-            in [elem.id for elem in sub_areas]
+            for map_direction in MapService.get_map_directions(self.service, map.id)
+            if map_direction.to_map.sub_area_id in [elem.id for elem in sub_areas]
         ]
         self.logger.info(f"Map voisines avec leur temps: {neighbors_time}")
         return neighbors_time
@@ -73,7 +69,7 @@ class SubAreaFarmingSystem:
         maps_time: dict[int, float],
         weights_by_map: dict[int, float],
     ) -> MapDirectionSchema | None:
-        neighbors_with_times = self.__get_neighbors_time_sub_area(
+        neighbors_with_times = self.get_neighbors_time_sub_area(
             self.core_walker_sys.get_curr_map_info().map, sub_areas, maps_time
         )
         if len(neighbors_with_times) == 0:

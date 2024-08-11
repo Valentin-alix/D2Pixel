@@ -46,11 +46,12 @@ class CraftAutomaticTab(QWidget):
         self.craft_group.signals.clicked_elem_queue.connect(self.on_added_recipe_queue)
         self.craft_table.signals.removed_recipe.connect(self.on_removed_recipe_queue)
 
+        self.layout().addWidget(self.craft_table)
+
         refresh_btn = PushButtonIcon("restart.svg")
         refresh_btn.clicked.connect(self._on_refresh_recipes)
         self.layout().addWidget(refresh_btn)
 
-        self.layout().addWidget(self.craft_table)
         self.layout().addWidget(self.craft_group)
 
     @pyqtSlot(object)

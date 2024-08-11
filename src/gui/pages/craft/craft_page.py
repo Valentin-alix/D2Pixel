@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QTabWidget, QWidget
 
 from D2Shared.shared.schemas.recipe import RecipeSchema
 from src.bots.modules.bot import Bot
+from src.gui.components.loaders import Loading
 from src.gui.components.organization import VerticalLayout
 
 from src.gui.pages.craft.craft_automatic_tab import CraftAutomaticTab
@@ -36,6 +37,10 @@ class CraftPage(QWidget):
 
         self.tabs = QTabWidget()
 
+        self.loading_widget = Loading(self)
+        self.loading_widget.start()
+        self.layout().addWidget(self.loading_widget)
+
         self.rec_thread, self.rec_worker = run_in_background(
             lambda: RecipeService.get_available_recipes(
                 self.service, self.bot.character_state.character.id
@@ -47,6 +52,7 @@ class CraftPage(QWidget):
 
     @pyqtSlot(object)
     def on_fetched_available_recipes(self, recipes: list[RecipeSchema]):
+        self.loading_widget.stop()
         self.automatic_tab = CraftAutomaticTab(
             self.service,
             self.bot.character_state.character,

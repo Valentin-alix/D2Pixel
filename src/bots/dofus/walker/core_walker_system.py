@@ -19,7 +19,6 @@ from D2Shared.shared.consts.adaptative.positions import (
 from D2Shared.shared.consts.adaptative.regions import INFO_MAP_REGION
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.directions import get_inverted_direction
-from D2Shared.shared.enums import FromDirection
 from D2Shared.shared.schemas.map import BaseMapSchema
 from D2Shared.shared.schemas.map_direction import MapDirectionSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
@@ -110,10 +109,9 @@ class CoreWalkerSystem:
         try:
             map, text = get_map(self.service, img, from_map)
         except UnknowStateException:
-            if not self.blocked.is_blocked_character():
-                raise
-            else:
+            if self.blocked.is_blocked_character():
                 raise CharacterIsStuckException
+            raise
 
         if (
             self.map_state.curr_map_info
@@ -142,13 +140,6 @@ class CoreWalkerSystem:
             assert self.map_state.curr_map_info is not None
         return self.map_state.curr_map_info
 
-    def get_curr_direction(self) -> FromDirection:
-        if self.map_state.curr_direction is None:
-            self.logger.info("Current direction is None, changing map")
-            self.change_map()
-            assert self.map_state.curr_direction is not None
-        return self.map_state.curr_direction
-
     def init_first_move(
         self,
         img: numpy.ndarray,
@@ -162,7 +153,6 @@ class CoreWalkerSystem:
         self.map_state.is_first_move = False
 
         if not use_transport:
-            self.get_curr_direction()
             return img
 
         near_zaap: WaypointSchema | None = min(
@@ -182,8 +172,6 @@ class CoreWalkerSystem:
         )
         if near_zaap is not None:
             img = self.use_zaap(near_zaap)
-        else:
-            self.get_curr_direction()
 
         return img
 
@@ -194,7 +182,7 @@ class CoreWalkerSystem:
         if waypoint not in character_waypoints:
             return self.travel_to_map([waypoint.map], character_waypoints)
 
-        if not self.get_curr_map_info().map.allow_teleport_from:
+        if not self.get_curr_map_info().map.can_havre_sac:
             # get near map that can use havre sac
             near_map_allow_havre = MapService.get_near_map_allow_havre(
                 self.service, self.get_curr_map_info().map.id
@@ -215,8 +203,8 @@ class CoreWalkerSystem:
                 if (new_img := self.wait_for_new_map(force=False)) is not None:
                     break
             if new_img is None:
-                MapService.update_not_allow_teleport_from(
-                    self.service, self.get_curr_map_info().map.id
+                MapService.update_can_havre_sac(
+                    self.service, False, self.get_curr_map_info().map.id
                 )
                 return self.use_zaap(waypoint)
             img = new_img
@@ -237,7 +225,6 @@ class CoreWalkerSystem:
         else:
             img = new_img
 
-        self.map_state.curr_direction = FromDirection.WAYPOINT
         self.map_state.building = None
         return img
 
@@ -263,7 +250,6 @@ class CoreWalkerSystem:
             img = self.wait_for_new_map(force=True)
         else:
             img = new_img
-        self.map_state.curr_direction = FromDirection.ZAAPI
         return self.hud_sys.close_modals(
             img, [ObjectConfigs.Cross.bank_inventory_right]
         )
@@ -295,7 +281,6 @@ class CoreWalkerSystem:
         near_building = self.go_near_entity_map(buildings)
         res = retry_force_count(CharacterIsStuckException)(near_building.go_in)()
         self.map_state.building = near_building
-        self.map_state.curr_direction = FromDirection.UNKNOWN
         return res
 
     def go_out_building(self) -> Any | None:
@@ -304,7 +289,6 @@ class CoreWalkerSystem:
                 self.map_state.building.go_out
             )()
             self.map_state.building = None
-            self.map_state.curr_direction = FromDirection.UNKNOWN
             return res
         return None
 
@@ -350,22 +334,11 @@ class CoreWalkerSystem:
         """
         return self.wait_for_new_map(args.retry_args), False
 
-    def change_map(self) -> numpy.ndarray:
-        for map_direction in MapService.get_map_neighbors(
-            self.service, self.get_curr_map_info().map.id
-        ):
-            new_img, _ = self.go_to_neighbor(map_direction, do_trust=False)
-            if new_img is None:
-                continue
-            return new_img
-        raise CharacterIsStuckException
-
-    def __handle_neighbor_new_map(
+    def handle_neighbor_new_map(
         self,
         img: numpy.ndarray | None,
         map_direction: MapDirectionSchema,
         was_teleported: bool = False,
-        do_trust: bool = True,
     ) -> tuple[numpy.ndarray | None, bool]:
         """Use after clicking and waiting new map result
         Returns:
@@ -373,57 +346,50 @@ class CoreWalkerSystem:
         """
         if was_teleported:
             # character was teleported (example : dead after fight), do no retry
-            if self.get_curr_map_info().map.waypoint is not None:
-                self.map_state.curr_direction = FromDirection.WAYPOINT
-            else:
-                self.map_state.curr_direction = FromDirection.UNKNOWN
             return None, False
 
         if img is None:
             # no new map, try again
             return None, True
 
-        if map_direction.from_map_id == self.get_curr_map_info().map.id:
+        curr_map = self.get_curr_map_info().map
+        self.map_state.curr_direction = get_inverted_direction(map_direction.direction)
+
+        if map_direction.from_map_id == curr_map.id:
             # new map but same coordinates, try again
             return img, True
 
-        self.map_state.curr_direction = get_inverted_direction(
-            map_direction.to_direction
-        )
-        self.logger.info(f"New curr direction : {self.get_curr_direction()}")
-        if map_direction.to_map_id == self.get_curr_map_info().map.id:
+        if map_direction.to_map_id == curr_map.id:
             # success
-            if do_trust:
-                MapService.confirm_map_direction(
-                    self.service, map_direction.id, map_direction.to_map_id
-                )
             return img, False
 
         # Changed map, but unexpected map
-        self.logger.warning(
-            f"Map : {self.get_curr_map_info().map} != {map_direction.to_map_id}"
-        )
-        if do_trust:
-            if self.blocked.is_blocked_character():
-                raise CharacterIsStuckException
+        self.logger.warning(f"Map : {map_direction} != {curr_map}")
+        if self.blocked.is_blocked_character() or map_direction.was_checked:
+            raise CharacterIsStuckException
 
-            MapService.confirm_map_direction(
-                self.service, map_direction.id, self.get_curr_map_info().map.id
-            )
+        MapService.update_map_direction(self.service, map_direction.id, curr_map.id)
 
         return None, False
+
+    def handle_neighbor_no_new_map(self, map_direction: MapDirectionSchema):
+        self.logger.info(f"No new map : {map_direction}")
+
+        if self.blocked.is_blocked_character() or map_direction.was_checked:
+            raise CharacterIsStuckException
+
+        MapService.delete_map_direction(self.service, map_direction.id)
 
     def go_to_neighbor(
         self,
         map_direction: MapDirectionSchema,
-        do_trust: bool = True,
         use_shift: bool = False,
         wait_new_map_walking_args=WaitForNewMapWalking(),
     ) -> tuple[numpy.ndarray | None, bool]:
         self.go_out_building()
 
         was_teleported = False
-        pos_direction = get_pos_to_direction(map_direction.to_direction)
+        pos_direction = get_pos_to_direction(map_direction.direction)
 
         for _ in range(MAX_RETRY):
             with (
@@ -434,41 +400,13 @@ class CoreWalkerSystem:
             new_img, was_teleported = self.wait_for_new_map_walking(
                 wait_new_map_walking_args
             )
-            new_img, should_retry = self.__handle_neighbor_new_map(
-                new_img, map_direction, was_teleported, do_trust=do_trust
+            new_img, should_retry = self.handle_neighbor_new_map(
+                new_img, map_direction, was_teleported
             )
             if not should_retry:
                 return new_img, was_teleported
 
-        self.logger.info(
-            f"No new map : {self.get_curr_map_info().map} != {map_direction.to_map_id}"
-        )
-        if do_trust:
-            if self.blocked.is_blocked_character():
-                raise CharacterIsStuckException
-            if not map_direction.was_checked:
-                if (
-                    len(
-                        MapService.get_map_neighbors(
-                            self.service,
-                            self.get_curr_map_info().map.id,
-                            self.get_curr_direction(),
-                        )
-                    )
-                    <= 1
-                ):
-                    self.logger.error(
-                        f"{self.get_curr_map_info().map} should have atleast one map direction",
-                    )
-                    raise UnknowStateException(
-                        self.get_curr_map_info().img,
-                        "min_required_neighbors",
-                    )
-                MapService.delete_map_direction(self.service, map_direction.id)
-            else:
-                raise UnknowStateException(
-                    self.capturer.capture(), "unexpected_no_new_map"
-                )
+        self.handle_neighbor_no_new_map(map_direction)
 
         return None, was_teleported
 
@@ -508,7 +446,6 @@ class CoreWalkerSystem:
                 img = retry_force_count(CharacterIsStuckException)(
                     dialog_portal_twelve
                 )()
-                self.map_state.curr_direction = FromDirection.UNKNOWN
                 return img
         elif self.get_curr_map_info().map.world_id == 1:
             if world_id == 2:
@@ -525,7 +462,6 @@ class CoreWalkerSystem:
                 img = retry_force_count(CharacterIsStuckException)(
                     take_portal_to_incar
                 )()
-                self.map_state.curr_direction = FromDirection.UNKNOWN
                 return img
 
         raise NotImplementedError(
@@ -561,13 +497,12 @@ class CoreWalkerSystem:
             self.service,
             use_transport,
             self.get_curr_map_info().map.id,
-            self.get_curr_direction(),
             [elem.id for elem in available_waypoints],
             [elem.id for elem in target_maps],
         )
         if path_map is None:
             self.logger.info(
-                f"Path from {self.get_curr_map_info().map} from direction : {self.get_curr_direction()} to {target_maps} not found..."
+                f"Path from {self.get_curr_map_info().map} to {target_maps} not found..."
             )
             raise CharacterIsStuckException
 
