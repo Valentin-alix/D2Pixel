@@ -1,15 +1,13 @@
 from collections import OrderedDict
 from logging import Logger
 
-from PyQt5 import QtWidgets
 from PyQt5.QtCore import QObject, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QSizePolicy, QWidget
-from qfluentwidgets import FluentIcon
 
 from D2Shared.shared.schemas.character import CharacterSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.modules.bot import Bot
-from src.gui.components.buttons import LocalToolButton
+from src.gui.components.buttons import LocalPushButtonIcon
 from src.gui.components.loaders import Loading
 from src.gui.components.organization import (
     HorizontalLayout,
@@ -83,24 +81,15 @@ class SideBarMenu(QWidget):
         footer.setLayout(HorizontalLayout(space=0, margins=(0, 0, 0, 0)))
         self.layout().addWidget(footer)
 
-        self.refresh_btn = LocalToolButton(FluentIcon.ROTATE, parent=self)
-        self.refresh_btn.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
-        )
+        self.refresh_btn = LocalPushButtonIcon("restart.svg", parent=self)
         self.refresh_btn.clicked.connect(self.signals.clicked_restart)
         footer.layout().addWidget(self.refresh_btn)
 
-        self.stats_btn = LocalToolButton(FluentIcon.PIE_SINGLE, parent=self)
-        self.stats_btn.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
-        )
+        self.stats_btn = LocalPushButtonIcon("stats.svg", parent=self)
         self.stats_btn.clicked.connect(self.on_clicked_stats)
         footer.layout().addWidget(self.stats_btn)
 
-        self.settings_btn = LocalToolButton(FluentIcon.SETTING, parent=self)
-        self.settings_btn.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
-        )
+        self.settings_btn = LocalPushButtonIcon("settings.svg", parent=self)
         self.settings_btn.clicked.connect(self.on_clicked_settings)
         footer.layout().addWidget(self.settings_btn)
 

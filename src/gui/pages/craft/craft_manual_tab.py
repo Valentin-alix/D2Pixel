@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QWidget
 
 from D2Shared.shared.schemas.recipe import RecipeSchema
 from src.bots.modules.bot import Bot
-from src.gui.components.buttons import PushButtonIcon
+from src.gui.components.buttons import LocalPushButtonIcon
 from src.gui.components.organization import VerticalLayout
 from src.gui.components.play_stop import PlayStopWidget
 from src.gui.pages.craft.recipe_group import RecipeGroup
@@ -52,7 +52,7 @@ class CraftManualTab(QWidget):
 
         self.layout().addWidget(self.craft_table)
 
-        refresh_btn = PushButtonIcon("restart.svg")
+        refresh_btn = LocalPushButtonIcon("restart.svg")
         refresh_btn.clicked.connect(self._on_refresh_recipes)
         self.layout().addWidget(refresh_btn)
 

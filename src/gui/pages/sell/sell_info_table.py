@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QTableWidgetItem, QWidget
 
 from D2Shared.shared.enums import SaleHotelQuantity
 from D2Shared.shared.schemas.item import SellItemInfo
-from src.gui.components.buttons import PushButtonIcon
+from src.gui.components.buttons import LocalPushButtonIcon
 from src.gui.components.combobox import CheckableComboBox
 from src.gui.components.table import BaseTableWidget, ColumnInfo, SearchType
 
@@ -69,7 +69,7 @@ class SellInfoTable(BaseTableWidget):
         )
         self.table.setCellWidget(table_index, 3, combo_quantities)
 
-        delete_btn = PushButtonIcon("delete.svg")
+        delete_btn = LocalPushButtonIcon("delete.svg")
         delete_btn.clicked.connect(lambda: self.remove_item_info(sell_item_info))
         self.table.setCellWidget(table_index, 4, delete_btn)
 

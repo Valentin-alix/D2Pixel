@@ -3,7 +3,7 @@ from typing import cast
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QLabel, QWidget
 
-from src.gui.components.buttons import LocalPushButton, PushButtonIcon
+from src.gui.components.buttons import LocalPushButton, LocalPushButtonIcon
 
 
 class QToaster(QtWidgets.QFrame):
@@ -157,7 +157,7 @@ def show_message(
     toastr.label = QtWidgets.QLabel(message)
     toastr.layout().addWidget(toastr.label)
 
-    toastr.closeButton = PushButtonIcon("close.svg", width=20, height=20)
+    toastr.closeButton = LocalPushButtonIcon("close.svg", width=20, height=20)
     toastr.closeButton.setProperty("class", "no-border")
     toastr.layout().addWidget(toastr.closeButton)
     toastr.closeButton.clicked.connect(toastr.close)

@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QComboBox, QWidget
 
 from D2Shared.shared.schemas.equipment import ReadEquipmentSchema
 from src.bots.modules.bot import Bot
-from src.gui.components.buttons import PushButtonIcon
+from src.gui.components.buttons import LocalPushButtonIcon
 from src.gui.components.organization import VerticalLayout
 from src.gui.components.play_stop import PlayStopWidget
 from src.gui.pages.fm.fm_item.fm_item import FmItem
@@ -52,7 +52,7 @@ class FmPage(QWidget):
         self.play_stop_widget.signals.stopped.connect(lambda: self._on_stop(bot))
 
     def _setup_top_page(self):
-        self.refresh_btn = PushButtonIcon(
+        self.refresh_btn = LocalPushButtonIcon(
             "restart.svg", width=80, height=40, icon_size=20, parent=self
         )
 

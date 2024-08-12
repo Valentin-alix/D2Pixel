@@ -3,8 +3,7 @@ import os
 from PyQt5 import QtCore
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QCursor, QIcon
-from PyQt5.QtWidgets import QAbstractButton
-from qfluentwidgets import PushButton, ToolButton
+from PyQt5.QtWidgets import QAbstractButton, QPushButton, QToolButton
 
 from src.consts import ASSET_FOLDER_PATH
 
@@ -18,15 +17,15 @@ class AbstractButton(
         self.setFocusPolicy(QtCore.Qt.NoFocus)
 
 
-class LocalPushButton(PushButton, AbstractButton):
+class LocalPushButton(QPushButton, AbstractButton):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
 
-class LocalToolButton(ToolButton, AbstractButton): ...
+class LocalToolButton(QToolButton, AbstractButton): ...
 
 
-class PushButtonIcon(LocalPushButton):
+class LocalPushButtonIcon(LocalPushButton):
     def __init__(
         self,
         filename: str | None = None,

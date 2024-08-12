@@ -1,7 +1,7 @@
-from qfluentwidgets import IndeterminateProgressRing
 from D2Shared.shared.schemas.character import CharacterSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from src.gui.components.combobox import CheckableComboBox
+from src.gui.components.loaders import Loading
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.gui.utils.run_in_background import run_in_background
 from src.services.character import CharacterService
@@ -19,11 +19,12 @@ class SubAreaFarmTab(QWidget):
     ):
         super().__init__(*args, **kwargs)
         self.setLayout(VerticalLayout())
+        self.layout().setAlignment(Qt.AlignHCenter)
         self.service = service
         self.character = character
         self.combo_sub_areas: list[CheckableComboBox[SubAreaSchema]] = []
 
-        self.loading = IndeterminateProgressRing(self, False)
+        self.loading = Loading(self)
         self.layout().addWidget(self.loading)
         self.loading.start()
 

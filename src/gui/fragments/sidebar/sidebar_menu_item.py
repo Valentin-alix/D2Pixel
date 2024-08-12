@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QWidget
 
 from src.bots.modules.bot import Bot
 from src.gui.components.buttons import (
-    PushButtonIcon,
+    LocalPushButtonIcon,
     LocalToolButtonIcon,
 )
 from src.gui.components.organization import HorizontalLayout
@@ -45,12 +45,14 @@ class SideBarMenuItem(QWidget):
         self.btn_char.setText(self.bot.character_id)
         self.layout().addWidget(self.btn_char)
 
-        self.logs_btn = PushButtonIcon("logs.svg", width=40, height=80, parent=self)
+        self.logs_btn = LocalPushButtonIcon(
+            "logs.svg", width=40, height=80, parent=self
+        )
         self.logs_btn.setFlat(True)
         self.logs_btn.clicked.connect(self.on_clicked_logs)
         self.layout().addWidget(self.logs_btn)
 
-        self.bot_settings_btn = PushButtonIcon(
+        self.bot_settings_btn = LocalPushButtonIcon(
             filename="settings.svg", width=40, height=80
         )
         self.bot_settings_btn.setFlat(False)
