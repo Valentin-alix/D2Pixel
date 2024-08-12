@@ -3,6 +3,7 @@ from logging import Logger
 from PyQt5.QtCore import Qt, QThread, pyqtSlot
 from PyQt5.QtWidgets import (
     QLabel,
+    QTabWidget,
     QWidget,
 )
 
@@ -12,12 +13,17 @@ from src.gui.components.organization import (
     VerticalLayout,
 )
 from src.gui.components.play_stop import PlayStopWidget
+from src.gui.pages.farm.path_farm_tab import PathFarmTab
+from src.gui.pages.farm.sub_area_farm_tab import SubAreaFarmTab
 from src.gui.signals.app_signals import AppSignals
 from src.gui.utils.run_in_background import run_in_background
+from src.services.session import ServiceSession
 
 
 class FarmPage(QWidget):
-    def __init__(self, logger: Logger, app_signals: AppSignals, bot: Bot):
+    def __init__(
+        self, service: ServiceSession, logger: Logger, app_signals: AppSignals, bot: Bot
+    ):
         super().__init__()
         self.thread_run: QThread | None = None
         self.thread_stop: QThread | None = None
@@ -25,6 +31,7 @@ class FarmPage(QWidget):
         self.is_loading = False
         self.app_signals = app_signals
         self.logger = logger
+        self.service = service
 
         self.main_layout = VerticalLayout()
         self.main_layout.setAlignment(Qt.AlignTop)
@@ -54,7 +61,18 @@ class FarmPage(QWidget):
         self.name_action = QLabel()
         self.layout().addWidget(self.name_action)
 
-    def _setup_content(self): ...
+    def _setup_content(self):
+        self.tabs = QTabWidget()
+        self.layout().addWidget(self.tabs)
+        self.sub_area_tabs = SubAreaFarmTab(
+            self.service, self.bot.character_state.character
+        )
+        self.tabs.addTab(self.sub_area_tabs, "Zones")
+
+        self.path_farm_tab = PathFarmTab(
+            self.service, self.bot.character_state.character
+        )
+        self.tabs.addTab(self.path_farm_tab, "Chemins")
 
     def _setup_action_btns(self):
         self.play_stop_widget = PlayStopWidget(self.app_signals, self.bot.bot_signals)

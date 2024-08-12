@@ -11,6 +11,7 @@ from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.enums import Direction
+from D2Shared.shared.schemas.collectable import CollectableSchema
 from D2Shared.shared.schemas.map import MapSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from D2Shared.shared.schemas.template_found import InfoTemplateFoundPlacementSchema
@@ -89,6 +90,12 @@ class Harvester:
     weight_by_map_harvest: dict[int, float] = field(
         default_factory=lambda: {}, init=False
     )
+    possible_colls: list[CollectableSchema] = field(init=False)
+
+    def __post_init__(self):
+        self.possible_colls = CharacterService.get_possible_collectable(
+            self.service, self.character_state.character.id
+        )
 
     def run(self) -> None:
         if self.character_state.character.lvl < 10:
@@ -104,16 +111,11 @@ class Harvester:
         )
 
         initial_time = perf_counter()
-        possible_collectable_ids = [
-            elem.id
-            for elem in CharacterService.get_possible_collectable(
-                self.service, self.character_state.character.id
-            )
-        ]
+        possible_collectable_ids = [_elem.id for _elem in self.possible_colls]
         valid_sub_areas = SubAreaService.get_valid_sub_areas_harvester(
             self.service, self.character_state.character.id
         )
-        valid_sub_area_ids = [elem.id for elem in valid_sub_areas]
+        valid_sub_area_ids = [_elem.id for _elem in valid_sub_areas]
         self.weight_by_map_harvest = SubAreaService.get_weights_harvest_map(
             self.service,
             self.character_state.character.id,
@@ -135,7 +137,7 @@ class Harvester:
                 self.collect_sub_areas(
                     sub_areas,
                     wait_default_args=WaitForNewMapWalking(
-                        extra_func=self._on_info_modal
+                        extra_func=self.on_info_modal
                     ),
                 )
             except StoppedException:
@@ -147,35 +149,27 @@ class Harvester:
                 for sub_area in sub_areas:
                     self.harvest_sub_areas_farming_ids.remove(sub_area.id)
 
-        item_ids = [
-            elem.item_id
-            for elem in CharacterService.get_possible_collectable(
-                self.service, self.character_state.character.id
-            )
-        ]
+        item_ids = [elem.item_id for elem in self.possible_colls]
         CharacterService.add_bank_items(
             self.service, self.character_state.character.id, item_ids
         )
 
-    def _on_info_modal(self, img: numpy.ndarray) -> numpy.ndarray:
+    def on_info_modal(self, img: numpy.ndarray) -> numpy.ndarray:
         img, events = self.hud_sys.handle_info_modal(img)
         for event in events:
             if event == EventInfoPopup.LVL_UP_JOB:
-                possible_collectable_ids = [
-                    elem.id
-                    for elem in CharacterService.get_possible_collectable(
-                        self.service, self.character_state.character.id
-                    )
-                ]
+                self.possible_colls = CharacterService.get_possible_collectable(
+                    self.service, self.character_state.character.id
+                )
                 valid_sub_areas = SubAreaService.get_valid_sub_areas_harvester(
                     self.service, self.character_state.character.id
                 )
-                valid_sub_area_ids = [elem.id for elem in valid_sub_areas]
+                valid_sub_area_ids = [_elem.id for _elem in valid_sub_areas]
                 self.weight_by_map_harvest = SubAreaService.get_weights_harvest_map(
                     self.service,
                     self.character_state.character.id,
                     self.character_state.character.server_id,
-                    possible_collectable_ids,
+                    [_elem.id for _elem in self.possible_colls],
                     valid_sub_area_ids,
                 )
         return img
@@ -277,15 +271,8 @@ class Harvester:
         start_pos = get_pos_to_direction(curr_direction) if curr_direction else None
         end_pos = get_pos_to_direction(next_direction)
 
-        possible_colls = [
-            elem.id
-            for elem in CharacterService.get_possible_collectable(
-                self.service, self.character_state.character.id
-            )
-        ]
-
         collectable_configs = CollectableService.get_possible_config_on_map(
-            self.service, map.id, possible_colls
+            self.service, map.id, [_elem.id for _elem in self.possible_colls]
         )
         self.logger.info(f"Searching for {collectable_configs}")
 
@@ -294,7 +281,7 @@ class Harvester:
         if len(positions_infos) == 0:
             return 0
 
-        positions = [pos_info[0] for pos_info in positions_infos]
+        positions = [pos for pos, _, _ in positions_infos]
         optimal_path = (
             find_dumby_optimal_path_positions(positions, start_pos)
             if (len(positions) + (1 if start_pos else 0) + (1 if end_pos else 0)) > 13

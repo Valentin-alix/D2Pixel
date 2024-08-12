@@ -28,6 +28,7 @@ qt-material = "^2.14"
 schedule = "^1.2.2"
 requests = "^2.32.2"
 pyarmor = "^8.5.9"
+pyqt-fluent-widgets = {extras = ["full"], version = "^1.6.0"}
 
 [tool.poetry.group.dev.dependencies]
 types-pynput = "^1.7.6.20240511"

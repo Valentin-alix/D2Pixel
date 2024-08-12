@@ -8,12 +8,10 @@ from PyQt5.QtWidgets import (
 from D2Shared.shared.schemas.character import (
     CharacterSchema,
 )
-from src.gui.components.buttons import PushButton
+from src.gui.components.buttons import LocalPushButton
 from src.gui.components.dialog import Dialog
 from src.gui.components.organization import VerticalLayout
-from src.gui.fragments.sidebar.settings.bot_settings_modal.tabs.farm_tab import (
-    FarmTab,
-)
+
 from src.gui.fragments.sidebar.settings.bot_settings_modal.tabs.gameplay_tab import (
     GameplayTab,
 )
@@ -46,7 +44,7 @@ class BotSettingsModal(Dialog):
         self._setup_tabs()
 
     def _setup_save_btn(self):
-        self.save_btn = PushButton(text="Enregistrer")
+        self.save_btn = LocalPushButton(text="Enregistrer")
         self.save_btn.clicked.connect(self.on_save)
         self.save_btn.setShortcut("Return")
         self.layout().addWidget(self.save_btn)
@@ -58,9 +56,6 @@ class BotSettingsModal(Dialog):
         self.general_tab = GeneralTab(self.service, self.character)
         self.tabs.addTab(self.general_tab, "Général")
 
-        self.farm_tab = FarmTab(self.service, self.character)
-        self.tabs.addTab(self.farm_tab, "Farm")
-
         self.gameplay_tab = GameplayTab(self.service, self.character)
         self.tabs.addTab(self.gameplay_tab, "Gameplay")
 
@@ -71,7 +66,6 @@ class BotSettingsModal(Dialog):
     def on_save(self) -> None:
         def _on_save():
             self.general_tab.on_save()
-            self.farm_tab.on_save()
             self.gameplay_tab.on_save()
 
         self.threads.append(run_in_background(_on_save)[0])

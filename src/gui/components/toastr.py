@@ -3,14 +3,14 @@ from typing import cast
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QLabel, QWidget
 
-from src.gui.components.buttons import PushButton, PushButtonIcon
+from src.gui.components.buttons import LocalPushButton, PushButtonIcon
 
 
 class QToaster(QtWidgets.QFrame):
     current_toastr: "QToaster | None" = None
 
     label: QLabel
-    closeButton: PushButton
+    closeButton: LocalPushButton
 
     def __init__(self, parent: QWidget, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)

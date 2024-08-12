@@ -3,7 +3,8 @@ import os
 from PyQt5 import QtCore
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QCursor, QIcon
-from PyQt5.QtWidgets import QAbstractButton, QPushButton, QToolButton
+from PyQt5.QtWidgets import QAbstractButton
+from qfluentwidgets import PushButton, ToolButton
 
 from src.consts import ASSET_FOLDER_PATH
 
@@ -11,23 +12,21 @@ from src.consts import ASSET_FOLDER_PATH
 class AbstractButton(
     QAbstractButton,
 ):
-    def __init__(self, checkable: bool = False, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.setCheckable(checkable)
         self.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
         self.setFocusPolicy(QtCore.Qt.NoFocus)
 
 
-class PushButton(QPushButton, AbstractButton):
-    def __init__(self, flat: bool = False, *args, **kwargs) -> None:
+class LocalPushButton(PushButton, AbstractButton):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.setFlat(flat)
 
 
-class ToolButton(QToolButton, AbstractButton): ...
+class LocalToolButton(ToolButton, AbstractButton): ...
 
 
-class PushButtonIcon(PushButton):
+class PushButtonIcon(LocalPushButton):
     def __init__(
         self,
         filename: str | None = None,
@@ -39,7 +38,7 @@ class PushButtonIcon(PushButton):
     ) -> None:
         super().__init__(*args, **kwargs)
         if filename is not None:
-            self.set_icon(filename)
+            self.setIcon(QIcon(os.path.join(ASSET_FOLDER_PATH, "icons", filename)))
         if icon_size is not None:
             self.setIconSize(QSize(icon_size, icon_size))
         if height is not None:
@@ -47,11 +46,8 @@ class PushButtonIcon(PushButton):
         if width is not None:
             self.setFixedWidth(width)
 
-    def set_icon(self, filename: str):
-        self.setIcon(QIcon(os.path.join(ASSET_FOLDER_PATH, "icons", filename)))
 
-
-class ToolButtonIcon(ToolButton):
+class LocalToolButtonIcon(LocalToolButton):
     def __init__(
         self,
         filename: str,

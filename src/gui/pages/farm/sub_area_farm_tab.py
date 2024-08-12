@@ -1,10 +1,7 @@
-from PyQt5.QtCore import Qt, pyqtSlot
-from PyQt5.QtWidgets import QFormLayout, QLabel, QWidget
-
+from qfluentwidgets import IndeterminateProgressRing
 from D2Shared.shared.schemas.character import CharacterSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
 from src.gui.components.combobox import CheckableComboBox
-from src.gui.components.loaders import Loading
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.gui.utils.run_in_background import run_in_background
 from src.services.character import CharacterService
@@ -12,7 +9,11 @@ from src.services.session import ServiceSession
 from src.services.sub_area import SubAreaService
 
 
-class FarmTab(QWidget):
+from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtWidgets import QFormLayout, QLabel, QWidget
+
+
+class SubAreaFarmTab(QWidget):
     def __init__(
         self, service: ServiceSession, character: CharacterSchema, *args, **kwargs
     ):
@@ -22,7 +23,7 @@ class FarmTab(QWidget):
         self.character = character
         self.combo_sub_areas: list[CheckableComboBox[SubAreaSchema]] = []
 
-        self.loading = Loading(self)
+        self.loading = IndeterminateProgressRing(self, False)
         self.layout().addWidget(self.loading)
         self.loading.start()
 
@@ -66,6 +67,7 @@ class FarmTab(QWidget):
                 area_widg.setLayout(form_l)
 
                 combo_sub = CheckableComboBox[SubAreaSchema](parent=self)
+                combo_sub.signals.clicked_item.connect(self.on_clicked_combo_sub_areas)
                 self.combo_sub_areas.append(combo_sub)
 
                 for sub_area in sorted(
@@ -76,7 +78,8 @@ class FarmTab(QWidget):
                     combo_sub.addItem(sub_area.name, sub_area, checked=checked)
                 form_l.addRow(area.name, combo_sub)
 
-    def on_save(self):
+    @pyqtSlot()
+    def on_clicked_combo_sub_areas(self):
         new_sub_areas: list[SubAreaSchema] = [
             _elem for combo in self.combo_sub_areas for _elem in combo.currentData()
         ]
@@ -85,5 +88,5 @@ class FarmTab(QWidget):
             CharacterService.update_sub_areas(
                 self.service,
                 self.character.id,
-                [elem.id for elem in self.character.sub_areas],
+                [_elem.id for _elem in self.character.sub_areas],
             )

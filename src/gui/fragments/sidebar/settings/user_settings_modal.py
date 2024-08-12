@@ -15,7 +15,7 @@ from D2Shared.shared.schemas.range_time import (
     UpdateRangeWaitSchema,
 )
 from D2Shared.shared.schemas.user import ReadUserSchema
-from src.gui.components.buttons import PushButton, PushButtonIcon
+from src.gui.components.buttons import LocalPushButton, PushButtonIcon
 from src.gui.components.dialog import Dialog
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.gui.signals.app_signals import AppSignals
@@ -178,7 +178,7 @@ class UserSettingsModal(Dialog):
         self.adjustSize()
 
     def set_save_btn(self):
-        self.save_btn = PushButton(text="Enregistrer")
+        self.save_btn = LocalPushButton(text="Enregistrer")
         self.save_btn.clicked.connect(self.on_save)
         self.save_btn.setShortcut("Return")
         self.main_layout.addWidget(self.save_btn)
