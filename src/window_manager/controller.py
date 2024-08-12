@@ -144,6 +144,7 @@ class Controller:
             raise StoppedException()
         with self.action_lock:
             self.key_down(key)
+            sleep(0.3)
             yield
             self.key_up(key)
 
