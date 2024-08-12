@@ -19,7 +19,7 @@ class SubAreaFarmTab(QWidget):
     ):
         super().__init__(*args, **kwargs)
         self.setLayout(VerticalLayout())
-        self.layout().setAlignment(Qt.AlignHCenter)
+        self.layout().setAlignment(Qt.AlignTop | Qt.AlignCenter)
         self.service = service
         self.character = character
         self.combo_sub_areas: list[CheckableComboBox[SubAreaSchema]] = []

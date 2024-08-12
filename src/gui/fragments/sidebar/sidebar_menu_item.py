@@ -55,7 +55,7 @@ class SideBarMenuItem(QWidget):
         self.bot_settings_btn = LocalPushButtonIcon(
             filename="settings.svg", width=40, height=80
         )
-        self.bot_settings_btn.setFlat(False)
+        self.bot_settings_btn.setFlat(True)
         self.bot_settings_btn.clicked.connect(self.on_click_settings)
         self.layout().addWidget(self.bot_settings_btn)
 

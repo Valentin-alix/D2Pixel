@@ -78,7 +78,7 @@ class SideBarMenu(QWidget):
 
     def _setup_footer(self) -> None:
         footer = QWidget()
-        footer.setLayout(HorizontalLayout(space=0, margins=(0, 0, 0, 0)))
+        footer.setLayout(HorizontalLayout(space=4))
         self.layout().addWidget(footer)
 
         self.refresh_btn = LocalPushButtonIcon("restart.svg", parent=self)
