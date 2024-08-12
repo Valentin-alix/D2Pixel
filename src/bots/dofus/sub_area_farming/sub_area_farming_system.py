@@ -58,7 +58,7 @@ class SubAreaFarmingSystem:
         neighbors_time: list[tuple[MapDirectionSchema, float]] = [
             (map_direction, maps_time[map_direction.to_map_id])
             for map_direction in MapService.get_map_directions(self.service, map.id)
-            if map_direction.to_map.sub_area_id in [elem.id for elem in sub_areas]
+            if map_direction.to_map.sub_area in sub_areas
         ]
         self.logger.info(f"Map voisines avec leur temps: {neighbors_time}")
         return neighbors_time
