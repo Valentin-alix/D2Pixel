@@ -34,7 +34,7 @@ class SubHeader(QWidget):
     def _setup_tabs(self, bot: Bot):
         self.tabs = QTabWidget()
 
-        self.bot_page = FarmPage(self.logger, self.app_signals, bot=bot)
+        self.bot_page = FarmPage(self.service, self.logger, self.app_signals, bot=bot)
         self.tabs.addTab(self.bot_page, "Farm")
 
         self.craft_frame = CraftPage(
