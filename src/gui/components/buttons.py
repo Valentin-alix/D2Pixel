@@ -17,15 +17,15 @@ class AbstractButton(
         self.setFocusPolicy(QtCore.Qt.NoFocus)
 
 
-class LocalPushButton(QPushButton, AbstractButton):
+class PushButton(QPushButton, AbstractButton):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
 
-class LocalToolButton(QToolButton, AbstractButton): ...
+class ToolButton(QToolButton, AbstractButton): ...
 
 
-class LocalPushButtonIcon(LocalPushButton):
+class PushButtonIcon(PushButton):
     def __init__(
         self,
         filename: str | None = None,
@@ -46,7 +46,7 @@ class LocalPushButtonIcon(LocalPushButton):
             self.setFixedWidth(width)
 
 
-class LocalToolButtonIcon(LocalToolButton):
+class ToolButtonIcon(ToolButton):
     def __init__(
         self,
         filename: str,

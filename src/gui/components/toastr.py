@@ -3,14 +3,14 @@ from typing import cast
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QLabel, QWidget
 
-from src.gui.components.buttons import LocalPushButton, LocalPushButtonIcon
+from src.gui.components.buttons import PushButton, PushButtonIcon
 
 
 class QToaster(QtWidgets.QFrame):
     current_toastr: "QToaster | None" = None
 
     label: QLabel
-    closeButton: LocalPushButton
+    closeButton: PushButton
 
     def __init__(self, parent: QWidget, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -157,7 +157,7 @@ def show_message(
     toastr.label = QtWidgets.QLabel(message)
     toastr.layout().addWidget(toastr.label)
 
-    toastr.closeButton = LocalPushButtonIcon("close.svg", width=20, height=20)
+    toastr.closeButton = PushButtonIcon("close.svg", width=20, height=20)
     toastr.closeButton.setProperty("class", "no-border")
     toastr.layout().addWidget(toastr.closeButton)
     toastr.closeButton.clicked.connect(toastr.close)

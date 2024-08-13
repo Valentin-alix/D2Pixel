@@ -15,7 +15,7 @@ from D2Shared.shared.schemas.range_time import (
     UpdateRangeWaitSchema,
 )
 from D2Shared.shared.schemas.user import ReadUserSchema
-from src.gui.components.buttons import LocalPushButton, LocalPushButtonIcon
+from src.gui.components.buttons import PushButton, PushButtonIcon
 from src.gui.components.dialog import Dialog
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.gui.signals.app_signals import AppSignals
@@ -116,7 +116,7 @@ class UserSettingsModal(Dialog):
         self.play_time_widget.setLayout(self.play_time_widget_layout)
         self.range_playtime_edits: list[tuple[QTimeEdit, QTimeEdit]] = []
 
-        button_add = LocalPushButtonIcon("add.svg", parent=self)
+        button_add = PushButtonIcon("add.svg", parent=self)
         self.play_time_widget_layout.addWidget(button_add)
         button_add.clicked.connect(lambda: self.add_range_playtime(time(), time()))
 
@@ -154,7 +154,7 @@ class UserSettingsModal(Dialog):
 
         self.range_playtime_edits.append((time_start_edit, time_end_edit))
 
-        button_delete = LocalPushButtonIcon("close.svg", parent=self)
+        button_delete = PushButtonIcon("close.svg", parent=self)
         range_playtime_widget_layout.addWidget(button_delete)
         button_delete.clicked.connect(
             partial(
@@ -178,7 +178,7 @@ class UserSettingsModal(Dialog):
         self.adjustSize()
 
     def set_save_btn(self):
-        self.save_btn = LocalPushButton(text="Enregistrer")
+        self.save_btn = PushButton(text="Enregistrer")
         self.save_btn.clicked.connect(self.on_save)
         self.save_btn.setShortcut("Return")
         self.main_layout.addWidget(self.save_btn)

@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QCheckBox, QComboBox, QLineEdit, QWidget
 from D2Shared.shared.enums import CharacteristicEnum, ElemEnum
 from D2Shared.shared.schemas.character import CharacterSchema
 from D2Shared.shared.schemas.spell import SpellSchema, UpdateSpellSchema
-from src.gui.components.buttons import LocalPushButtonIcon
+from src.gui.components.buttons import PushButtonIcon
 from src.gui.components.organization import VerticalLayout
 from src.gui.components.table import BaseTableWidget, ColumnInfo
 from src.services.character import CharacterService
@@ -46,7 +46,7 @@ class GameplayTab(QWidget):
     def set_prefered_ia(self): ...
 
     def _init_spell_configs(self) -> None:
-        add_spell_btn = LocalPushButtonIcon("add.svg")
+        add_spell_btn = PushButtonIcon("add.svg")
         add_spell_btn.clicked.connect(lambda: self.add_spell())
         self.layout().addWidget(add_spell_btn)
 
@@ -162,7 +162,7 @@ class GameplayTab(QWidget):
         else:
             level_edit.setText(str(1))
 
-        delete_btn = LocalPushButtonIcon("delete.svg")
+        delete_btn = PushButtonIcon("delete.svg")
         self.spells_table.table.setCellWidget(index, 14, delete_btn)
         delete_btn.clicked.connect(partial(self.on_delete_spell, index))
 
@@ -186,7 +186,7 @@ class GameplayTab(QWidget):
     def update_delete_buttons(self):
         for row_index in range(self.spells_table.table.rowCount()):
             delete_btn = self.spells_table.table.cellWidget(row_index, 14)
-            assert isinstance(delete_btn, LocalPushButtonIcon)
+            assert isinstance(delete_btn, PushButtonIcon)
             if delete_btn is not None:
                 delete_btn.clicked.disconnect()
                 delete_btn.clicked.connect(partial(self.on_delete_spell, row_index))

@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
 from D2Shared.shared.schemas.character import (
     CharacterSchema,
 )
-from src.gui.components.buttons import LocalPushButton
+from src.gui.components.buttons import PushButton
 from src.gui.components.dialog import Dialog
 from src.gui.components.organization import VerticalLayout
 
@@ -44,7 +44,7 @@ class BotSettingsModal(Dialog):
         self._setup_tabs()
 
     def _setup_save_btn(self):
-        self.save_btn = LocalPushButton(text="Enregistrer")
+        self.save_btn = PushButton(text="Enregistrer")
         self.save_btn.clicked.connect(self.on_save)
         self.save_btn.setShortcut("Return")
         self.layout().addWidget(self.save_btn)

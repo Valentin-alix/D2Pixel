@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QObject, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget
 
-from src.gui.components.buttons import LocalPushButtonIcon
+from src.gui.components.buttons import PushButtonIcon
 from src.gui.components.loaders import Loading
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.gui.signals.app_signals import AppSignals
@@ -42,13 +42,13 @@ class PlayStopWidget(QWidget):
         self.action_content_layout.setAlignment(Qt.AlignCenter)
         self.action_content.setLayout(self.action_content_layout)
 
-        self.button_play = LocalPushButtonIcon(
+        self.button_play = PushButtonIcon(
             "play.svg", width=80, height=40, icon_size=20, parent=self
         )
         self.button_play.clicked.connect(self.on_play)
         self.action_content.layout().addWidget(self.button_play)
 
-        self.button_stop = LocalPushButtonIcon(
+        self.button_stop = PushButtonIcon(
             "stop.svg", width=80, height=40, icon_size=20, parent=self
         )
         self.button_stop.hide()

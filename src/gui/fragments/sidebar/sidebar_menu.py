@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QSizePolicy, QWidget
 from D2Shared.shared.schemas.character import CharacterSchema
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.modules.bot import Bot
-from src.gui.components.buttons import LocalPushButtonIcon
+from src.gui.components.buttons import PushButtonIcon
 from src.gui.components.loaders import Loading
 from src.gui.components.organization import (
     HorizontalLayout,
@@ -81,15 +81,15 @@ class SideBarMenu(QWidget):
         footer.setLayout(HorizontalLayout(space=4))
         self.layout().addWidget(footer)
 
-        self.refresh_btn = LocalPushButtonIcon("restart.svg", parent=self)
+        self.refresh_btn = PushButtonIcon("restart.svg", parent=self)
         self.refresh_btn.clicked.connect(self.signals.clicked_restart)
         footer.layout().addWidget(self.refresh_btn)
 
-        self.stats_btn = LocalPushButtonIcon("stats.svg", parent=self)
+        self.stats_btn = PushButtonIcon("stats.svg", parent=self)
         self.stats_btn.clicked.connect(self.on_clicked_stats)
         footer.layout().addWidget(self.stats_btn)
 
-        self.settings_btn = LocalPushButtonIcon("settings.svg", parent=self)
+        self.settings_btn = PushButtonIcon("settings.svg", parent=self)
         self.settings_btn.clicked.connect(self.on_clicked_settings)
         footer.layout().addWidget(self.settings_btn)
 

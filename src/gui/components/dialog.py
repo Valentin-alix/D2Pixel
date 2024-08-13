@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QLabel, QWidget
 
-from src.gui.components.buttons import LocalPushButton
+from src.gui.components.buttons import PushButton
 from src.gui.components.organization import (
     HorizontalLayout,
     VerticalLayout,
@@ -22,9 +22,9 @@ class ConfirmationDialog(Dialog):
         self.buttons = QWidget()
         self.buttons_layout = HorizontalLayout(space=8, margins=(8, 8, 8, 8))
         self.buttons.setLayout(self.buttons_layout)
-        self.yes_btn = LocalPushButton(text="Oui")
+        self.yes_btn = PushButton(text="Oui")
         self.buttons_layout.addWidget(self.yes_btn)
-        self.no_btn = LocalPushButton(text="Non")
+        self.no_btn = PushButton(text="Non")
         self.buttons_layout.addWidget(self.no_btn)
 
         self.yes_btn.clicked.connect(self.accept)

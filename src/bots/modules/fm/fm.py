@@ -44,17 +44,17 @@ class Fm:
         self._searched_rune_name = None
         old_img: numpy.ndarray | None = None
         while True:
-            wait((0.3, 1))
+            wait((0.3, 1.5))
             img = self.capturer.capture()
             if not self.smithmagic_workshop.has_history_changed(old_img, img):
                 continue
             current_lines: list[BaseLineSchema] | None = (
                 self.fm_analyser.get_stats_item_selected(img)
             )
-            self.logger.info(f"Current lines : {current_lines}")
             if current_lines is None:
                 self.logger.info("Could not get stats of item")
                 return None
+            self.logger.info(f"Current lines : {current_lines}")
             if self.put_rune(current_lines, target_lines, exo_stat, equipment) is True:
                 self.logger.info("Target item achieved")
                 return None

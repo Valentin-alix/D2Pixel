@@ -99,6 +99,9 @@ class Harvester:
 
     def run(self) -> None:
         if self.character_state.character.lvl < 10:
+            self.logger.warning(
+                "Character can't use module harvester because he can't acceed bank"
+            )
             return None
 
         limit_time: float = convert_time_to_seconds(
@@ -112,6 +115,7 @@ class Harvester:
 
         initial_time = perf_counter()
         possible_collectable_ids = [_elem.id for _elem in self.possible_colls]
+
         valid_sub_areas = SubAreaService.get_valid_sub_areas_harvester(
             self.service, self.character_state.character.id
         )

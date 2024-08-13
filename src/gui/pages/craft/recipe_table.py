@@ -3,7 +3,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QTableWidgetItem
 
 from D2Shared.shared.schemas.recipe import RecipeSchema
-from src.gui.components.buttons import LocalPushButtonIcon
+from src.gui.components.buttons import PushButtonIcon
 from src.gui.components.table import BaseTableWidget, ColumnInfo
 
 
@@ -41,7 +41,7 @@ class RecipeTable(BaseTableWidget):
             table_index, 2, QTableWidgetItem(str(recipe.result_item.level))
         )
 
-        delete_btn = LocalPushButtonIcon("delete.svg")
+        delete_btn = PushButtonIcon("delete.svg")
         delete_btn.clicked.connect(lambda: self.remove_recipe(recipe))
         self.table.setCellWidget(table_index, 3, delete_btn)
 

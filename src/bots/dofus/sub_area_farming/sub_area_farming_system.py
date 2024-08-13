@@ -32,7 +32,7 @@ class SubAreaFarming:
             self.service,
             sub_area_ids_farming,
             weights_by_map,
-            [elem.id for elem in valid_sub_areas],
+            [_elem.id for _elem in valid_sub_areas],
         )
 
 

@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QFormLayout, QLabel, QLineEdit, QWidget
 
 from D2Shared.shared.schemas.equipment import ReadEquipmentSchema, UpdateEquipmentSchema
 from D2Shared.shared.schemas.stat import BaseLineSchema, StatSchema
-from src.gui.components.buttons import LocalPushButtonIcon
+from src.gui.components.buttons import PushButtonIcon
 from src.gui.components.organization import (
     HorizontalLayout,
     VerticalLayout,
@@ -111,13 +111,13 @@ class FmItem(QWidget):
         self.action_buttons_layout = HorizontalLayout()
         action_buttons.setLayout(self.action_buttons_layout)
 
-        self.button_save = LocalPushButtonIcon(
+        self.button_save = PushButtonIcon(
             "save.svg", width=80, height=40, icon_size=20, parent=self
         )
         self.button_save.clicked.connect(self._on_save)
         self.action_buttons_layout.addWidget(self.button_save)
 
-        self.button_delete = LocalPushButtonIcon(
+        self.button_delete = PushButtonIcon(
             "delete.svg", width=80, height=40, icon_size=20, parent=self
         )
         self.button_delete.hide()

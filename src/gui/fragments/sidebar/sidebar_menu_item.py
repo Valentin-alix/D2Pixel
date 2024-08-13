@@ -5,8 +5,8 @@ from PyQt5.QtWidgets import QWidget
 
 from src.bots.modules.bot import Bot
 from src.gui.components.buttons import (
-    LocalPushButtonIcon,
-    LocalToolButtonIcon,
+    PushButtonIcon,
+    ToolButtonIcon,
 )
 from src.gui.components.organization import HorizontalLayout
 from src.gui.fragments.sidebar.bot_log_dialog import BotLogDialog
@@ -36,7 +36,7 @@ class SideBarMenuItem(QWidget):
         self._setup_btns()
 
     def _setup_btns(self):
-        self.btn_char = LocalToolButtonIcon(
+        self.btn_char = ToolButtonIcon(
             width=150, height=80, icon_size=32, filename="people.svg"
         )
         self.btn_char.setCheckable(True)
@@ -45,14 +45,12 @@ class SideBarMenuItem(QWidget):
         self.btn_char.setText(self.bot.character_id)
         self.layout().addWidget(self.btn_char)
 
-        self.logs_btn = LocalPushButtonIcon(
-            "logs.svg", width=40, height=80, parent=self
-        )
+        self.logs_btn = PushButtonIcon("logs.svg", width=40, height=80, parent=self)
         self.logs_btn.setFlat(True)
         self.logs_btn.clicked.connect(self.on_clicked_logs)
         self.layout().addWidget(self.logs_btn)
 
-        self.bot_settings_btn = LocalPushButtonIcon(
+        self.bot_settings_btn = PushButtonIcon(
             filename="settings.svg", width=40, height=80
         )
         self.bot_settings_btn.setFlat(True)

@@ -5,6 +5,7 @@ from logging import Logger
 from threading import Event, Lock, RLock
 from time import sleep
 
+import win32con
 import win32gui
 from dotenv import get_key, set_key
 
@@ -110,7 +111,9 @@ class AnkamaLauncher:
             self.logger.info("Launch launcher for visible window")
             launch_launcher()  # to have window visible
         else:
-            self.controller.set_foreground()  # to redraw image
+            window_place = win32gui.GetWindowPlacement(self.window_info.hwnd)[1]
+            if window_place == win32con.SW_SHOWMINIMIZED:
+                self.controller.set_foreground()  # to redraw image
 
         self.controller.click(EMPTY_POSITION)  # to defocus play button
 
