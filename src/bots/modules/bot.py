@@ -396,10 +396,10 @@ class Bot:
             self.capturer,
         )
 
-        self.modules: dict[str, Callable[..., None]] = {
-            "Hdv": self.hdv.run,
-            "Fighter": self.fighter.run,
-            "Harvester": self.harvester.run,
+        self.modules: dict[FarmingAction, Callable[..., None]] = {
+            FarmingAction.HDV: self.hdv.run,
+            FarmingAction.FIGHTER: self.fighter.run,
+            FarmingAction.HARVESTER: self.harvester.run,
         }
 
     def _stop_bot(self):
