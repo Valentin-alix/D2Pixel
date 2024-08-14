@@ -153,7 +153,7 @@ class BankSystem:
         if pos_item:
             with self.controller.hold(win32con.VK_CONTROL):
                 self.controller.click(pos_item, count=2)
-            wait()
+            sleep(0.6)
             if get_percentage_inventory_bar_normal(self.capturer.capture()) > 0.9:
                 return ItemProcessedStatus.MAX_PROCESSED
 
@@ -161,7 +161,7 @@ class BankSystem:
             return ItemProcessedStatus.PROCESSED
 
         self.controller.click(BANK_CLEAR_SEARCH_IN_POSITION)
-        sleep(0.3)
+        wait()
         return ItemProcessedStatus.NOT_PROCESSED
 
     def __get_transfer_position_if_available(

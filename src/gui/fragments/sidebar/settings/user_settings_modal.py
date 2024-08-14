@@ -87,15 +87,6 @@ class UserSettingsModal(Dialog):
         )
         form.addRow("Temps module Harvester (HH-mm)", self.time_harvester_edit)
 
-        self.randomizer_duration_activity_edit = QLineEdit()
-        self.randomizer_duration_activity_edit.setText(
-            str(config_user.randomizer_duration_activity)
-        )
-        form.addRow(
-            "Indice de randomisation d'activité (0-1)",
-            self.randomizer_duration_activity_edit,
-        )
-
         range_new_map_widget = QWidget()
         range_new_map_widget_h_layout = HorizontalLayout()
         range_new_map_widget.setLayout(range_new_map_widget_h_layout)
@@ -207,10 +198,6 @@ class UserSettingsModal(Dialog):
                 time_harvester_value.second(),
             )
 
-            randomizer_duration_activity = float(
-                self.randomizer_duration_activity_edit.text()
-            )
-
             range_new_map_start = float(self.range_new_map_start_edit.text())
             range_new_map_end = float(self.range_new_map_end_edit.text())
             range_new_map = UpdateRangeWaitSchema(
@@ -239,7 +226,6 @@ class UserSettingsModal(Dialog):
                 time_between_sentence=time_between_sentence,
                 time_fighter=time_fighter,
                 time_harvester=time_harvester,
-                randomizer_duration_activity=randomizer_duration_activity,
                 range_new_map=range_new_map,
                 ranges_hour_playtime=ranges_hour_playtime,
             )

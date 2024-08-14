@@ -106,12 +106,7 @@ class Harvester:
 
         limit_time: float = convert_time_to_seconds(
             self.user.config_user.time_harvester
-        ) * multiply_offset(
-            (
-                1 - self.user.config_user.randomizer_duration_activity,
-                1 + self.user.config_user.randomizer_duration_activity,
-            )
-        )
+        ) * multiply_offset((0.6, 1.4))
 
         initial_time = perf_counter()
         possible_collectable_ids = [_elem.id for _elem in self.possible_colls]

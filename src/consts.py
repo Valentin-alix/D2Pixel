@@ -16,4 +16,4 @@ ANKAMA_WINDOW_SIZE = (1920, 1032)
 BACKEND_URL = f"http://{get_key(ENV_PATH, "BACKEND_URL") or "localhost"}:8000"
 
 PAUSE: float = 0.05
-RANGE_WAIT: tuple[float, float] = (0.3, 0.7)
+RANGE_WAIT: tuple[float, float] = (0.3, 0.9)

@@ -67,7 +67,7 @@ from src.window_manager.window_info import WindowInfo
 class FarmingAction(StrEnum):
     HDV = "Hdv"
     FIGHTER = "Combat"
-    HARVESTER = "Récole"
+    HARVESTER = "Récolte"
 
 
 DEFAULT_FARMING_ACTIONS: list[FarmingAction] = [

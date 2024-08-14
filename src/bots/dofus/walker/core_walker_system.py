@@ -418,9 +418,9 @@ class CoreWalkerSystem:
     ) -> numpy.ndarray:
         def dialog_portal_twelve() -> numpy.ndarray | None:
             self.controller.click(PORTAL_TWELVE_TAKE_POSITION)
-            wait((0.3, 0.5))
+            wait()
             self.controller.click(PORTAL_TWELVE_ACCEPT_POSITION)
-            wait((0.3, 0.5))
+            wait()
             self.controller.click(PORTAL_TWELVE_CONFIRM_POSITION)
             return self.wait_for_new_map(is_same_world=False)
 

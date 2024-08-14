@@ -7,6 +7,7 @@ from time import sleep
 
 
 sys.path.append(os.path.dirname(os.path.dirname((os.path.dirname(__file__)))))
+from D2Shared.shared.utils.randomizer import pick_random_weighted_time
 from src.window_manager.window_searcher import (
     get_ankama_window_info,
 )
@@ -17,6 +18,9 @@ from src.services.session import ServiceSession
 
 
 if __name__ == "__main__":
+    temp = pick_random_weighted_time(0.3, 1)
+    print(temp)
+    sys.exit()
     logger = Logger("root")
     logger.setLevel(logging.DEBUG)
     console_handler = logging.StreamHandler()

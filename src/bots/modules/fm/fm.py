@@ -71,7 +71,7 @@ class Fm:
         if self._searched_rune_name != name:
             self.search_rune(name)
         self.controller.click(FIRST_OBJECT_INVENTORY_POSITION, count=2)
-        wait((0.6, 1))
+        wait((0.6, 1.5))
         self.controller.click(MERGE_POSITION)
 
     def put_exo(

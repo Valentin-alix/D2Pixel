@@ -1,7 +1,7 @@
 from datetime import time
+import random
 from time import sleep
 
-from D2Shared.shared.utils.randomizer import pick_random_weighted_time
 from src.consts import RANGE_WAIT
 
 
@@ -10,5 +10,4 @@ def convert_time_to_seconds(value: time) -> float:
 
 
 def wait(range: tuple[float, float] = RANGE_WAIT):
-    time = pick_random_weighted_time(*range)
-    sleep(time)
+    sleep(random.uniform(*range))

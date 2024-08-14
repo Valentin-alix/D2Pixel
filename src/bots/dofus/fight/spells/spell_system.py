@@ -41,7 +41,7 @@ class SpellSystem:
         self.controller.void_click()
         self.spell_manager._pa -= spell.ap_cost
         self.spell_manager._spell_used_ids_with_count[spell.id] += 1
-        wait((0.3, 0.4))
+        wait()
         return self.capturer.capture()
 
     def launch_spell_at_self(self, spell: SpellSchema) -> numpy.ndarray:
