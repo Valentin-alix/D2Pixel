@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, QTimer, pyqtSignal, pyqtSlot
 from D2Shared.shared.schemas.character_path_map import (
     BaseCharacterPathMapSchema,
     CreateUpdateCharacterPathMapSchema,
@@ -41,8 +41,17 @@ class PathMapWidget(QWidget):
 
     def setup_content(self):
         self.x_edit = QLineEdit()
+        x_timer = QTimer()
+        x_timer.setSingleShot(True)
+        self.x_edit.textChanged.connect(lambda: x_timer.start(1000))
+        x_timer.timeout.connect(self.on_edited_path_map)
         self.layout().addWidget(self.x_edit)
+
         self.y_edit = QLineEdit()
+        y_timer = QTimer()
+        y_timer.setSingleShot(True)
+        self.x_edit.textChanged.connect(lambda: y_timer.start(1000))
+        y_timer.timeout.connect(self.on_edited_path_map)
         self.layout().addWidget(self.y_edit)
 
         if self.map:
@@ -76,12 +85,15 @@ class PathMapWidget(QWidget):
             )
         except ValueError:
             return
-        if self.id is None:
-            path_map = PathMapService.create_path_map(self.service, path_map_datas)
-            self.path_map = path_map
-            self.id = path_map.id
-            self.add_remove_btn(self.id)
-        else:
-            self.path_map = PathMapService.update_character_path_map(
-                self.service, self.id, path_map_datas
-            )
+        try:
+            if self.id is None:
+                path_map = PathMapService.create_path_map(self.service, path_map_datas)
+                self.path_map = path_map
+                self.id = path_map.id
+                self.add_remove_btn(self.id)
+            else:
+                self.path_map = PathMapService.update_character_path_map(
+                    self.service, self.id, path_map_datas
+                )
+        except Exception:
+            return
