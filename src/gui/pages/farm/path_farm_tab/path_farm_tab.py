@@ -16,6 +16,7 @@ class PathFarmTab(QWidget):
         self, service: ServiceSession, character: CharacterSchema, *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
+        self.setMaximumHeight(600)
         self.setLayout(HorizontalLayout())
         self.service = service
         self.character = character
