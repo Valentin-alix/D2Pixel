@@ -40,15 +40,10 @@ class PathInfoWidget(QWidget):
         self.id: int | None = id
         self.path_info: BaseCharacterPathInfoSchema = path_info
         self.last_order_index = 0
+        self.paths_maps_widget: QWidget | None = None
 
         self.setLayout(VerticalLayout())
         self.layout().setAlignment(Qt.AlignTop | Qt.AlignCenter)
-
-        self.paths_maps_widget = QWidget()
-        paths_maps_area = QScrollArea()
-        paths_maps_area.setWidget(self.paths_maps_widget)
-        paths_maps_area.setWidgetResizable(True)
-        self.layout().addWidget(paths_maps_area)
 
         self.setup_content(path_maps)
 
@@ -62,7 +57,6 @@ class PathInfoWidget(QWidget):
         timer.setSingleShot(True)
         self.path_info_edit.textChanged.connect(lambda: timer.start(1000))
         self.layout().addWidget(self.path_info_edit)
-
         timer.timeout.connect(self.on_edited_name)
 
         if self.id:
@@ -70,8 +64,23 @@ class PathInfoWidget(QWidget):
             self.add_path_info_remove_btn(self.id)
 
         if path_maps:
+            paths_maps_widget = self.add_path_maps_area()
             for path_map in sorted(path_maps, key=lambda elem: elem.order_index):
-                self.add_path_map(path_map, path_map.map, path_map.id)
+                self.add_path_map(
+                    paths_maps_widget, path_map, path_map.map, path_map.id
+                )
+
+    def add_path_maps_area(self) -> QWidget:
+        if self.paths_maps_widget:
+            return self.paths_maps_widget
+        self.paths_maps_widget = QWidget()
+        self.paths_maps_widget.setLayout(VerticalLayout())
+        self.paths_maps_widget.layout().setAlignment(Qt.AlignTop | Qt.AlignCenter)
+        paths_maps_area = QScrollArea()
+        paths_maps_area.setWidget(self.paths_maps_widget)
+        paths_maps_area.setWidgetResizable(True)
+        self.layout().addWidget(paths_maps_area)
+        return self.paths_maps_widget
 
     def add_path_map_add_btn(self, id: int):
         add_path_map_btn = PushButtonIcon("add.svg")
@@ -85,6 +94,7 @@ class PathInfoWidget(QWidget):
 
     def add_path_map(
         self,
+        paths_maps_widget: QWidget,
         path_map: BaseCharacterPathMapSchema,
         map: CoordinatesMapSchema | None = None,
         path_map_id: int | None = None,
@@ -94,12 +104,14 @@ class PathInfoWidget(QWidget):
             lambda: self.on_delete_path_map(path_map_widget)
         )
         self.last_order_index = path_map.order_index
-        self.paths_maps_widget.layout().addWidget(path_map_widget)
+        paths_maps_widget.layout().addWidget(path_map_widget)
 
     @pyqtSlot()
-    def on_delete_path_map(self, path_map_widget: PathMapWidget):
+    def on_delete_path_map(
+        self, paths_maps_widget: QWidget, path_map_widget: PathMapWidget
+    ):
         path_map_widget.deleteLater()
-        self.paths_maps_widget.layout().removeWidget(path_map_widget)
+        paths_maps_widget.layout().removeWidget(path_map_widget)
 
     @pyqtSlot()
     def on_delete_path_info(self, path_info_id: int):
@@ -109,10 +121,12 @@ class PathInfoWidget(QWidget):
     @pyqtSlot(int)
     def on_add_path_map(self, id: int):
         self.last_order_index += 1
+        path_map_widget = self.add_path_maps_area()
         self.add_path_map(
+            path_map_widget,
             BaseCharacterPathMapSchema(
                 order_index=self.last_order_index, character_path_info_id=id
-            )
+            ),
         )
 
     @pyqtSlot()
