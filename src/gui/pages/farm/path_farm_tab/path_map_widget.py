@@ -50,7 +50,7 @@ class PathMapWidget(QWidget):
         self.y_edit = QLineEdit()
         y_timer = QTimer()
         y_timer.setSingleShot(True)
-        self.x_edit.textChanged.connect(lambda: y_timer.start(1000))
+        self.y_edit.textChanged.connect(lambda: y_timer.start(1000))
         y_timer.timeout.connect(self.on_edited_path_map)
         self.layout().addWidget(self.y_edit)
 
