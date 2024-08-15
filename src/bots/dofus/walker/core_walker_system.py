@@ -1,7 +1,6 @@
 from contextlib import nullcontext
 from dataclasses import dataclass
 from logging import Logger
-from time import sleep
 from typing import Any, Callable, Literal, NamedTuple, Sequence, TypeVar, overload
 
 import numpy
@@ -106,7 +105,7 @@ class CoreWalkerSystem:
                 )
             )
         else:
-            sleep(0.6)
+            wait()
 
         img = self.capturer.capture()
         if self.map_state.curr_map_info:
