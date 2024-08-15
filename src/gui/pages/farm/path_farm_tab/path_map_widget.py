@@ -41,17 +41,9 @@ class PathMapWidget(QWidget):
 
     def setup_content(self):
         self.x_edit = QLineEdit()
-        x_timer = QTimer()
-        x_timer.setSingleShot(True)
-        self.x_edit.textChanged.connect(lambda: x_timer.start(1000))
-        x_timer.timeout.connect(self.on_edited_path_map)
         self.layout().addWidget(self.x_edit)
 
         self.y_edit = QLineEdit()
-        y_timer = QTimer()
-        y_timer.setSingleShot(True)
-        self.y_edit.textChanged.connect(lambda: y_timer.start(1000))
-        y_timer.timeout.connect(self.on_edited_path_map)
         self.layout().addWidget(self.y_edit)
 
         if self.map:
@@ -60,6 +52,16 @@ class PathMapWidget(QWidget):
 
         if self.id:
             self.add_remove_btn(self.id)
+
+        x_timer = QTimer()
+        x_timer.setSingleShot(True)
+        self.x_edit.textChanged.connect(lambda: x_timer.start(1000))
+        x_timer.timeout.connect(self.on_edited_path_map)
+
+        y_timer = QTimer()
+        y_timer.setSingleShot(True)
+        self.y_edit.textChanged.connect(lambda: y_timer.start(1000))
+        y_timer.timeout.connect(self.on_edited_path_map)
 
     def add_remove_btn(self, id: int):
         remove_btn_widget = PushButtonIcon("delete.svg")

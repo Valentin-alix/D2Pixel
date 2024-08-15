@@ -142,7 +142,7 @@ class Harvester:
                     len(valid_sub_areas),
                 ],
                 k=1,
-            )
+            )[0]
             try:
                 if harvest_action == ActionHarvest.SUB_AREA:
                     self.run_action_sub_area(valid_sub_areas)
