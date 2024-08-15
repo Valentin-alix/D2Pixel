@@ -35,7 +35,10 @@ from src.bots.dofus.sub_area_farming.sub_area_farming_system import (
     SubAreaFarming,
     SubAreaFarmingSystem,
 )
-from src.bots.dofus.walker.core_walker_system import WaitForNewMapWalking
+from src.bots.dofus.walker.core_walker_system import (
+    GoToNeighborsExtraArgs,
+    WaitForNewMapWalking,
+)
 from src.bots.dofus.walker.directions import (
     get_pos_to_direction,
 )
@@ -162,16 +165,6 @@ class Harvester:
         path_info = random.choice(paths_infos)
         self.collect_path_info(path_info)
 
-    def get_wait_for_new_map_by_coll_count(
-        self, collecting_count: int
-    ) -> WaitForNewMapWalking:
-        timeout = 15 + collecting_count * 5
-        wait_default_args = WaitForNewMapWalking(
-            extra_func=self.on_info_modal,
-            retry_args=RetryTimeArgs(timeout=timeout),
-        )
-        return wait_default_args
-
     def collect_path_info(self, path_info: ReadCharacterPathInfoSchema):
         collecting_count: int = 0
 
@@ -179,17 +172,27 @@ class Harvester:
             path_info.path_maps, key=lambda elem: elem.order_index
         )
         for index, path_map in enumerate(ordered_path_maps):
-            wait_args = self.get_wait_for_new_map_by_coll_count(collecting_count)
+            if index > 0:
+                first_go_to_neighbor_args = GoToNeighborsExtraArgs(
+                    use_shift=True,
+                    wait_for_new_map_args=self._get_wait_for_new_map_by_coll_count(
+                        collecting_count
+                    ),
+                )
+            else:
+                first_go_to_neighbor_args = GoToNeighborsExtraArgs()
+
             img = self.walker_sys.travel_to_map(
-                [path_map.map],
-                use_shift_on_first=True if index > 0 else False,
-                wait_for_new_map_first=wait_args,
+                [path_map.map], extra_first_go_neighbors_args=first_go_to_neighbor_args
             )
             collecting_count = self.collect_map(
                 img, self.walker_sys.get_curr_map_info().map
             )
+
         self.walker_sys.change_map(
-            True, self.get_wait_for_new_map_by_coll_count(collecting_count)
+            GoToNeighborsExtraArgs(
+                True, self._get_wait_for_new_map_by_coll_count(collecting_count)
+            )
         )
 
     def run_action_sub_area(self, valid_sub_areas: list[SubAreaSchema]):
@@ -260,12 +263,16 @@ class Harvester:
                     self.walker_sys.get_curr_map_info().map,
                     map_direction.direction,
                 )
-                wait_args = self.get_wait_for_new_map_by_coll_count(collecting_count)
+                wait_args = self._get_wait_for_new_map_by_coll_count(collecting_count)
             else:
                 wait_args = WaitForNewMapWalking()
 
             new_img, was_teleported = self.walker_sys.go_to_neighbor(
-                map_direction, use_shift=is_new_map, wait_new_map_walking_args=wait_args
+                True,
+                map_direction,
+                extra_args=GoToNeighborsExtraArgs(
+                    use_shift=is_new_map, wait_for_new_map_args=wait_args
+                ),
             )
 
             if was_teleported:
@@ -363,3 +370,13 @@ class Harvester:
                 img = clean_image_after_collect(img, high_img, pos)
 
         return collected_count
+
+    def _get_wait_for_new_map_by_coll_count(
+        self, collecting_count: int
+    ) -> WaitForNewMapWalking:
+        timeout = 15 + collecting_count * 5
+        wait_default_args = WaitForNewMapWalking(
+            extra_func=self.on_info_modal,
+            retry_args=RetryTimeArgs(timeout=timeout),
+        )
+        return wait_default_args

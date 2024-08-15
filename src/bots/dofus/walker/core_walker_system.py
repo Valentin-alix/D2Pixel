@@ -69,6 +69,11 @@ class WaitForNewMapWalking(NamedTuple):
     extra_func: Callable[[numpy.ndarray], numpy.ndarray] | None = None
 
 
+class GoToNeighborsExtraArgs(NamedTuple):
+    use_shift: bool = False
+    wait_for_new_map_args: WaitForNewMapWalking = WaitForNewMapWalking()
+
+
 @dataclass
 class CoreWalkerSystem:
     hud_sys: HudSystem
@@ -84,7 +89,7 @@ class CoreWalkerSystem:
     user: ReadUserSchema
     blocked: Blocked
 
-    def on_new_map(self, do_pause: bool = True) -> tuple[bool, numpy.ndarray]:
+    def on_new_map(self, do_pause: bool) -> tuple[bool, numpy.ndarray]:
         """
         Args:
             do_pause (bool, optional): if set to True, wait before capturing. Defaults to True.
@@ -200,7 +205,9 @@ class CoreWalkerSystem:
             new_img: numpy.ndarray | None = None
             for _ in range(3):
                 self.controller.key("h")
-                if (new_img := self.wait_for_new_map(force=False)) is not None:
+                if (
+                    new_img := self.wait_for_new_map(do_pause=False, force=False)
+                ) is not None:
                     break
             if new_img is None:
                 MapService.update_can_havre_sac(
@@ -219,9 +226,9 @@ class CoreWalkerSystem:
             pos=SEARCH_ZAAP_POSITION,
         )
 
-        if (new_img := self.wait_for_new_map(force=False)) is None:
+        if (new_img := self.wait_for_new_map(do_pause=True, force=False)) is None:
             self.controller.click(tp_pos)
-            img = self.wait_for_new_map(force=True)
+            img = self.wait_for_new_map(True, force=True)
         else:
             img = new_img
 
@@ -244,10 +251,10 @@ class CoreWalkerSystem:
         self.controller.click(get_position_by_zaapi_category(zaapi.category))
         self.controller.send_text(zaapi.text, pos=ZAAPI_SEARCH_POSITION)
 
-        new_img = self.wait_for_new_map()
+        new_img = self.wait_for_new_map(True)
         if new_img is None:
             self.controller.click(tp_pos)
-            img = self.wait_for_new_map(force=True)
+            img = self.wait_for_new_map(True, force=True)
         else:
             img = new_img
         return self.hud_sys.close_modals(
@@ -295,6 +302,7 @@ class CoreWalkerSystem:
     @overload
     def wait_for_new_map(
         self,
+        do_pause: bool,
         retry_args: RetryTimeArgs = RetryTimeArgs(),
         is_same_world: bool = True,
         force: Literal[True] = ...,
@@ -303,6 +311,7 @@ class CoreWalkerSystem:
     @overload
     def wait_for_new_map(
         self,
+        do_pause: bool,
         retry_args: RetryTimeArgs = RetryTimeArgs(),
         is_same_world: bool = True,
         force: Literal[False] = ...,
@@ -310,6 +319,7 @@ class CoreWalkerSystem:
 
     def wait_for_new_map(
         self,
+        do_pause: bool,
         retry_args: RetryTimeArgs = RetryTimeArgs(offset_start=0, wait_end=(0, 0)),
         is_same_world: bool = True,
         force: bool = False,
@@ -318,13 +328,14 @@ class CoreWalkerSystem:
             self.get_curr_map_info().img, INFO_MAP_REGION, retry_args, force
         )
         if img is not None:
-            is_new_map, img = self.on_new_map()
+            is_new_map, img = self.on_new_map(do_pause)
             if not is_new_map:
-                return self.wait_for_new_map(retry_args, is_same_world, force)  # type: ignore
+                return self.wait_for_new_map(retry_args, do_pause, is_same_world, force)  # type: ignore
         return img
 
     def wait_for_new_map_walking(
         self,
+        do_pause: bool,
         args: WaitForNewMapWalking = WaitForNewMapWalking(),
     ) -> tuple[numpy.ndarray | None, bool]:
         """wait for new map based on character walking, used for going neighbor map for example
@@ -332,7 +343,7 @@ class CoreWalkerSystem:
         Returns:
             tuple[numpy.ndarray | None, bool]: the new img, was teleported bool
         """
-        return self.wait_for_new_map(args.retry_args), False
+        return self.wait_for_new_map(do_pause, args.retry_args), False
 
     def handle_neighbor_new_map(
         self,
@@ -382,9 +393,9 @@ class CoreWalkerSystem:
 
     def go_to_neighbor(
         self,
+        do_pause: bool,
         map_direction: MapDirectionSchema,
-        use_shift: bool = False,
-        wait_new_map_walking_args=WaitForNewMapWalking(),
+        extra_args: GoToNeighborsExtraArgs = GoToNeighborsExtraArgs(),
     ) -> tuple[numpy.ndarray | None, bool]:
         self.go_out_building()
 
@@ -393,12 +404,14 @@ class CoreWalkerSystem:
 
         for _ in range(MAX_RETRY):
             with (
-                self.controller.hold(win32con.VK_SHIFT) if use_shift else nullcontext()
+                self.controller.hold(win32con.VK_SHIFT)
+                if extra_args.use_shift
+                else nullcontext()
             ):
                 self.controller.click(pos_direction)
 
             new_img, was_teleported = self.wait_for_new_map_walking(
-                wait_new_map_walking_args
+                do_pause, extra_args.wait_for_new_map_args
             )
             new_img, should_retry = self.handle_neighbor_new_map(
                 new_img, map_direction, was_teleported
@@ -412,17 +425,14 @@ class CoreWalkerSystem:
 
     def change_map(
         self,
-        use_shift: bool = False,
-        wait_new_map_walking_args: WaitForNewMapWalking = WaitForNewMapWalking(),
+        go_to_neighbor_extra_args: GoToNeighborsExtraArgs = GoToNeighborsExtraArgs(),
     ) -> tuple[numpy.ndarray, bool]:
         map_directions = MapService.get_map_directions(
             self.service, self.get_curr_map_info().map.id
         )
         self.logger.info("Randomly changing map")
         for map_dir in map_directions:
-            img, was_tp = self.go_to_neighbor(
-                map_dir, use_shift, wait_new_map_walking_args
-            )
+            img, was_tp = self.go_to_neighbor(False, map_dir, go_to_neighbor_extra_args)
             if img is not None:
                 return img, was_tp
         raise CharacterIsStuckException
@@ -439,15 +449,15 @@ class CoreWalkerSystem:
             self.controller.click(PORTAL_TWELVE_ACCEPT_POSITION)
             wait()
             self.controller.click(PORTAL_TWELVE_CONFIRM_POSITION)
-            return self.wait_for_new_map(is_same_world=False)
+            return self.wait_for_new_map(True, is_same_world=False)
 
         def enter_portal_to_incar() -> numpy.ndarray | None:
             self.controller.click(PORTAL_INCARNAM_ENTER_POSITION)
-            return self.wait_for_new_map()
+            return self.wait_for_new_map(True)
 
         def take_portal_to_incar() -> numpy.ndarray | None:
             self.controller.click(PORTAL_INCARNAM_TAKE_POSITION)
-            return self.wait_for_new_map(is_same_world=False)
+            return self.wait_for_new_map(True, is_same_world=False)
 
         if self.get_curr_map_info().map.world_id == 2:
             if world_id == 1:
@@ -490,8 +500,7 @@ class CoreWalkerSystem:
         target_maps: Sequence[BaseMapSchema],
         available_waypoints: list[WaypointSchema] | None = None,
         use_transport: bool = True,
-        use_shift_on_first: bool | None = None,
-        wait_for_new_map_first: WaitForNewMapWalking | None = None,
+        extra_first_go_neighbors_args: GoToNeighborsExtraArgs | None = None,
     ) -> numpy.ndarray:
         if available_waypoints is None:
             available_waypoints = [
@@ -512,59 +521,54 @@ class CoreWalkerSystem:
                 target_maps[0].world_id, use_transport, available_waypoints
             )
 
-        path_map = MapService.find_path(
+        actions_to_map = MapService.find_path(
             self.service,
             use_transport,
             self.get_curr_map_info().map.id,
             [elem.id for elem in available_waypoints],
             [elem.id for elem in target_maps],
         )
-        if path_map is None:
+        if actions_to_map is None:
             self.logger.info(
                 f"Path from {self.get_curr_map_info().map} to {target_maps} not found..."
             )
             raise CharacterIsStuckException
 
-        path_map = path_map[1:]
-        if len(path_map) > 0 and (use_shift_on_first or wait_for_new_map_first):
-            extra_args: dict = {}
-            if use_shift_on_first:
-                extra_args["use_shift"] = use_shift_on_first
-            if wait_for_new_map_first:
-                extra_args["wait_new_map_walking_args"] = wait_for_new_map_first
-            first_action_path_map = path_map[0].from_action
+        actions_to_map = actions_to_map[1:]
+
+        if len(actions_to_map) > 0 and extra_first_go_neighbors_args:
+            first_action_path_map = actions_to_map[0].from_action
             if isinstance(first_action_path_map, MapDirectionSchema):
-                self.logger.info("First is map direction")
                 new_img, was_teleported = self.go_to_neighbor(
-                    first_action_path_map, **extra_args
+                    len(actions_to_map) == 1,
+                    first_action_path_map,
+                    extra_first_go_neighbors_args,
                 )
                 if new_img is None or was_teleported:
                     return self.travel_to_map(
                         target_maps,
                         available_waypoints,
                         use_transport,
-                        use_shift_on_first,
-                        wait_for_new_map_first,
+                        extra_first_go_neighbors_args,
                     )
-                path_map.pop(0)
+                actions_to_map.pop(0)
             else:
-                new_img, was_teleported = self.change_map(**extra_args)
+                new_img, was_teleported = self.change_map(extra_first_go_neighbors_args)
                 if new_img is None or was_teleported:
                     return self.travel_to_map(
                         target_maps,
                         available_waypoints,
                         use_transport,
-                        use_shift_on_first,
-                        wait_for_new_map_first,
+                        extra_first_go_neighbors_args,
                     )
                 return self.travel_to_map(
                     target_maps, available_waypoints, use_transport
                 )
 
-        for action_map_change in path_map:
+        for index, action_map_change in enumerate(actions_to_map):
             if isinstance(action_map_change.from_action, MapDirectionSchema):
                 new_img, was_teleported = self.go_to_neighbor(
-                    action_map_change.from_action
+                    len(actions_to_map) - 1 == index, action_map_change.from_action
                 )
                 if new_img is None or was_teleported:
                     return self.travel_to_map(

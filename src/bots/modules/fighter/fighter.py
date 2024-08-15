@@ -27,7 +27,9 @@ from src.bots.dofus.sub_area_farming.sub_area_farming_system import (
     SubAreaFarming,
     SubAreaFarmingSystem,
 )
-from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
+from src.bots.dofus.walker.core_walker_system import (
+    CoreWalkerSystem,
+)
 from src.exceptions import (
     CharacterIsStuckException,
     StoppedException,
@@ -254,7 +256,7 @@ class Fighter:
                 raise CharacterIsStuckException
 
             new_img, was_teleported = self.core_walker_sys.go_to_neighbor(
-                map_direction, use_shift=False
+                True, map_direction
             )
             if was_teleported:
                 new_img = self.sub_area_farming_sys.go_inside_grouped_sub_area(

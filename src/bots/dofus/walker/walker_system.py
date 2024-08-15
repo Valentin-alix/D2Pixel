@@ -41,7 +41,7 @@ class WalkerSystem(CoreWalkerSystem):
 
     @override
     def wait_for_new_map_walking(
-        self, args: WaitForNewMapWalking = WaitForNewMapWalking()
+        self, do_pause: bool, args: WaitForNewMapWalking = WaitForNewMapWalking()
     ) -> tuple[numpy.ndarray | None, bool]:
         self.animation_manager._prev_img = self.capturer.capture()
 
@@ -68,7 +68,7 @@ class WalkerSystem(CoreWalkerSystem):
                 self.animation_manager._is_start_animation(INFO_MAP_REGION, img)
                 is not None
             ):
-                is_new_map, img = self.on_new_map()
+                is_new_map, img = self.on_new_map(do_pause)
                 if is_new_map:
                     return img, was_teleported
 

@@ -101,12 +101,12 @@ class PathInfoWidget(QWidget):
     ):
         path_map_widget = PathMapWidget(self.service, path_map, map, path_map_id)
         path_map_widget.signals.deleted_path_map.connect(
-            lambda: self.on_delete_path_map(path_map_widget)
+            lambda: self.on_delete_path_map(paths_maps_widget, path_map_widget)
         )
         self.last_order_index = path_map.order_index
         paths_maps_widget.layout().addWidget(path_map_widget)
 
-    @pyqtSlot()
+    @pyqtSlot(object)
     def on_delete_path_map(
         self, paths_maps_widget: QWidget, path_map_widget: PathMapWidget
     ):

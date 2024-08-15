@@ -180,7 +180,7 @@ class FightSystem:
 
         if config == ObjectConfigs.Cross.info_lose_fight:
             self.logger.warning("Loosed Fight")
-            self.core_walker_system.wait_for_new_map()
+            self.core_walker_system.wait_for_new_map(True)
             return (
                 self.hud_sys.close_modals(
                     img,
@@ -214,7 +214,7 @@ class FightSystem:
             self.capturer.capture(),
             ordered_configs_to_check=[ObjectConfigs.Cross.info_lose_fight],
         )
-        self.core_walker_system.wait_for_new_map(force=False)
+        self.core_walker_system.wait_for_new_map(True, force=False)
 
         img = self.revive_character()
         return img

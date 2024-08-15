@@ -45,12 +45,12 @@ class BankBuilding:
     def __go_in_bank_astrub(self):
         self.logger.info("Go in bank astrub")
         self.controller.click(BANK_ASTRUB_IN)
-        return self.core_walker_sys.wait_for_new_map()
+        return self.core_walker_sys.wait_for_new_map(True)
 
     def __go_out_bank_astrub(self):
         self.logger.info("Go out bank astrub")
         self.controller.click(BANK_ASTRUB_OUT)
-        return self.core_walker_sys.wait_for_new_map()
+        return self.core_walker_sys.wait_for_new_map(True)
 
     def __go_in_bank_bonta(self):
         self.logger.info("Go in bank bonta")
