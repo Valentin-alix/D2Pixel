@@ -8,7 +8,7 @@ from src.gui.pages.farm.path_farm_tab.path_info_widget import PathInfoWidget
 from src.services.session import ServiceSession
 
 
-from PyQt5.QtWidgets import QScrollArea, QWidget
+from PyQt5.QtWidgets import QScrollArea
 
 
 class PathFarmTab(QScrollArea):
@@ -16,16 +16,14 @@ class PathFarmTab(QScrollArea):
         self, service: ServiceSession, character: CharacterSchema, *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
-        self.path_farm_widget = QWidget()
-        self.setWidget(self.path_farm_widget)
-        self.setWidgetResizable(True)
-        self.path_farm_widget.setLayout(HorizontalLayout())
+
+        self.setLayout(HorizontalLayout())
         self.service = service
         self.character = character
 
         add_path_info_btn = PushButtonIcon("add.svg")
         add_path_info_btn.clicked.connect(self.on_add_path_info)
-        self.path_farm_widget.layout().addWidget(add_path_info_btn)
+        self.layout().addWidget(add_path_info_btn)
 
         for path_info in self.character.paths_infos:
             self.add_path_info(path_info, path_info.path_maps, path_info.id)
@@ -42,12 +40,12 @@ class PathFarmTab(QScrollArea):
         path_info_widget.signals.deleted_path_info.connect(
             lambda: self.on_remove_path_info(path_info_widget)
         )
-        self.path_farm_widget.layout().addWidget(path_info_widget)
+        self.layout().addWidget(path_info_widget)
 
     @pyqtSlot(object)
     def on_remove_path_info(self, path_info_widget: PathInfoWidget):
         path_info_widget.deleteLater()
-        self.path_farm_widget.layout().removeWidget(path_info_widget)
+        self.layout().removeWidget(path_info_widget)
 
     @pyqtSlot()
     def on_add_path_info(self):

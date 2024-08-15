@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QObject, QTimer, Qt, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QLineEdit, QWidget
+from PyQt5.QtWidgets import QLineEdit, QScrollArea, QWidget
 
 from D2Shared.shared.schemas.character_path_info import (
     BaseCharacterPathInfoSchema,
@@ -43,6 +43,12 @@ class PathInfoWidget(QWidget):
 
         self.setLayout(VerticalLayout())
         self.layout().setAlignment(Qt.AlignTop | Qt.AlignCenter)
+
+        self.paths_maps_widget = QWidget()
+        paths_maps_area = QScrollArea()
+        paths_maps_area.setWidget(self.paths_maps_widget)
+        paths_maps_area.setWidgetResizable(True)
+        self.layout().addWidget(paths_maps_area)
 
         self.setup_content(path_maps)
 
@@ -88,12 +94,12 @@ class PathInfoWidget(QWidget):
             lambda: self.on_delete_path_map(path_map_widget)
         )
         self.last_order_index = path_map.order_index
-        self.layout().addWidget(path_map_widget)
+        self.paths_maps_widget.layout().addWidget(path_map_widget)
 
     @pyqtSlot()
     def on_delete_path_map(self, path_map_widget: PathMapWidget):
         path_map_widget.deleteLater()
-        self.layout().removeWidget(path_map_widget)
+        self.paths_maps_widget.layout().removeWidget(path_map_widget)
 
     @pyqtSlot()
     def on_delete_path_info(self, path_info_id: int):
