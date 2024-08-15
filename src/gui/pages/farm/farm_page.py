@@ -13,7 +13,8 @@ from src.gui.components.organization import (
     VerticalLayout,
 )
 from src.gui.components.play_stop import PlayStopWidget
-from src.gui.pages.farm.path_farm_tab import PathFarmTab
+
+from src.gui.pages.farm.path_farm_tab.path_farm_tab import PathFarmTab
 from src.gui.pages.farm.sub_area_farm_tab import SubAreaFarmTab
 from src.gui.signals.app_signals import AppSignals
 from src.gui.utils.run_in_background import run_in_background

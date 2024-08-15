@@ -1,3 +1,5 @@
+from enum import Enum, auto
+import random
 import traceback
 from dataclasses import dataclass, field
 from logging import Logger
@@ -11,6 +13,7 @@ from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.enums import Direction
+from D2Shared.shared.schemas.character_path_info import ReadCharacterPathInfoSchema
 from D2Shared.shared.schemas.collectable import CollectableSchema
 from D2Shared.shared.schemas.map import MapSchema
 from D2Shared.shared.schemas.sub_area import SubAreaSchema
@@ -69,6 +72,11 @@ def clean_image_after_collect(
 harvester_choose_sub_area_lock = Lock()
 
 
+class ActionHarvest(Enum):
+    SUB_AREA = auto()
+    CUSTOM_PATH = auto()
+
+
 @dataclass
 class Harvester:
     service: ServiceSession
@@ -100,17 +108,16 @@ class Harvester:
     def run(self) -> None:
         if self.character_state.character.lvl < 10:
             self.logger.warning(
-                "Character can't use module harvester because he can't acceed bank"
+                "Character can't use module harvester because he can't access bank"
             )
             return None
 
         limit_time: float = convert_time_to_seconds(
             self.user.config_user.time_harvester
         ) * multiply_offset((0.6, 1.4))
-
         initial_time = perf_counter()
-        possible_collectable_ids = [_elem.id for _elem in self.possible_colls]
 
+        possible_collectable_ids = [_elem.id for _elem in self.possible_colls]
         valid_sub_areas = SubAreaService.get_valid_sub_areas_harvester(
             self.service, self.character_state.character.id
         )
@@ -124,34 +131,60 @@ class Harvester:
         )
 
         while perf_counter() - initial_time < limit_time:
-            with harvester_choose_sub_area_lock:
-                sub_areas = self.sub_area_farming.get_random_grouped_sub_area(
-                    self.harvest_sub_areas_farming_ids,
-                    self.weight_by_map_harvest,
-                    valid_sub_areas,
-                )
-            self.harvest_sub_areas_farming_ids.extend((elem.id for elem in sub_areas))
+            harvest_action = random.choices(
+                [ActionHarvest.CUSTOM_PATH, ActionHarvest.SUB_AREA],
+                weights=[
+                    len(self.character_state.character.paths_infos),
+                    len(valid_sub_areas),
+                ],
+                k=1,
+            )
             try:
-                self.logger.info(f"Harvest : gonna farm {sub_areas}")
-                self.collect_sub_areas(
-                    sub_areas,
-                    wait_default_args=WaitForNewMapWalking(
-                        extra_func=self.on_info_modal
-                    ),
-                )
+                if harvest_action == ActionHarvest.SUB_AREA:
+                    self.run_action_sub_area(valid_sub_areas)
+                else:
+                    self.run_action_custom_path(
+                        self.character_state.character.paths_infos
+                    )
             except StoppedException:
                 raise
             except (UnknowStateException, CharacterIsStuckException):
                 self.logger.error(traceback.format_exc())
                 self.deblock_sys.deblock_character()
-            finally:
-                for sub_area in sub_areas:
-                    self.harvest_sub_areas_farming_ids.remove(sub_area.id)
 
         item_ids = [elem.item_id for elem in self.possible_colls]
         CharacterService.add_bank_items(
             self.service, self.character_state.character.id, item_ids
         )
+
+    def run_action_custom_path(self, paths_infos: list[ReadCharacterPathInfoSchema]):
+        path_info = random.choice(paths_infos)
+        self.collect_path_info(path_info)
+
+    def collect_path_info(self, path_info: ReadCharacterPathInfoSchema):
+        for path_map in sorted(path_info.path_maps, key=lambda elem: elem.order_index):
+            self.walker_sys.travel_to_map([path_map.map])
+            self.collect_map(
+                self.capturer.capture(), self.walker_sys.get_curr_map_info().map
+            )
+
+    def run_action_sub_area(self, valid_sub_areas: list[SubAreaSchema]):
+        with harvester_choose_sub_area_lock:
+            sub_areas = self.sub_area_farming.get_random_grouped_sub_area(
+                self.harvest_sub_areas_farming_ids,
+                self.weight_by_map_harvest,
+                valid_sub_areas,
+            )
+        self.harvest_sub_areas_farming_ids.extend((elem.id for elem in sub_areas))
+        try:
+            self.logger.info(f"Harvest : gonna farm {sub_areas}")
+            self.collect_sub_areas(
+                sub_areas,
+                wait_default_args=WaitForNewMapWalking(extra_func=self.on_info_modal),
+            )
+        finally:
+            for sub_area in sub_areas:
+                self.harvest_sub_areas_farming_ids.remove(sub_area.id)
 
     def on_info_modal(self, img: numpy.ndarray) -> numpy.ndarray:
         img, events = self.hud_sys.handle_info_modal(img)
@@ -264,11 +297,11 @@ class Harvester:
         self,
         img: numpy.ndarray,
         map: MapSchema,
-        next_direction: Direction,
+        next_direction: Direction | None = None,
     ) -> int:
         curr_direction = self.walker_sys.map_state.curr_direction
         start_pos = get_pos_to_direction(curr_direction) if curr_direction else None
-        end_pos = get_pos_to_direction(next_direction)
+        end_pos = get_pos_to_direction(next_direction) if next_direction else None
 
         collectable_configs = CollectableService.get_possible_config_on_map(
             self.service, map.id, [_elem.id for _elem in self.possible_colls]
