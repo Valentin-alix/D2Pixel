@@ -24,7 +24,7 @@ class ServiceSession:
         if rep.status_code in [500]:
             self.logger.error("Erreur du serveur interne.")
         elif rep.status_code in [400]:
-            self.logger.error(f"Erreur : {rep.content}")
+            self.logger.error(f"Erreur : {rep.json()}")
         elif rep.status_code == 401:
             self.logger.error("Erreur d'authentification.")
             if "/login/" not in rep.url:

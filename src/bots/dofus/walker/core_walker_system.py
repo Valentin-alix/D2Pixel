@@ -410,6 +410,23 @@ class CoreWalkerSystem:
 
         return None, was_teleported
 
+    def change_map(
+        self,
+        use_shift: bool = False,
+        wait_new_map_walking_args: WaitForNewMapWalking = WaitForNewMapWalking(),
+    ) -> tuple[numpy.ndarray, bool]:
+        map_directions = MapService.get_map_directions(
+            self.service, self.get_curr_map_info().map.id
+        )
+        self.logger.info("Randomly changing map")
+        for map_dir in map_directions:
+            img, was_tp = self.go_to_neighbor(
+                map_dir, use_shift, wait_new_map_walking_args
+            )
+            if img is not None:
+                return img, was_tp
+        raise CharacterIsStuckException
+
     def travel_to_world(
         self,
         world_id: int,
@@ -473,6 +490,8 @@ class CoreWalkerSystem:
         target_maps: Sequence[BaseMapSchema],
         available_waypoints: list[WaypointSchema] | None = None,
         use_transport: bool = True,
+        use_shift_on_first: bool | None = None,
+        wait_for_new_map_first: WaitForNewMapWalking | None = None,
     ) -> numpy.ndarray:
         if available_waypoints is None:
             available_waypoints = [
@@ -506,7 +525,42 @@ class CoreWalkerSystem:
             )
             raise CharacterIsStuckException
 
-        self.logger.info("Found path")
+        path_map = path_map[1:]
+        if len(path_map) > 0 and (use_shift_on_first or wait_for_new_map_first):
+            extra_args: dict = {}
+            if use_shift_on_first:
+                extra_args["use_shift"] = use_shift_on_first
+            if wait_for_new_map_first:
+                extra_args["wait_new_map_walking_args"] = wait_for_new_map_first
+            first_action_path_map = path_map[0].from_action
+            if isinstance(first_action_path_map, MapDirectionSchema):
+                self.logger.info("First is map direction")
+                new_img, was_teleported = self.go_to_neighbor(
+                    first_action_path_map, **extra_args
+                )
+                if new_img is None or was_teleported:
+                    return self.travel_to_map(
+                        target_maps,
+                        available_waypoints,
+                        use_transport,
+                        use_shift_on_first,
+                        wait_for_new_map_first,
+                    )
+                path_map.pop(0)
+            else:
+                new_img, was_teleported = self.change_map(**extra_args)
+                if new_img is None or was_teleported:
+                    return self.travel_to_map(
+                        target_maps,
+                        available_waypoints,
+                        use_transport,
+                        use_shift_on_first,
+                        wait_for_new_map_first,
+                    )
+                return self.travel_to_map(
+                    target_maps, available_waypoints, use_transport
+                )
+
         for action_map_change in path_map:
             if isinstance(action_map_change.from_action, MapDirectionSchema):
                 new_img, was_teleported = self.go_to_neighbor(

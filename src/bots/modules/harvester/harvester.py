@@ -56,6 +56,7 @@ from src.services.collectable import CollectableService
 from src.services.session import ServiceSession
 from src.services.sub_area import SubAreaService
 from src.states.character_state import CharacterState
+from src.utils.retry import RetryTimeArgs
 from src.utils.time import convert_time_to_seconds
 from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
@@ -161,12 +162,35 @@ class Harvester:
         path_info = random.choice(paths_infos)
         self.collect_path_info(path_info)
 
+    def get_wait_for_new_map_by_coll_count(
+        self, collecting_count: int
+    ) -> WaitForNewMapWalking:
+        timeout = 15 + collecting_count * 5
+        wait_default_args = WaitForNewMapWalking(
+            extra_func=self.on_info_modal,
+            retry_args=RetryTimeArgs(timeout=timeout),
+        )
+        return wait_default_args
+
     def collect_path_info(self, path_info: ReadCharacterPathInfoSchema):
-        for path_map in sorted(path_info.path_maps, key=lambda elem: elem.order_index):
-            self.walker_sys.travel_to_map([path_map.map])
-            self.collect_map(
-                self.capturer.capture(), self.walker_sys.get_curr_map_info().map
+        collecting_count: int = 0
+
+        ordered_path_maps = sorted(
+            path_info.path_maps, key=lambda elem: elem.order_index
+        )
+        for index, path_map in enumerate(ordered_path_maps):
+            wait_args = self.get_wait_for_new_map_by_coll_count(collecting_count)
+            img = self.walker_sys.travel_to_map(
+                [path_map.map],
+                use_shift_on_first=True if index > 0 else False,
+                wait_for_new_map_first=wait_args,
             )
+            collecting_count = self.collect_map(
+                img, self.walker_sys.get_curr_map_info().map
+            )
+        self.walker_sys.change_map(
+            True, self.get_wait_for_new_map_by_coll_count(collecting_count)
+        )
 
     def run_action_sub_area(self, valid_sub_areas: list[SubAreaSchema]):
         with harvester_choose_sub_area_lock:
@@ -178,10 +202,7 @@ class Harvester:
         self.harvest_sub_areas_farming_ids.extend((elem.id for elem in sub_areas))
         try:
             self.logger.info(f"Harvest : gonna farm {sub_areas}")
-            self.collect_sub_areas(
-                sub_areas,
-                wait_default_args=WaitForNewMapWalking(extra_func=self.on_info_modal),
-            )
+            self.collect_sub_areas(sub_areas)
         finally:
             for sub_area in sub_areas:
                 self.harvest_sub_areas_farming_ids.remove(sub_area.id)
@@ -206,11 +227,7 @@ class Harvester:
                 )
         return img
 
-    def collect_sub_areas(
-        self,
-        sub_areas: list[SubAreaSchema],
-        wait_default_args: WaitForNewMapWalking = WaitForNewMapWalking(),
-    ):
+    def collect_sub_areas(self, sub_areas: list[SubAreaSchema]):
         max_time = SubAreaService.get_max_time_harvester(
             self.service, [elem.id for elem in sub_areas]
         )
@@ -243,12 +260,9 @@ class Harvester:
                     self.walker_sys.get_curr_map_info().map,
                     map_direction.direction,
                 )
-                timeout = 15 + collecting_count * 5
-                wait_args = wait_default_args._replace(
-                    retry_args=wait_default_args.retry_args._replace(timeout=timeout)
-                )
+                wait_args = self.get_wait_for_new_map_by_coll_count(collecting_count)
             else:
-                wait_args = wait_default_args
+                wait_args = WaitForNewMapWalking()
 
             new_img, was_teleported = self.walker_sys.go_to_neighbor(
                 map_direction, use_shift=is_new_map, wait_new_map_walking_args=wait_args
