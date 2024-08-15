@@ -58,9 +58,6 @@ class PathMapWidget(QWidget):
             self.x_edit.setText(str(self.map.x))
             self.y_edit.setText(str(self.map.y))
 
-        self.x_edit.textChanged.connect(self.on_edited_path_map)
-        self.y_edit.textChanged.connect(self.on_edited_path_map)
-
         if self.id:
             self.add_remove_btn(self.id)
 
