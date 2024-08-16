@@ -2,7 +2,6 @@ import cv2
 import numpy
 import tesserocr
 from D2Shared.shared.consts.adaptative.regions import PA_REGION
-from D2Shared.shared.utils.debugger import timeit
 
 from src.image_manager.masks import get_white_masked
 from src.image_manager.ocr import (
@@ -13,7 +12,6 @@ from src.image_manager.ocr import (
 from src.image_manager.transformation import crop_image
 
 
-@timeit
 def get_pa(img: numpy.ndarray):
     img = crop_image(img, PA_REGION)
     img = ~get_white_masked(img)
