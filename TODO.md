@@ -1,4 +1,4 @@
-FIX ANKAMA le bouton play
+quand on update les paths ca update pas internally
 
 Utiliser yolov8 pour les collectable pour unity qui arrive (bcp plus rapide et devient tjrs meilleur modèle)
 

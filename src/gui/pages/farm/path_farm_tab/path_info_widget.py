@@ -19,7 +19,7 @@ from src.services.session import ServiceSession
 
 
 class PathInfoWidgetSignals(QObject):
-    deleted_path_info = pyqtSignal()
+    deleted_path_info = pyqtSignal(int)
 
 
 class PathInfoWidget(QWidget):
@@ -118,7 +118,7 @@ class PathInfoWidget(QWidget):
     def on_delete_path_info(self):
         if self.id:
             PathInfoService.delete_character_path_info(self.service, self.id)
-        self.signals.deleted_path_info.emit()
+        self.signals.deleted_path_info.emit(self.id)
 
     @pyqtSlot(int)
     def on_add_path_map(self, id: int):
@@ -147,4 +147,4 @@ class PathInfoWidget(QWidget):
             path_info = PathInfoService.update_character_path_info(
                 self.service, self.id, UpdateCharacterPathInfoSchema(name=name)
             )
-        self.path_info = path_info
+        self.path_info.name = path_info.name

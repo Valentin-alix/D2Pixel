@@ -5,7 +5,7 @@ from logging import Logger
 from pathlib import Path
 
 from src.services.item import ItemService
-from src.services.map import MapService
+from src.services.sub_area import SubAreaService
 
 sys.path.append(os.path.join(Path(__file__).parent.parent.parent))
 from D2Shared.shared.enums import JobEnum
@@ -71,5 +71,11 @@ class TestServiceCharacter(unittest.TestCase):
         # items = ItemService.get_items(self.service)
         # print(perf_counter() - before)
         # print(len(items))
-        temp = MapService.get_limit_maps_sub_area(self.service, [])
+        valid_sub_ids = [
+            _elem.id
+            for _elem in SubAreaService.get_valid_sub_areas_harvester(
+                self.service, self.character.id
+            )
+        ]
+        temp = SubAreaService.get_max_time_harvester(self.service, valid_sub_ids)
         print(temp)

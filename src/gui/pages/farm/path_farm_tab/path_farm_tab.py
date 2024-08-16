@@ -38,12 +38,17 @@ class PathFarmTab(QScrollArea):
             self.character.id, self.service, path_info, path_maps, path_info_id
         )
         path_info_widget.signals.deleted_path_info.connect(
-            lambda: self.on_remove_path_info(path_info_widget)
+            lambda path_info_id: self.on_remove_path_info(
+                path_info_id, path_info_widget
+            )
         )
         self.layout().addWidget(path_info_widget)
 
     @pyqtSlot(object)
-    def on_remove_path_info(self, path_info_widget: PathInfoWidget):
+    def on_remove_path_info(self, path_info_id: int, path_info_widget: PathInfoWidget):
+        self.character.paths_infos = [
+            _elem for _elem in self.character.paths_infos if _elem.id != path_info_id
+        ]
         path_info_widget.deleteLater()
         self.layout().removeWidget(path_info_widget)
 

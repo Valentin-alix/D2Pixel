@@ -90,7 +90,7 @@ class Organizer:
                 rect.bottom - end_y,
             )
             offset_x: int = (shadows[2] - shadows[0]) // 2
-            offset_y: int = -title_bar_height
+            offset_y: int = -title_bar_height + 8
 
             OFFSET_BY_PROCESS_NAME[process_name] = (offset_x, offset_y)
 
