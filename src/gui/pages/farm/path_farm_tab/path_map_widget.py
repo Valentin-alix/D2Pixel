@@ -50,8 +50,7 @@ class PathMapWidget(QWidget):
             self.x_edit.setText(str(self.map.x))
             self.y_edit.setText(str(self.map.y))
 
-        if self.id:
-            self.add_remove_btn(self.id)
+        self.add_remove_btn()
 
         x_timer = QTimer()
         x_timer.setSingleShot(True)
@@ -63,13 +62,14 @@ class PathMapWidget(QWidget):
         self.y_edit.textChanged.connect(lambda: y_timer.start(1000))
         y_timer.timeout.connect(self.on_edited_path_map)
 
-    def add_remove_btn(self, id: int):
+    def add_remove_btn(self):
         remove_btn_widget = PushButtonIcon("delete.svg")
-        remove_btn_widget.clicked.connect(lambda: self.on_clicked_remove_btn(id))
+        remove_btn_widget.clicked.connect(self.on_clicked_remove_btn)
         self.layout().addWidget(remove_btn_widget)
 
-    def on_clicked_remove_btn(self, id: int):
-        PathMapService.delete_character_path_map(self.service, id)
+    def on_clicked_remove_btn(self):
+        if self.id:
+            PathMapService.delete_character_path_map(self.service, self.id)
         self.signals.deleted_path_map.emit()
 
     @pyqtSlot()
@@ -89,7 +89,6 @@ class PathMapWidget(QWidget):
                 path_map = PathMapService.create_path_map(self.service, path_map_datas)
                 self.path_map = path_map
                 self.id = path_map.id
-                self.add_remove_btn(self.id)
             else:
                 self.path_map = PathMapService.update_character_path_map(
                     self.service, self.id, path_map_datas

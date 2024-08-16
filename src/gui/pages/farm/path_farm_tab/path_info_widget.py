@@ -61,7 +61,8 @@ class PathInfoWidget(QWidget):
 
         if self.id:
             self.add_path_map_add_btn(self.id)
-            self.add_path_info_remove_btn(self.id)
+
+        self.add_path_info_remove_btn()
 
         if path_maps:
             paths_maps_widget = self.add_path_maps_area()
@@ -87,9 +88,9 @@ class PathInfoWidget(QWidget):
         add_path_map_btn.clicked.connect(lambda: self.on_add_path_map(id))
         self.layout().addWidget(add_path_map_btn)
 
-    def add_path_info_remove_btn(self, id: int):
+    def add_path_info_remove_btn(self):
         btn_delete_path_info = PushButtonIcon("delete.svg")
-        btn_delete_path_info.clicked.connect(lambda: self.on_delete_path_info(id))
+        btn_delete_path_info.clicked.connect(self.on_delete_path_info)
         self.layout().addWidget(btn_delete_path_info)
 
     def add_path_map(
@@ -114,8 +115,9 @@ class PathInfoWidget(QWidget):
         paths_maps_widget.layout().removeWidget(path_map_widget)
 
     @pyqtSlot()
-    def on_delete_path_info(self, path_info_id: int):
-        PathInfoService.delete_character_path_info(self.service, path_info_id)
+    def on_delete_path_info(self):
+        if self.id:
+            PathInfoService.delete_character_path_info(self.service, self.id)
         self.signals.deleted_path_info.emit()
 
     @pyqtSlot(int)
@@ -141,7 +143,6 @@ class PathInfoWidget(QWidget):
             )
             self.id = path_info.id
             self.add_path_map_add_btn(self.id)
-            self.add_path_info_remove_btn(self.id)
         else:
             path_info = PathInfoService.update_character_path_info(
                 self.service, self.id, UpdateCharacterPathInfoSchema(name=name)
