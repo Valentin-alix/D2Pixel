@@ -59,7 +59,7 @@ from src.window_manager.controller import Controller
 
 EntityMapT = TypeVar("EntityMapT", bound=EntityMap)
 
-BLACKLISTED_WAYPOINT_IDS: list[int] = [33]  # Temp fix
+BLACKLISTED_WAYPOINT_IDS: list[int] = [32, 33]  # Temp fix
 
 
 class WaitForNewMapWalking(NamedTuple):

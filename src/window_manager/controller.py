@@ -4,7 +4,6 @@ from logging import Logger
 from threading import Event, RLock
 from time import sleep
 
-
 import win32api
 import win32con
 import win32gui

@@ -3,7 +3,6 @@ import sys
 from logging import Logger
 from pathlib import Path
 from threading import Event, Lock
-from time import sleep
 from typing import Iterator
 
 import cv2
@@ -68,5 +67,4 @@ def get_sc_ankama():
 
 
 if __name__ == "__main__":
-    sleep(4)
     get_sc_dofus()

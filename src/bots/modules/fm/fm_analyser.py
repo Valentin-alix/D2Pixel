@@ -6,13 +6,13 @@ import numpy
 import tesserocr
 
 from D2Shared.shared.consts.adaptative.regions import LINE_AREAS
-from D2Shared.shared.consts.stats import BIG_STATS_NAMES
 from D2Shared.shared.schemas.stat import (
     BaseLineSchema,
     RuneSchema,
     StatSchema,
 )
 from D2Shared.shared.utils.clean import clean_line_text
+from D2Shared.shared.utils.randomizer import multiply_offset
 from D2Shared.shared.utils.text_similarity import get_similarity
 from src.bots.dofus.elements.smithmagic_workshop import SmithMagicWorkshop
 from src.exceptions import UnknowStateException
@@ -102,6 +102,7 @@ class FmAnalyser:
     def get_optimal_index_rune_for_target_line(
         self, current_line: BaseLineSchema, target_line: BaseLineSchema
     ) -> tuple[int, RuneSchema] | None:
+        # TODO Get count max
         for index, rune in list(enumerate(current_line.stat.runes))[::-1]:
             if (
                 target_line.value - current_line.value
@@ -133,10 +134,10 @@ class FmAnalyser:
             if difference_weight >= 1.0:
                 # ignore achieved lines
                 continue
-
-            # TODO If a stat failed between big stat missing, then ignore next line
-            if target_line.stat.name in BIG_STATS_NAMES:
-                difference_weight = 1  # put big stats at last
+            difference_weight *= multiply_offset((0.95, 1))
+            # TODO If a stat failed  between big stat missing, then ignore next line
+            # if target_line.stat.name in BIG_STATS_NAMES:
+            #     difference_weight = 1  # put big stats at last
 
             if priority_line_with_weight is None or (
                 priority_line_with_weight[1] > difference_weight

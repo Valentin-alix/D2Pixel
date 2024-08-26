@@ -44,7 +44,7 @@ class Fm:
         self._searched_rune_name = None
         old_img: numpy.ndarray | None = None
         while True:
-            wait((0.3, 1.5))
+            wait((0.3, 3), is_weighted=True, coeff=3)
             img = self.capturer.capture()
             if not self.smithmagic_workshop.has_history_changed(old_img, img):
                 continue

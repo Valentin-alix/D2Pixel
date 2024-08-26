@@ -4,8 +4,10 @@ import unittest
 from logging import Logger
 from pathlib import Path
 
+from src.bots.dofus.sub_area_farming.sub_area_farming_system import SubAreaFarming
 from src.services.item import ItemService
 from src.services.sub_area import SubAreaService
+from src.states.character_state import CharacterState
 
 sys.path.append(os.path.join(Path(__file__).parent.parent.parent))
 from D2Shared.shared.enums import JobEnum
@@ -17,10 +19,11 @@ from src.services.session import ServiceSession
 
 class TestServiceCharacter(unittest.TestCase):
     def setUp(self) -> None:
-        self.service = ServiceSession(Logger("Xeloreeuu"), AppSignals())
+        self.service = ServiceSession(Logger("Maryan-Samal"), AppSignals())
         self.character = CharacterService.get_or_create_character(
-            self.service, "Tema-la-ratte"
+            self.service, "Maryan-Samal"
         )
+
         # for job_id in HARVEST_JOBS_ID:
         #     CharacterService.update_job_info(
         #         self.service, self.character.id, job_id, 80
@@ -71,11 +74,14 @@ class TestServiceCharacter(unittest.TestCase):
         # items = ItemService.get_items(self.service)
         # print(perf_counter() - before)
         # print(len(items))
-        valid_sub_ids = [
-            _elem.id
-            for _elem in SubAreaService.get_valid_sub_areas_harvester(
-                self.service, self.character.id
-            )
-        ]
-        temp = SubAreaService.get_max_time_harvester(self.service, valid_sub_ids)
-        print(temp)
+        valid_subs = SubAreaService.get_valid_sub_areas_fighter(
+            self.service, self.character.id
+        )
+        self.sub_area_farming = SubAreaFarming(
+            self.service, CharacterState(self.service, self.character.id)
+        )
+        sub_areas = self.sub_area_farming.get_random_grouped_sub_area(
+            [],
+            {},
+            valid_subs,
+        )
