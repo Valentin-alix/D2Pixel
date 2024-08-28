@@ -43,13 +43,9 @@ class TestParseItem(unittest.TestCase):
         img = cv2.imread(path_img)
         lines = self.fm_analyser.get_current_lines_from_img(img)
 
-        print(self.fm_analyser.get_max_lines_values_from_img(img))
         assert lines is not None and len(lines) == 10
 
-        return
-
         temp = self.fm_analyser.get_optimal_index_rune_for_target_line(
-            10,
             lines[0],
             BaseLineSchema(value=345, stat_id=lines[0].stat_id, stat=lines[0].stat),
         )
