@@ -117,15 +117,15 @@ class Fm:
                 return self.put_exo(current_item_lines, exo_stat)
             return True
 
-        related_max_value = max_lines_values[
-            next(
-                index
-                for index, _line in enumerate(current_item_lines)
-                if _line.stat_id == line_prio.current_line.stat_id
-            )
-        ]
+        # related_max_value = max_lines_values[
+        #     next(
+        #         index
+        #         for index, _line in enumerate(current_item_lines)
+        #         if _line.stat_id == line_prio.current_line.stat_id
+        #     )
+        # ]
         col_rune_info = self.fm_analyser.get_optimal_index_rune_for_target_line(
-            related_max_value, line_prio.current_line, line_prio.target_line
+            line_prio.current_line, line_prio.target_line
         )
         if col_rune_info is None:
             raise ValueError(

@@ -44,7 +44,6 @@ class FmAnalyser:
 
     def get_optimal_index_rune_for_target_line(
         self,
-        max_line_value: int,
         current_line: BaseLineSchema,
         target_line: BaseLineSchema,
     ) -> tuple[int, RuneSchema] | None:
@@ -52,9 +51,11 @@ class FmAnalyser:
             current_line.stat.runes, key=lambda rune: rune.stat_quantity, reverse=True
         )
         for index, rune in enumerate(ordered_runes):
-            if target_line.value - current_line.value >= rune.stat_quantity or (
-                current_line.value + rune.stat_quantity <= max_line_value
-                and (
+            if (
+                target_line.value - current_line.value >= rune.stat_quantity
+                or
+                # current_line.value + rune.stat_quantity <= max_line_value
+                (
                     index == len(ordered_runes) - 1
                     or current_line.value >= 20 * ordered_runes[index + 1].stat_quantity
                 )
