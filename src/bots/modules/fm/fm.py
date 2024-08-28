@@ -73,6 +73,7 @@ class Fm:
         self.controller.click(FIRST_OBJECT_INVENTORY_POSITION, count=2)
         wait((0.6, 1.5))
         self.controller.click(MERGE_POSITION)
+        wait((0.6, 3))
 
     def put_exo(
         self,
