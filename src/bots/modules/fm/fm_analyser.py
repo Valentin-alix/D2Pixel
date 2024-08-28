@@ -170,6 +170,7 @@ class FmAnalyser:
                     if text == "":
                         break
                     max_lines_values.append(int(text))
+            self.logger.info(max_lines_values)
         except ValueError:
             raise UnknowStateException(image, "magic_stat_item_parse_max_err")
         return max_lines_values
