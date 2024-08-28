@@ -52,13 +52,9 @@ class FmAnalyser:
         )
         for index, rune in enumerate(ordered_runes):
             if (
-                target_line.value - current_line.value >= rune.stat_quantity
-                or
-                # current_line.value + rune.stat_quantity <= max_line_value
-                (
-                    index == len(ordered_runes) - 1
-                    or current_line.value >= 20 * ordered_runes[index + 1].stat_quantity
-                )
+                current_line.value + rune.stat_quantity <= target_line.value
+                or index == len(ordered_runes) - 1
+                or current_line.value >= 20 * ordered_runes[index + 1].stat_quantity
             ):
                 # si le resultat donne une valeur inférieur ou égale à la cible
                 # ou si la valeur recherché est trop haute pour la rune suivante
