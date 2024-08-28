@@ -43,19 +43,24 @@ class Fm:
     ):
         self._searched_rune_name = None
         old_img: numpy.ndarray | None = None
+        max_lines_values = self.fm_analyser.get_max_lines_values_from_img(
+            self.capturer.capture()
+        )
         while True:
             wait((0.3, 3), is_weighted=True, coeff=3)
             img = self.capturer.capture()
             if not self.smithmagic_workshop.has_history_changed(old_img, img):
                 continue
-            current_lines: list[BaseLineSchema] | None = (
-                self.fm_analyser.get_stats_item_selected(img)
+            current_lines: list[BaseLineSchema] = (
+                self.fm_analyser.get_current_lines_from_img(img)
             )
-            if current_lines is None:
-                self.logger.info("Could not get stats of item")
-                return None
             self.logger.info(f"Current lines : {current_lines}")
-            if self.put_rune(current_lines, target_lines, exo_stat, equipment) is True:
+            if (
+                self.put_rune(
+                    max_lines_values, current_lines, target_lines, exo_stat, equipment
+                )
+                is True
+            ):
                 self.logger.info("Target item achieved")
                 return None
             old_img = img
@@ -93,6 +98,7 @@ class Fm:
 
     def put_rune(
         self,
+        max_lines_values: list[int],
         current_item_lines: list[BaseLineSchema],
         target_item_lines: list[BaseLineSchema],
         exo_stat: StatSchema | None = None,
@@ -111,8 +117,15 @@ class Fm:
                 return self.put_exo(current_item_lines, exo_stat)
             return True
 
+        related_max_value = max_lines_values[
+            next(
+                index
+                for index, _line in enumerate(current_item_lines)
+                if _line.stat_id == line_prio.current_line.stat_id
+            )
+        ]
         col_rune_info = self.fm_analyser.get_optimal_index_rune_for_target_line(
-            line_prio.current_line, line_prio.target_line
+            related_max_value, line_prio.current_line, line_prio.target_line
         )
         if col_rune_info is None:
             raise ValueError(
