@@ -58,7 +58,12 @@ class FmAnalyser:
             ):
                 # si le resultat donne une valeur inférieur ou égale à la cible
                 # ou si la valeur recherché est trop haute pour la rune suivante
-                return index, rune
+                related_index: int = next(
+                    index
+                    for index, rune in enumerate(current_line.stat.runes)
+                    if rune.stat_quantity == rune.stat_quantity
+                )
+                return related_index, rune
 
         return None
 
