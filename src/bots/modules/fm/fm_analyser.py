@@ -21,7 +21,10 @@ from src.image_manager.ocr import (
     get_text_from_image,
     set_config_for_ocr_number,
 )
-from src.image_manager.transformation import crop_image, img_to_gray
+from src.image_manager.transformation import (
+    crop_image,
+    img_to_gray,
+)
 from src.services.session import ServiceSession
 from src.services.stat import StatService
 
@@ -165,7 +168,6 @@ class FmAnalyser:
                 set_config_for_ocr_number(tes_api, white_list="-0123456789")
                 for line_area in LINE_MAX_AREAS:
                     croped_img = crop_image(image, line_area)
-                    croped_img = img_to_gray(croped_img)
                     text = get_text_from_image(croped_img, tes_api)
                     if text == "":
                         break

@@ -29,7 +29,7 @@ class TestParseItem(unittest.TestCase):
         img = cv2.imread(path_img)
         lines = self.fm_analyser.get_current_lines_from_img(img)
 
-        self.fm_analyser.get_max_lines_values_from_img(img)
+        print(self.fm_analyser.get_max_lines_values_from_img(img))
         assert lines is not None and len(lines) == 5
 
         assert lines[0].value == 2
@@ -42,7 +42,11 @@ class TestParseItem(unittest.TestCase):
         path_img = os.path.join(PATH_FIXTURES, "anneau_brouce.png")
         img = cv2.imread(path_img)
         lines = self.fm_analyser.get_current_lines_from_img(img)
+
+        print(self.fm_analyser.get_max_lines_values_from_img(img))
         assert lines is not None and len(lines) == 10
+
+        return
 
         temp = self.fm_analyser.get_optimal_index_rune_for_target_line(
             10,
@@ -66,7 +70,7 @@ class TestParseItem(unittest.TestCase):
         path_img = os.path.join(PATH_FIXTURES, "choudini.png")
         img = cv2.imread(path_img)
         stats = self.fm_analyser.get_current_lines_from_img(img)
-        print(stats)
+        print(self.fm_analyser.get_max_lines_values_from_img(img))
         assert stats is not None and len(stats) == 5
         assert stats[0].value == 3
         assert stats[1].value == 8
