@@ -133,7 +133,7 @@ class FmPage(QWidget):
     @pyqtSlot(object)
     def _on_refresh(self, bot: Bot):
         self.equipment_combo.setCurrentIndex(0)
-        lines_item = bot.fm_analyser.get_stats_item_selected(bot.capturer.capture())
+        lines_item = bot.fm_analyser.get_current_lines_from_img(bot.capturer.capture())
         if lines_item is None:
             return
         self.curr_fm_item = self._insert_and_get_fm_item()
