@@ -1,5 +1,26 @@
 # Utilisation
 
+### Présentation
+
+AutoYieldMaster est un bot full pixel, donc il ne marche qu'a travers l'analyse d'image et la simulation de clique, il marche en arrière plan sauf si vous voulez farmer les monstres à travers le mode combat.
+
+Le bot peux :
+- Farmer les ressources récoltables (Paysan, Bucheron, Alchimiste, Pêcheur)
+- Craft à travers les métiers (Paysan, Bucheron, Alchimiste, Pêcheur)
+- Vendre des ressources ou consommables
+- Automatiser la forgemagie d'exo
+
+
+![alt text](docs/farm_page.png)
+
+![alt text](docs/craft_page.png)
+
+![alt text](docs/sell_page.png)
+
+![alt text](docs/fm_page.png)
+
+![alt text](docs/analysis_page.png)
+
 ### Pré-requis
 - Windows
 - Afficher la barre des pods
@@ -14,24 +35,23 @@
 - Ne pas cocher afficher tous les monstres d'un groupe
 - Mise à l'echelle 100% paramètre affichage pc
 - Résolution 1920x1080
-- Ne pas avoir d'écran dupliquer, ca fout la merde apparemment
-- Cacher la barre de tâche si windows 10
+- Ne pas avoir d'écran dupliquer
 
 ### Jeu
 - Ne pas être dans le tutoriel
 - Etre abonné
 - Avoir le zaap de bonta
 
+### Télécharger la dernière version
+
 # Development
 
 ## Configuration
 
-### Example of .env:
-```
-BACKEND_URL=145.239.198.180
-USERNAME="temp@example.com"
-PASSWORD="lepassword"
-```
+### Create .env:
+
+Create .env file based on .env.template
+
 ### Install dependencies:
 - `pip install poetry`
 - `bash scripts/init.sh`

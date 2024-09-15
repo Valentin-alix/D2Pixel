@@ -27,7 +27,7 @@ pyinstaller = "^6.6.0"
 qt-material = "^2.14"
 schedule = "^1.2.2"
 requests = "^2.32.2"
-pyarmor = "^8.5.9"
+pyarmor = "^8.5.11"
 
 [tool.poetry.group.dev.dependencies]
 types-pynput = "^1.7.6.20240511"

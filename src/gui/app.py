@@ -13,7 +13,7 @@ from src.consts import RESOURCE_FOLDER_PATH
 
 
 class Application(QApplication):
-    TITLE = "D2SafeBot"
+    TITLE = "AutoYieldMaster"
 
     def __init__(self, argv) -> None:
         # authorize app to change icon of application
