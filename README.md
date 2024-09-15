@@ -1,7 +1,7 @@
-# Usage
+# Utilisation
 
-### Hud
-- Windows 11/10
+### Pré-requis
+- Windows
 - Afficher la barre des pods
 - Connexion au choix de personnage
 - Anticrénélage: aucun
@@ -17,14 +17,14 @@
 - Ne pas avoir d'écran dupliquer, ca fout la merde apparemment
 - Cacher la barre de tâche si windows 10
 
-### Game
+### Jeu
 - Ne pas être dans le tutoriel
 - Etre abonné
 - Avoir le zaap de bonta
 
 # Development
 
-## Setup
+## Configuration
 
 ### Example of .env:
 ```
