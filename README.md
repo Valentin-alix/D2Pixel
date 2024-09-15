@@ -10,6 +10,10 @@ Le bot peux :
 - Vendre des ressources ou consommables
 - Automatiser la forgemagie d'exo
 
+Hormis pour la forgemagie d'exo tout est organisé de sorte à ce que le bot soit autonome malgré les erreurs, les morts, le fais qu'il soit full pods etc..
+
+En lancant le bot vous n'aurez qu'a remplir les informations du bot sans oublier les sorts (index: 0 veux dire première colonne et première ligne de la barre de sort)
+
 
 ![alt text](docs/farm_page.png)
 
