@@ -75,7 +75,7 @@ class UserSettingsModal(Dialog):
                 config_user.time_fighter.second,
             )
         )
-        form.addRow("Temps module Fighter (HH-mm)", self.time_fighter_edit)
+        form.addRow("Temps module Combat (HH-mm)", self.time_fighter_edit)
 
         self.time_harvester_edit = QTimeEdit()
         self.time_harvester_edit.setTime(
@@ -85,7 +85,7 @@ class UserSettingsModal(Dialog):
                 config_user.time_harvester.second,
             )
         )
-        form.addRow("Temps module Harvester (HH-mm)", self.time_harvester_edit)
+        form.addRow("Temps module Récolte (HH-mm)", self.time_harvester_edit)
 
         range_new_map_widget = QWidget()
         range_new_map_widget_h_layout = HorizontalLayout()

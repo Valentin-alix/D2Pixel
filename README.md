@@ -1,19 +1,35 @@
-# Utilisation
-
 ### Présentation
 
-AutoYieldMaster est un bot full pixel, donc il ne marche qu'a travers l'analyse d'image et la simulation de clique, il marche en arrière plan sauf si vous voulez farmer les monstres à travers le mode combat.
+D2Pixel est un bot full pixel, il ne marche qu'a travers l'analyse d'image et la simulation de clique, il marche en arrière plan sauf si vous voulez farmer les monstres à travers le mode combat.
 
 Le bot peux :
-- Farmer les ressources récoltables (Paysan, Bucheron, Alchimiste, Pêcheur)
-- Craft à travers les métiers (Paysan, Bucheron, Alchimiste, Pêcheur)
-- Vendre des ressources ou consommables
+- Farmer les ressources récoltables des métiers:
+  - Paysan
+  - Bucheron
+  - Alchimiste
+  - Pêcheur
+- Craft à travers les métiers:
+  - Paysan
+  - Bucheron
+  - Alchimiste
+  - Pêcheur
+- Vendre des ressources ou des consommables
 - Automatiser la forgemagie d'exo
 
-Hormis pour la forgemagie d'exo tout est organisé de sorte à ce que le bot soit autonome malgré les erreurs, les morts, le fais qu'il soit full pods etc..
+Le mode farm est codé de sorte à ce que le bot soit autonome malgré les erreurs, les morts, le fait qu'il soit full pods.
 
-En lancant le bot vous n'aurez qu'a remplir les informations du bot sans oublier les sorts (index: 0 veux dire première colonne et première ligne de la barre de sort)
+En lancant le bot vous n'aurez qu'a remplir les informations du bot :
+- Niveau
+- Élement
+- Serveur
+- Zaaps disponible
+- Niveau des métiers
+- Les sorts (index: 0 veux dire première colonne et première ligne de la barre de sort)
 
+_Exemple de configuration pour les sorts_ :
+![alt text](docs/gameplay_spell_example.png)
+
+_Interfaces :_
 
 ![alt text](docs/farm_page.png)
 
@@ -26,7 +42,7 @@ En lancant le bot vous n'aurez qu'a remplir les informations du bot sans oublier
 ![alt text](docs/analysis_page.png)
 
 ### Pré-requis
-- Windows
+- Windows 11/10/8 (je n'ai pas testé pour d'autre version de windows mais ça devrait marcher)
 - Afficher la barre des pods
 - Connexion au choix de personnage
 - Anticrénélage: aucun
@@ -50,11 +66,11 @@ En lancant le bot vous n'aurez qu'a remplir les informations du bot sans oublier
 
 https://github.com/Valentin-alix/AutoYieldMaster/releases/download/0.1/auto-yield-master-win64.zip
 
-# Development
+Une fois le dossier extrait vous n'avez plus qu'a lancer le .exe
 
-## Configuration
+## Development
 
-### Create .env:
+### Configuration
 
 Create .env file based on .env.template
 
@@ -64,8 +80,8 @@ Create .env file based on .env.template
 
 ## Production:
 
-### Generate obfucasted .exe
-`pyi-makespec --noconsole --hidden-import "pkg_resources.extern" --add-data "./resources":"./resources" --add-data ".env":"." main.py && mkdir -p dist/ && pyarmor gen --pack main.spec -r main.py dist/`
+### Generate .exe
+`pyinstaller --noconsole --hidden-import "pkg_resources.extern" --add-data "./resources":"./resources" --add-data ".env":"." main.py`
 
 ## Profiling:
 

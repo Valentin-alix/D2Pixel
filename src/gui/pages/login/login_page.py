@@ -1,13 +1,14 @@
+from dotenv import set_key
+from PyQt5.QtCore import QSize
+from PyQt5.QtWidgets import QDialogButtonBox, QFormLayout, QLineEdit
+
+from D2Shared.shared.schemas.user import CreateUserSchema
 from src.consts import ENV_PATH
 from src.gui.components.dialog import Dialog
 from src.gui.signals.app_signals import AppSignals
 from src.services.login import LoginService
 from src.services.session import ServiceSession
-
-
-from PyQt5.QtCore import QSize
-from PyQt5.QtWidgets import QDialogButtonBox, QFormLayout, QLineEdit
-from dotenv import set_key
+from src.services.user import UserService
 
 
 class LoginModal(Dialog):
@@ -19,6 +20,7 @@ class LoginModal(Dialog):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        self.setWindowTitle("Connexion ou inscription")
         self.resize(QSize(400, 100))
         self.service = service
         self.app_signals = app_signals
@@ -41,6 +43,9 @@ class LoginModal(Dialog):
         username, password = self.get_inputs()
         if username == "" or password == "":
             return
+        UserService.create_user(
+            self.service, CreateUserSchema(email=username, password=password)
+        )
         set_key(ENV_PATH, "USERNAME", username)
         set_key(ENV_PATH, "PASSWORD", password)
         if not LoginService.is_login(self.service):
