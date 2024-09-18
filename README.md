@@ -64,7 +64,7 @@ _Interfaces :_
 
 ### Télécharger la dernière version
 
-https://github.com/Valentin-alix/AutoYieldMaster/releases/download/0.1/auto-yield-master-win64.zip
+https://github.com/Valentin-alix/D2Pixel/releases/download/0.1/d2pixel.zip
 
 Une fois le dossier extrait vous n'avez plus qu'a lancer le .exe
 
