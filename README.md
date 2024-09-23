@@ -1,6 +1,6 @@
 ### Présentation
 
-D2Pixel est un bot full pixel, il ne marche qu'a travers l'analyse d'image et la simulation de clique, il marche en arrière plan sauf si vous voulez farmer les monstres à travers le mode combat.
+D2Pixel est un bot full pixel, il ne marche qu'à travers l'analyse d'image et la simulation de clique, il marche en arrière plan sauf si vous voulez farmer les monstres à travers le mode combat.
 
 Le bot peux :
 - Farmer les ressources récoltables des métiers:
@@ -72,10 +72,11 @@ _Interfaces :_
 
 ### Télécharger la dernière version
 
-https://github.com/Valentin-alix/D2Pixel/releases/download/0.1/d2pixel.zip
+Aller à https://github.com/Valentin-alix/D2Pixel/releases
+puis télécharger d2pixel.zip.
 
 Une fois le dossier extrait vous n'avez plus qu'a lancer le main.exe
-puis mettez le nom d'utilisateur et le mot de passe que vous souhaitez, si le nom d'utilisateur n'existe pas, un compte est créer.
+puis mettez le nom d'utilisateur et le mot de passe que vous souhaitez, si le nom d'utilisateur n'existe pas, un compte est créé.
 
 ## Development
 
