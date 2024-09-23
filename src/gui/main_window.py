@@ -145,7 +145,9 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_login_failed(self):
-        input_dialog = LoginModal(app_signals=self.app_signals, service=self.service)
+        input_dialog = LoginModal(
+            logger=self.logger, app_signals=self.app_signals, service=self.service
+        )
         if input_dialog.exec_() != QDialog.Accepted:
             sys.exit()
 

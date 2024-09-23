@@ -1,4 +1,7 @@
+from logging import Logger
+
 from dotenv import set_key
+from pydantic import ValidationError
 from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import QDialogButtonBox, QFormLayout, QLineEdit
 
@@ -14,6 +17,7 @@ from src.services.user import UserService
 class LoginModal(Dialog):
     def __init__(
         self,
+        logger: Logger,
         app_signals: AppSignals,
         service: ServiceSession,
         *args,
@@ -24,6 +28,7 @@ class LoginModal(Dialog):
         self.resize(QSize(400, 100))
         self.service = service
         self.app_signals = app_signals
+        self.logger = logger
         self.username = QLineEdit(self)
         self.password = QLineEdit(self)
         self.password.setEchoMode(QLineEdit.Password)
@@ -32,7 +37,7 @@ class LoginModal(Dialog):
         )
 
         layout = QFormLayout(self)
-        layout.addRow("Nom d'utilisateur", self.username)
+        layout.addRow("Email", self.username)
         layout.addRow("Mot de passe", self.password)
         layout.addWidget(button_box)
 
@@ -43,9 +48,12 @@ class LoginModal(Dialog):
         username, password = self.get_inputs()
         if username == "" or password == "":
             return
-        UserService.create_user(
-            self.service, CreateUserSchema(email=username, password=password)
-        )
+        try:
+            create_user = CreateUserSchema(email=username, password=password)
+        except ValidationError:
+            self.logger.error("Email non valide.")
+            return
+        UserService.create_user(self.service, create_user)
         set_key(ENV_PATH, "USERNAME", username)
         set_key(ENV_PATH, "PASSWORD", password)
         if not LoginService.is_login(self.service):
