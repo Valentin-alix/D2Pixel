@@ -42,9 +42,19 @@ _Interfaces :_
 ![alt text](docs/analysis_page.png)
 
 ### Pré-requis
+
+#### Système : 
 - Windows 11/10/8 (je n'ai pas testé pour d'autre version de windows mais ça devrait marcher)
+- Mise à l'echelle 100% paramètre affichage pc
+- Résolution 1920x1080
+- Ne pas avoir d'écran dupliquer
+
+#### Launcher ankama :
+- Connexion direct au choix de personnage
+- Taille de l'interface : HD (Classique)
+
+#### Config en jeu :
 - Afficher la barre des pods
-- Connexion au choix de personnage
 - Anticrénélage: aucun
 - Limite de passage en mode créature: aucun
 - Ne pas cocher afficher les personnages en transparence
@@ -53,11 +63,9 @@ _Interfaces :_
 - Ne pas cocher utiliser le mode tactique coloré
 - Ne pas cocher afficher les cartes adjacentes
 - Ne pas cocher afficher tous les monstres d'un groupe
-- Mise à l'echelle 100% paramètre affichage pc
-- Résolution 1920x1080
-- Ne pas avoir d'écran dupliquer
+- Réinitialiser les positions d'interface
 
-### Jeu
+#### Personnage :
 - Ne pas être dans le tutoriel
 - Etre abonné
 - Avoir le zaap de bonta
@@ -66,7 +74,8 @@ _Interfaces :_
 
 https://github.com/Valentin-alix/D2Pixel/releases/download/0.1/d2pixel.zip
 
-Une fois le dossier extrait vous n'avez plus qu'a lancer le .exe
+Une fois le dossier extrait vous n'avez plus qu'a lancer le main.exe
+puis mettez le nom d'utilisateur et le mot de passe que vous souhaitez, si le nom d'utilisateur n'existe pas, un compte est créer.
 
 ## Development
 
