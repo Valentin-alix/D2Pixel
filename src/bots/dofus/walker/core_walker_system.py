@@ -259,9 +259,7 @@ class CoreWalkerSystem:
             img = self.wait_for_new_map(True, force=True)
         else:
             img = new_img
-        return self.hud_sys.close_modals(
-            img, [ObjectConfigs.Cross.bank_inventory_right]
-        )
+        return self.hud_sys.close_modals(img, [ObjectConfigs.Cross.black_on_grey])
 
     # EntityMap
 

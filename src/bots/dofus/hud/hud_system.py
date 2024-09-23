@@ -35,14 +35,10 @@ class Hud:
 
     close_interface_configs: list[ObjectSearchConfig] = field(
         default_factory=lambda: [
-            ObjectConfigs.Cross.popup_info,
-            ObjectConfigs.Cross.inverted,
+            ObjectConfigs.Cross.grey_on_black,
+            ObjectConfigs.Cross.black_on_grey,
+            ObjectConfigs.Cross.small_black_on_grey,
             ObjectConfigs.Cross.map,
-            ObjectConfigs.Cross.bank_inventory_right,
-            ObjectConfigs.Cross.sale_hotel_inventory_right,
-            ObjectConfigs.Cross.info_win_fight,
-            ObjectConfigs.Cross.info_lose_fight,
-            ObjectConfigs.Cross.connection_warning,
             ObjectConfigs.Button.ok,
             ObjectConfigs.Button.yes,
         ],
@@ -111,7 +107,7 @@ class HudSystem:
 
         if (
             quit_info := self.image_manager.object_searcher.get_position(
-                img, ObjectConfigs.Cross.green
+                img, ObjectConfigs.Cross.green_info_modal
             )
         ) is None:
             return img, events_info_modal
@@ -201,8 +197,8 @@ class HudSystem:
         self,
         img: numpy.ndarray,
         ordered_configs_to_check: list[ObjectSearchConfig] = [
-            ObjectConfigs.Cross.bank_inventory_right,
-            ObjectConfigs.Cross.info_win_fight,
+            ObjectConfigs.Cross.black_on_grey,
+            ObjectConfigs.Cross.small_black_on_grey,
         ],
         from_cache: bool = True,
     ) -> numpy.ndarray:

@@ -3,18 +3,11 @@ from threading import Lock
 from typing import Literal, overload
 
 import numpy
-import win32gui
-import win32ui
 
 from D2Shared.shared.entities.object_search_config import ObjectSearchConfig
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.schemas.template_found import TemplateFoundPlacementSchema
 from src.exceptions import UnknowStateException
-from src.image_manager.analysis import are_same_image
-from src.image_manager.screen_objects.cursor import (
-    CursorType,
-    get_cursor_images,
-)
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.utils.retry import RetryTimeArgs, retry_time
 from src.window_manager.capturer import Capturer
@@ -169,31 +162,3 @@ class ImageManager:
         if img is None:
             img = self.capturer.capture()
         return self.object_searcher.is_not_on_screen(img, config, map_id)
-
-    def is_current_cursor_of_type(self, cursor_type: CursorType) -> bool:
-        icon_width, icon_height = 32, 32
-
-        cursor_info = win32gui.GetCursorInfo()
-        cursor_handle = cursor_info[1]
-
-        with self.dc_lock:
-            hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
-            hbmp = win32ui.CreateBitmap()
-            hbmp.CreateCompatibleBitmap(hdc, icon_width, icon_height)
-            hdc = hdc.CreateCompatibleDC()
-            hdc.SelectObject(hbmp)
-
-            hdc.DrawIcon((0, 0), cursor_handle)
-
-            bmp_str = hbmp.GetBitmapBits(True)
-
-            img = numpy.frombuffer(bmp_str, dtype="uint8")  # type: ignore
-            img.shape = (icon_width, icon_height, 4)
-            img = img[..., :3]
-            current_icon_img = numpy.ascontiguousarray(img)
-
-            win32gui.DeleteObject(hbmp.GetHandle())
-            hdc.DeleteDC()
-            cursor_type_image = get_cursor_images()[cursor_type]
-
-        return are_same_image(current_icon_img, cursor_type_image)

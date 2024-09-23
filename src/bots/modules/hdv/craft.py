@@ -55,9 +55,7 @@ class Crafter:
                 if current_job is not None:
                     self.hud_sys.close_modals(
                         self.capturer.capture(),
-                        ordered_configs_to_check=[
-                            ObjectConfigs.Cross.bank_inventory_right
-                        ],
+                        ordered_configs_to_check=[ObjectConfigs.Cross.black_on_grey],
                     )
                 pos = self.workshop_building.go_workshop_for_job(recipe.job.name)
                 self.logger.info(f"Go for {recipe.job.name}")
@@ -99,7 +97,7 @@ class Crafter:
         if current_job is not None:
             self.hud_sys.close_modals(
                 img,
-                ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
+                ordered_configs_to_check=[ObjectConfigs.Cross.black_on_grey],
             )
 
     def run_crafter(self, recipes: list[RecipeSchema]):
@@ -124,7 +122,7 @@ class Crafter:
                 # item is probably still craftable, go craft & stay on same item
                 self.hud_sys.close_modals(
                     self.capturer.capture(),
-                    ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
+                    ordered_configs_to_check=[ObjectConfigs.Cross.black_on_grey],
                 )
                 self.craft_from_inventory(recipes_inventory)
                 self.bank_sys.bank_clear_inventory()
@@ -138,6 +136,6 @@ class Crafter:
 
         self.hud_sys.close_modals(
             self.capturer.capture(),
-            ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
+            ordered_configs_to_check=[ObjectConfigs.Cross.black_on_grey],
         )
         self.craft_from_inventory(recipes_inventory)

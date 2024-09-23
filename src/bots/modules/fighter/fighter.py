@@ -214,7 +214,7 @@ class Fighter:
                 new_img = self.bank_sys.bank_clear_inventory()
                 self.hud_sys.close_modals(
                     new_img,
-                    ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
+                    ordered_configs_to_check=[ObjectConfigs.Cross.black_on_grey],
                 )
                 self.sub_area_farming_sys.go_inside_grouped_sub_area(sub_areas)
                 return True

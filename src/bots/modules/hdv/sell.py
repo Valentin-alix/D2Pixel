@@ -107,7 +107,7 @@ class Seller:
                 self.logger.info("Character is full pods, go sell")
                 self.hud_sys.close_modals(
                     self.capturer.capture(),
-                    ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
+                    ordered_configs_to_check=[ObjectConfigs.Cross.black_on_grey],
                 )
                 full_categories, _ = self.sell_inventory(items_infos_inventory)
 
@@ -131,7 +131,7 @@ class Seller:
         self.logger.info("Got all items in inventory")
         self.hud_sys.close_modals(
             self.capturer.capture(),
-            ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
+            ordered_configs_to_check=[ObjectConfigs.Cross.black_on_grey],
         )
         _, completed_items = self.sell_inventory(items_infos_inventory)
         _completed_items_ids.update(completed_items)

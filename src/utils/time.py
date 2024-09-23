@@ -11,7 +11,7 @@ def convert_time_to_seconds(value: time) -> float:
 
 
 def wait(
-    range: tuple[float, float] = RANGE_WAIT, is_weighted: bool = False, coeff: int = 2
+    range: tuple[float, float] = RANGE_WAIT, is_weighted: bool = True, coeff: int = 2
 ):
     if is_weighted:
         wait_time = pick_random_weighted_time(*range, coeff)

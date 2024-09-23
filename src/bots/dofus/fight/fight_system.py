@@ -157,36 +157,32 @@ class FightSystem:
         """Return True if was teleported"""
         self.logger.info("Handling post fight")
         pos, template_found, config, img = self.image_manager.wait_multiple_or_template(
-            [
-                ObjectConfigs.Cross.info_win_fight,
-                ObjectConfigs.Cross.info_lose_fight,
-                ObjectConfigs.Text.level_up,
-            ],
+            [ObjectConfigs.Cross.small_black_on_grey, ObjectConfigs.Text.level_up],
             force=True,
         )
-        if config == ObjectConfigs.Text.level_up:
+        sleep(0.3)
+        img = self.capturer.capture()
+
+        if self.object_searcher.get_position(img, ObjectConfigs.Text.level_up):
             img = self.hud_sys.handle_level_up(
                 img, pos, RegionSchema.model_validate(template_found.region)
             )
 
-        if (
-            self.object_searcher.get_position(img, ObjectConfigs.Fight.grave)
-            is not None
-        ):
+        if self.object_searcher.get_position(img, ObjectConfigs.Fight.grave):
             self.logger.warning("Character is dead.")
             img = self.on_dead_character(img)
             self.is_in_fight_event.clear()
             return img, True
 
-        if config == ObjectConfigs.Cross.info_lose_fight:
+        if self.object_searcher.get_position(img, ObjectConfigs.Fight.defeat_text):
             self.logger.warning("Loosed Fight")
             self.core_walker_system.wait_for_new_map(True)
             return (
                 self.hud_sys.close_modals(
                     img,
                     ordered_configs_to_check=[
-                        ObjectConfigs.Cross.info_lose_fight,
-                        ObjectConfigs.Cross.popup_info,  # in case energy is low
+                        ObjectConfigs.Cross.small_black_on_grey,
+                        ObjectConfigs.Cross.black_on_grey,  # in case energy is low
                     ],
                 ),
                 True,
@@ -197,8 +193,8 @@ class FightSystem:
                 img,
                 ordered_configs_to_check=[
                     ObjectConfigs.Cross.map,
-                    ObjectConfigs.Cross.info_win_fight,
-                    ObjectConfigs.Cross.popup_info,
+                    ObjectConfigs.Cross.small_black_on_grey,
+                    ObjectConfigs.Cross.black_on_grey,
                 ],
             ),
             False,
@@ -212,7 +208,7 @@ class FightSystem:
 
         img = self.hud_sys.close_modals(
             self.capturer.capture(),
-            ordered_configs_to_check=[ObjectConfigs.Cross.info_lose_fight],
+            ordered_configs_to_check=[ObjectConfigs.Cross.small_black_on_grey],
         )
         self.core_walker_system.wait_for_new_map(True, force=False)
 

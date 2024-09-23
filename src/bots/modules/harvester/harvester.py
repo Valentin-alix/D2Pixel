@@ -1,7 +1,7 @@
-from enum import Enum, auto
 import random
 import traceback
 from dataclasses import dataclass, field
+from enum import Enum, auto
 from logging import Logger
 from threading import Lock
 from time import perf_counter, sleep
@@ -294,7 +294,7 @@ class Harvester:
                 img = self.bank_sys.bank_clear_inventory()
                 img = self.hud_sys.close_modals(
                     img,
-                    ordered_configs_to_check=[ObjectConfigs.Cross.bank_inventory_right],
+                    ordered_configs_to_check=[ObjectConfigs.Cross.black_on_grey],
                 )
                 img = self.sub_area_farming_sys.go_inside_grouped_sub_area(sub_areas)
 

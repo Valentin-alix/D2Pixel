@@ -28,7 +28,7 @@ class TestHud(unittest.TestCase):
         assert (
             len(
                 self.object_searcher.get_multiple_position(
-                    img, ObjectConfigs.Cross.bank_inventory_right
+                    img, ObjectConfigs.Cross.black_on_grey
                 )
             )
             == 0
@@ -41,10 +41,10 @@ class TestHud(unittest.TestCase):
         img = cv2.imread(os.path.join(PATH_FIXTURES_HUD, "cross_ok.png"))
         positions: list[tuple[Position, InfoTemplateFoundPlacementSchema]] = []
         for config in [
-            ObjectConfigs.Cross.inverted,
+            ObjectConfigs.Cross.grey_on_black,
             ObjectConfigs.Cross.map,
-            ObjectConfigs.Cross.bank_inventory_right,
-            ObjectConfigs.Cross.info_win_fight,
+            ObjectConfigs.Cross.black_on_grey,
+            ObjectConfigs.Cross.small_black_on_grey,
         ]:
             positions.extend(self.object_searcher.get_multiple_position(img, config))
         print(positions)
