@@ -5,18 +5,17 @@ from threading import Event, Lock, RLock
 
 import cv2
 
-from D2Shared.shared.consts.adaptative.positions import CHAT_TEXT_POSITION
-from D2Shared.shared.consts.adaptative.regions import MAP_POSITION_REGION
-from src.consts import DOFUS_WINDOW_SIZE
-from src.window_manager.window_searcher import get_windows_by_process_and_name
-
 sys.path.append(os.path.dirname(os.path.dirname((os.path.dirname(__file__)))))
 
+from D2Shared.shared.consts.adaptative.positions import CHAT_TEXT_POSITION
+from D2Shared.shared.consts.adaptative.regions import MAP_POSITION_REGION
 from D2Shared.shared.entities.position import Position
 from D2Shared.shared.schemas.region import RegionSchema
+from src.consts import DOFUS_WINDOW_SIZE
 from src.image_manager.drawer import ColorBGR, draw_area, draw_position
 from src.window_manager.capturer import Capturer
 from src.window_manager.organizer import Organizer
+from src.window_manager.window_searcher import get_windows_by_process_and_name
 
 COLOR_REGION = ColorBGR.GREEN
 
