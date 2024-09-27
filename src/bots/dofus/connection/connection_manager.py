@@ -1,5 +1,5 @@
 import traceback
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from logging import Logger
 from threading import Event, Lock, RLock, Thread
 from time import sleep
@@ -49,15 +49,35 @@ class ConnectionManager:
     bots_by_id: dict[str, Bot]
     app_signals: AppSignals
     dc_lock: Lock
+    is_pausing: Event = field(init=False, default_factory=Event)
+    is_resuming: Event = field(init=False, default_factory=Event)
 
     def pause_bots(self) -> None:
-        self.pause_threads = []
+        while self.is_resuming.is_set():
+            sleep(1)
+
+        self.is_pausing.set()
+
+        self.pause_threads: list[Thread] = []
         for bot in self.bots_by_id.values():
-            pause_thread = Thread(target=bot.connection_sys.pause_bot, daemon=True)
-            pause_thread.start()
-            self.pause_threads.append(pause_thread)
+            self.pause_threads.append(
+                Thread(target=bot.connection_sys.pause_bot, daemon=True)
+            )
+
+        for thread in self.pause_threads:
+            thread.start()
+
+        for thread in self.pause_threads:
+            thread.join()
+
+        self.is_pausing.clear()
 
     def resume_bots(self) -> None:
+        while self.is_pausing.is_set():
+            sleep(1)
+
+        self.is_resuming.set()
+
         if not any(
             elem.window_info and elem.is_playing_event.is_set()
             for elem in self.bots_by_id.values()
@@ -76,6 +96,8 @@ class ConnectionManager:
             bot.is_paused_internal_event.clear()
             bot.is_connected_event.set()
 
+        self.is_resuming.clear()
+
     def connect_all_dofus_account(self) -> list[WindowInfo]:
         dofus_windows_info = get_dofus_window_infos()
         threads_connect_dofus: list[Thread] = []
@@ -85,11 +107,11 @@ class ConnectionManager:
                     target=self.connect_dofus_account, args=(window_info,), daemon=True
                 )
             )
-        for _thread in threads_connect_dofus:
-            _thread.start()
+        for thread in threads_connect_dofus:
+            thread.start()
 
-        for _thread in threads_connect_dofus:
-            _thread.join()
+        for thread in threads_connect_dofus:
+            thread.join()
 
         return get_dofus_window_infos()
 
