@@ -1,6 +1,5 @@
 import traceback
 from datetime import time
-from functools import partial
 from logging import Logger
 
 from PyQt5.QtCore import Qt, QTime, pyqtSlot
@@ -11,11 +10,10 @@ from D2Shared.shared.schemas.config_user import (
     UpdateConfigUserSchema,
 )
 from D2Shared.shared.schemas.range_time import (
-    UpdateRangeHourPlayTimeSchema,
     UpdateRangeWaitSchema,
 )
 from D2Shared.shared.schemas.user import ReadUserSchema
-from src.gui.components.buttons import PushButton, PushButtonIcon
+from src.gui.components.buttons import PushButton
 from src.gui.components.dialog import Dialog
 from src.gui.components.organization import HorizontalLayout, VerticalLayout
 from src.gui.signals.app_signals import AppSignals
@@ -107,67 +105,6 @@ class UserSettingsModal(Dialog):
         self.play_time_widget.setLayout(self.play_time_widget_layout)
         self.range_playtime_edits: list[tuple[QTimeEdit, QTimeEdit]] = []
 
-        button_add = PushButtonIcon("add.svg", parent=self)
-        self.play_time_widget_layout.addWidget(button_add)
-        button_add.clicked.connect(lambda: self.add_range_playtime(time(), time()))
-
-        for range_playtime in sorted(
-            config_user.ranges_hour_playtime, key=lambda elem: elem.start_time
-        ):
-            self.add_range_playtime(range_playtime.start_time, range_playtime.end_time)
-
-        form.addRow("Planning d'activité (HH-mm)", self.play_time_widget)
-
-    def add_range_playtime(self, start_time: time, end_time: time):
-        range_playtime_widget = QWidget()
-        range_playtime_widget_layout = HorizontalLayout()
-        range_playtime_widget.setLayout(range_playtime_widget_layout)
-
-        time_start_edit = QTimeEdit()
-        time_start_edit.setTime(
-            QTime(
-                start_time.hour,
-                start_time.minute,
-                start_time.second,
-            )
-        )
-        range_playtime_widget_layout.addWidget(time_start_edit)
-
-        time_end_edit = QTimeEdit()
-        time_end_edit.setTime(
-            QTime(
-                end_time.hour,
-                end_time.minute,
-                end_time.second,
-            )
-        )
-        range_playtime_widget_layout.addWidget(time_end_edit)
-
-        self.range_playtime_edits.append((time_start_edit, time_end_edit))
-
-        button_delete = PushButtonIcon("close.svg", parent=self)
-        range_playtime_widget_layout.addWidget(button_delete)
-        button_delete.clicked.connect(
-            partial(
-                self.on_delete_playtime,
-                range_playtime_widget,
-                time_start_edit,
-                time_end_edit,
-            )
-        )
-
-        self.play_time_widget_layout.addWidget(range_playtime_widget)
-
-    def on_delete_playtime(
-        self, widget: QWidget, time_start_edit: QTimeEdit, time_end_edit: QTimeEdit
-    ):
-        self.play_time_widget_layout.removeWidget(widget)
-        self.range_playtime_edits.remove((time_start_edit, time_end_edit))
-        widget.deleteLater()
-        self.play_time_widget_layout.update()
-        self.play_time_widget.adjustSize()
-        self.adjustSize()
-
     def set_save_btn(self):
         self.save_btn = PushButton(text="Enregistrer")
         self.save_btn.clicked.connect(self.on_save)
@@ -204,30 +141,11 @@ class UserSettingsModal(Dialog):
                 start=range_new_map_start, end=range_new_map_end
             )
 
-            ranges_hour_playtime: list[UpdateRangeHourPlayTimeSchema] = []
-            for range_playtime_edit in self.range_playtime_edits:
-                start_time = time(
-                    range_playtime_edit[0].time().hour(),
-                    range_playtime_edit[0].time().minute(),
-                    range_playtime_edit[0].time().second(),
-                )
-                end_time = time(
-                    range_playtime_edit[1].time().hour(),
-                    range_playtime_edit[1].time().minute(),
-                    range_playtime_edit[1].time().second(),
-                )
-                ranges_hour_playtime.append(
-                    UpdateRangeHourPlayTimeSchema(
-                        start_time=start_time, end_time=end_time
-                    )
-                )
-
             update_config = UpdateConfigUserSchema(
                 time_between_sentence=time_between_sentence,
                 time_fighter=time_fighter,
                 time_harvester=time_harvester,
                 range_new_map=range_new_map,
-                ranges_hour_playtime=ranges_hour_playtime,
             )
             self.user.config_user = ConfigService.update_config_user(
                 self.service, self.user.config_user.id, update_config
