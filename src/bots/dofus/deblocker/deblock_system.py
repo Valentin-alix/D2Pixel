@@ -1,7 +1,7 @@
 import traceback
 from dataclasses import dataclass
 from logging import Logger
-from threading import Event, Thread
+from threading import Event
 from time import sleep
 
 from D2Shared.shared.consts.object_configs import ObjectConfigs
@@ -15,13 +15,14 @@ from src.exceptions import StoppedException
 from src.gui.signals.app_signals import AppSignals
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
 from src.window_manager.capturer import Capturer
+from src.window_manager.controller import Controller
 
 
 @dataclass
 class DeblockSystem:
     logger: Logger
+    controller: Controller
     app_signals: AppSignals
-    is_paused_internal_event: Event
     is_connected_event: Event
     capturer: Capturer
     hud_system: HudSystem
@@ -33,10 +34,8 @@ class DeblockSystem:
         self.logger.info("En train de débloquer le bot...")
         if retry <= 0:
             self.logger.info("Fail to deblock character, restarting...")
-            pause_thread = Thread(target=self.connection_system.pause_bot, daemon=True)
-            pause_thread.start()
-            self.is_paused_internal_event.wait()
-            sleep(2)
+            self.is_connected_event.clear()
+            self.controller.kill_window()
             self.app_signals.need_restart.emit()
             self.is_connected_event.wait()
             return self.deblock_character()

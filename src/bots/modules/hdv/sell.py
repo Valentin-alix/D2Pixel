@@ -52,7 +52,8 @@ class Seller:
             self.hud_sys.close_modals(
                 self.capturer.capture(),
                 ordered_configs_to_check=[
-                    ObjectConfigs.Cross.sale_hotel_inventory_right
+                    ObjectConfigs.Cross.black_on_grey,
+                    ObjectConfigs.Cross.grey_on_black,
                 ],
             )
         return full_categories, all_completed_items

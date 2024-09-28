@@ -1,18 +1,15 @@
 import socket
 from dataclasses import dataclass
 from logging import Logger
-from threading import Event, RLock
-from time import sleep
+from threading import Event
 
 import numpy
 
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from src.bots.dofus.fight.fight_system import FightSystem
 from src.bots.dofus.hud.hud_system import HudSystem
-from src.gui.signals.app_signals import AppSignals
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
-from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 
 
@@ -36,36 +33,9 @@ class ConnectionSystem:
     hud_system: HudSystem
     controller: Controller
     object_searcher: ObjectSearcher
-    capturer: Capturer
     image_manager: ImageManager
     logger: Logger
-    app_signals: AppSignals
     is_connected_event: Event
-    is_paused_internal_event: Event
-    is_playing_event: Event
-    is_paused_event: Event
-    is_in_fight_event: Event
-    action_lock: RLock
-
-    def pause_bot(self):
-        while True:
-            if not self.is_playing_event.is_set() or self.is_paused_event.is_set():
-                return
-            if not self.is_in_fight_event.is_set():
-                break
-            self.logger.info("En attente que le bot ne soit plus en combat...")
-            sleep(0.5)
-        self.is_paused_internal_event.set()
-        with self.action_lock:
-            self.logger.info("Bot mis en pause.")
-            self.is_connected_event.clear()
-            self.controller.kill_window()
-            while True:
-                if not self.is_paused_internal_event.is_set():
-                    break
-                if self.is_paused_event.is_set():
-                    break
-                sleep(0.5)
 
     def connect_character(self, img: numpy.ndarray) -> tuple[numpy.ndarray, bool]:
         """return false if not connected"""

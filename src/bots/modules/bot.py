@@ -92,7 +92,6 @@ class Bot:
 
     bot_signals: BotSignals = field(default_factory=BotSignals, init=False)
     is_paused_event: Event = field(default_factory=Event, init=False)
-    is_paused_internal_event: Event = field(default_factory=Event, init=False)
     is_playing_event: Event = field(default_factory=Event, init=False)
     is_connected_event: Event = field(default_factory=Event, init=False)
     is_in_fight_event: Event = field(default_factory=Event, init=False)
@@ -238,21 +237,14 @@ class Bot:
             hud_system=self.hud_sys,
             controller=self.controller,
             object_searcher=self.object_searcher,
-            capturer=self.capturer,
             image_manager=self.image_manager,
             logger=self.logger,
-            app_signals=self.app_signals,
             is_connected_event=self.is_connected_event,
-            is_paused_internal_event=self.is_paused_internal_event,
-            is_playing_event=self.is_playing_event,
-            is_paused_event=self.is_paused_event,
-            is_in_fight_event=self.is_in_fight_event,
-            action_lock=self.action_lock,
         )
         self.deblock_sys = DeblockSystem(
             logger=self.logger,
+            controller=self.controller,
             app_signals=self.app_signals,
-            is_paused_internal_event=self.is_paused_internal_event,
             is_connected_event=self.is_connected_event,
             capturer=self.capturer,
             hud_system=self.hud_sys,

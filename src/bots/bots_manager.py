@@ -5,7 +5,6 @@ from threading import Lock
 
 from D2Shared.shared.schemas.user import ReadUserSchema
 from src.bots.ankama.ankama_launcher import AnkamaLauncher, get_or_launch_ankama_window
-from src.bots.dofus.antibot.playtime_manager import PlayTimeManager
 from src.bots.dofus.chat.sentence import FakeSentence
 from src.bots.dofus.connection.connection_manager import ConnectionManager
 from src.bots.modules.bot import Bot
@@ -29,7 +28,6 @@ class BotsManager:
     dc_lock: Lock = field(default_factory=Lock, init=False)
     ankama_launcher: AnkamaLauncher | None = field(default=None, init=False)
     connection_manager: ConnectionManager | None = field(default=None, init=False)
-    playtime_manager: PlayTimeManager | None = field(default=None, init=False)
     fighter_map_time: dict[int, float] = field(
         default_factory=lambda: defaultdict(lambda: 0), init=False
     )
@@ -44,7 +42,7 @@ class BotsManager:
     )
 
     def __post_init__(self):
-        self.app_signals.need_restart.connect(self._on_need_restart)
+        self.app_signals.need_restart.connect(self.connect_all)
 
     def connect_all(self):
         if self.ankama_launcher is None:
@@ -57,22 +55,12 @@ class BotsManager:
                 logger=self.logger,
                 service=self.service,
                 user=self.user,
-                ankama_launcher=self.ankama_launcher,
-                bots_by_id=self.bots_by_id,
-                app_signals=self.app_signals,
                 dc_lock=self.dc_lock,
-            )
-        if self.playtime_manager is None:
-            self.playtime_manager = PlayTimeManager(
-                user=self.user, connection_manager=self.connection_manager
             )
 
         self.ankama_launcher.launch_dofus_games()
         dofus_windows = self.connection_manager.connect_all_dofus_account()
         self._setup_bots(dofus_windows)
-
-    def _on_need_restart(self) -> None:
-        self.connect_all()
 
     def _setup_bots(self, dofus_windows: list[WindowInfo]):
         untreated_ids: list[str] = list(self.bots_by_id.keys())

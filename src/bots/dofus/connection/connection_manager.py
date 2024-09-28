@@ -1,12 +1,11 @@
 import traceback
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from logging import Logger
 from threading import Event, Lock, RLock, Thread
 from time import sleep
 
 from D2Shared.shared.consts.object_configs import ObjectConfigs
 from D2Shared.shared.schemas.user import ReadUserSchema
-from src.bots.ankama.ankama_launcher import AnkamaLauncher
 from src.bots.dofus.connection.connection_system import ConnectionSystem
 from src.bots.dofus.deblocker.blocked import Blocked
 from src.bots.dofus.fight.fight_system import FightSystem
@@ -20,9 +19,7 @@ from src.bots.dofus.fight.spells.spell_system import SpellSystem
 from src.bots.dofus.hud.hud_system import Hud, HudSystem
 from src.bots.dofus.hud.info_popup.job_level import JobParser
 from src.bots.dofus.walker.core_walker_system import CoreWalkerSystem
-from src.bots.modules.bot import Bot
 from src.consts import DOFUS_WINDOW_SIZE
-from src.gui.signals.app_signals import AppSignals
 from src.image_manager.animation import AnimationManager
 from src.image_manager.screen_objects.image_manager import ImageManager
 from src.image_manager.screen_objects.object_searcher import ObjectSearcher
@@ -34,7 +31,6 @@ from src.window_manager.capturer import Capturer
 from src.window_manager.controller import Controller
 from src.window_manager.organizer import (
     Organizer,
-    relink_windows_hwnd,
 )
 from src.window_manager.window_info import WindowInfo
 from src.window_manager.window_searcher import get_dofus_window_infos
@@ -45,58 +41,7 @@ class ConnectionManager:
     logger: Logger
     service: ServiceSession
     user: ReadUserSchema
-    ankama_launcher: AnkamaLauncher
-    bots_by_id: dict[str, Bot]
-    app_signals: AppSignals
     dc_lock: Lock
-    is_pausing: Event = field(init=False, default_factory=Event)
-    is_resuming: Event = field(init=False, default_factory=Event)
-
-    def pause_bots(self) -> None:
-        while self.is_resuming.is_set():
-            sleep(1)
-
-        self.is_pausing.set()
-
-        self.pause_threads: list[Thread] = []
-        for bot in self.bots_by_id.values():
-            self.pause_threads.append(
-                Thread(target=bot.connection_sys.pause_bot, daemon=True)
-            )
-
-        for thread in self.pause_threads:
-            thread.start()
-
-        for thread in self.pause_threads:
-            thread.join()
-
-        self.is_pausing.clear()
-
-    def resume_bots(self) -> None:
-        while self.is_pausing.is_set():
-            sleep(1)
-
-        self.is_resuming.set()
-
-        if not any(
-            elem.window_info and elem.is_playing_event.is_set()
-            for elem in self.bots_by_id.values()
-        ):
-            self.logger.info("Aucun bot n'est initialisé ou en train de jouer.")
-            return
-        self.ankama_launcher.launch_dofus_games()
-        dofus_windows_info = self.connect_all_dofus_account()
-        for bot in self.bots_by_id.values():
-            if bot.window_info is None or not bot.is_playing_event.is_set():
-                continue
-            bot.logger.info("Bot sortit de pause.")
-            if not relink_windows_hwnd(bot.window_info, dofus_windows_info):
-                bot.logger.info("Did not found related new window, retrying...")
-                return self.resume_bots()
-            bot.is_paused_internal_event.clear()
-            bot.is_connected_event.set()
-
-        self.is_resuming.clear()
 
     def connect_all_dofus_account(self) -> list[WindowInfo]:
         dofus_windows_info = get_dofus_window_infos()
@@ -122,8 +67,6 @@ class ConnectionManager:
 
         is_connected_event = Event()
         is_in_fight_event = Event()
-        is_paused_internal_event = Event()
-        is_playing_event = Event()
         is_paused_event = Event()
 
         organizer = Organizer(
@@ -237,16 +180,9 @@ class ConnectionManager:
             hud_system=hud_sys,
             controller=controller,
             object_searcher=object_searcher,
-            capturer=capturer,
             image_manager=image_manager,
             logger=self.logger,
-            app_signals=self.app_signals,
             is_connected_event=is_connected_event,
-            is_paused_internal_event=is_paused_internal_event,
-            is_playing_event=is_playing_event,
-            is_paused_event=is_paused_event,
-            is_in_fight_event=is_in_fight_event,
-            action_lock=action_lock,
         )
         while True:
             try:
