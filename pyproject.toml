@@ -25,7 +25,6 @@ pyqt5 = "^5.15.10"
 pyqtspinner = "^2.0.0"
 pyinstaller = "^6.6.0"
 qt-material = "^2.14"
-schedule = "^1.2.2"
 requests = "^2.32.2"
 
 
