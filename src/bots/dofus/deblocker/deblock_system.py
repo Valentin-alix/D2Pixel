@@ -32,13 +32,13 @@ class DeblockSystem:
 
     def deblock_character(self, retry: int = 15) -> None:
         self.logger.info("En train de débloquer le bot...")
-        if retry <= 0:
-            self.logger.info("Fail to deblock character, restarting...")
-            self.is_connected_event.clear()
-            self.controller.kill_window()
-            self.app_signals.need_restart.emit()
-            self.is_connected_event.wait()
-            return self.deblock_character()
+        # if retry <= 0:
+        #     self.logger.info("Fail to deblock character, restarting...")
+        #     self.is_connected_event.clear()
+        #     self.controller.kill_window()
+        #     self.app_signals.need_restart.emit()
+        #     self.is_connected_event.wait()
+        #     return self.deblock_character()
 
         while not has_internet_connection():
             self.logger.info("En attente d'une connexion internet...")
