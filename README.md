@@ -1,3 +1,6 @@
+## <!> Non Maintenu
+Je met ce projet en public principalement pour aider ceux qui veulent faire leur bot.
+
 ### Présentation
 
 D2Pixel est un bot full pixel, il ne marche qu'à travers l'analyse d'image et la simulation de clique, il marche en arrière plan sauf si vous voulez farmer les monstres à travers le mode combat.
