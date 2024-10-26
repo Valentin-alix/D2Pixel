@@ -1,5 +1,6 @@
-## <!> Non Maintenu
-Je met ce projet en public principalement pour aider ceux qui veulent faire leur bot.
+> [!WARNING]
+> Non maintenu,
+> je met ce projet en public principalement pour aider ceux qui veulent faire leur bot.
 
 ### Présentation
 
