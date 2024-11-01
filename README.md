@@ -29,21 +29,6 @@ En lancant le bot vous n'aurez qu'a remplir les informations du bot :
 - Niveau des métiers
 - Les sorts (index: 0 veux dire première colonne et première ligne de la barre de sort)
 
-_Exemple de configuration pour les sorts_ :
-![alt text](docs/gameplay_spell_example.png)
-
-_Interfaces :_
-
-![alt text](docs/farm_page.png)
-
-![alt text](docs/craft_page.png)
-
-![alt text](docs/sell_page.png)
-
-![alt text](docs/fm_page.png)
-
-![alt text](docs/analysis_page.png)
-
 ### Pré-requis
 
 #### Système : 
